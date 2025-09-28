@@ -1,0 +1,47 @@
+import { auth } from '@/lib/auth';
+import { ActivityType } from '@/lib/types';
+import { sendWelcomeEmail } from '@/lib/emails/dispatchers';
+import { generateOrganizationSlug } from '@/lib/utils';
+import { logActivity } from '@/lib/db/queries';
+
+export const databaseHooks = {
+  user: {
+    create: {
+      after: async (user: any) => {
+        // Send welcome email
+        await sendWelcomeEmail({
+          to: user.email,
+          recipientName: user.name,
+          dashboardUrl: '/app/general',
+        });
+
+        await logActivity(user.id, ActivityType.SIGN_UP);
+
+        // Create a default organization for the new user
+        const organizationName = `${
+          user.name || user.email.split('@')[0]
+        }'s Organization`;
+        const slug = generateOrganizationSlug(organizationName);
+
+        try {
+          const newOrganization = await auth.api.createOrganization({
+            body: {
+              name: organizationName,
+              slug,
+              userId: user.id,
+            },
+          });
+
+          if (newOrganization) {
+            await logActivity(user.id, ActivityType.CREATE_ORGANIZATION);
+          }
+        } catch (error) {
+          console.error('Failed to create default organization for user:', {
+            userId: user.id,
+            error,
+          });
+        }
+      },
+    },
+  },
+};

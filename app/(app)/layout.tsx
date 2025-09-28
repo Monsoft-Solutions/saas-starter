@@ -1,0 +1,25 @@
+import { authClient } from '@/lib/auth/auth-client';
+import { SWRProvider } from '@/components/providers/swr-provider';
+
+// TODO: improve this
+export const dynamic = 'force-dynamic';
+
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const user = authClient.getSession().then((session) => session?.data?.user);
+
+  return (
+    <SWRProvider
+      value={{
+        fallback: {
+          '/api/user': user,
+        },
+      }}
+    >
+      {children}
+    </SWRProvider>
+  );
+}

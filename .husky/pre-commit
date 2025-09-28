@@ -1,0 +1,8 @@
+# Run lint-staged for formatting and type checking
+
+# Run TypeScript compilation check without building
+echo "Running TypeScript compilation check..."
+pnpm type-check
+pnpm lint
+
+echo "Pre-commit checks passed!"

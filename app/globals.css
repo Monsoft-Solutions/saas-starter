@@ -1,0 +1,199 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Notion-inspired color palette for Tailwind CSS v4 */
+
+  /* Light theme colors (default) */
+  --color-background: #ffffff;
+  --color-foreground: #37352f;
+  --color-card: #ffffff;
+  --color-card-foreground: #37352f;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #37352f;
+  --color-primary: #4f7399;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #fbfaf9;
+  --color-secondary-foreground: #37352f;
+  --color-muted: #fbfaf9;
+  --color-muted-foreground: #6b6761;
+  --color-accent: #f8f7f5;
+  --color-accent-foreground: #37352f;
+  --color-destructive: #c2504c;
+  --color-destructive-foreground: #ffffff;
+  --color-success: #668771;
+  --color-success-foreground: #ffffff;
+  --color-warning: #b78e59;
+  --color-warning-foreground: #ffffff;
+  --color-border: #edebe9;
+  --color-input: #edebe9;
+  --color-ring: #4f7399;
+
+  /* Chart colors */
+  --color-chart-1: #4f7399;
+  --color-chart-2: #668771;
+  --color-chart-3: #b78e59;
+  --color-chart-4: #c2504c;
+  --color-chart-5: #87abcf;
+
+  /* Sidebar colors */
+  --color-sidebar-background: #fbfaf9;
+  --color-sidebar-foreground: #37352f;
+  --color-sidebar-primary: #4f7399;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f8f7f5;
+  --color-sidebar-accent-foreground: #37352f;
+  --color-sidebar-border: #edebe9;
+  --color-sidebar-ring: #4f7399;
+
+  /* Border radius system */
+  --radius-xs: 0.125rem; /* 2px */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-base: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-2xl: 1.25rem; /* 20px */
+  --radius-3xl: 1.5rem; /* 24px */
+  --radius-full: 9999px; /* circular */
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, currentColor);
+  }
+}
+
+@utility page-container {
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  width: 100%;
+}
+
+@utility stack-md {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Dark theme overrides using CSS custom properties */
+@layer base {
+  .dark {
+    /* Dark theme - Enhanced Notion-inspired colors */
+    --color-background: #1e1b18;
+    --color-foreground: #fdfcfb;
+    --color-card: #292521;
+    --color-card-foreground: #fdfcfb;
+    --color-popover: #292521;
+    --color-popover-foreground: #fdfcfb;
+    --color-primary: #87abcf;
+    --color-primary-foreground: #1e1b18;
+    --color-secondary: #292521;
+    --color-secondary-foreground: #fdfcfb;
+    --color-muted: #292521;
+    --color-muted-foreground: #a8a29e;
+    --color-accent: #332e2a;
+    --color-accent-foreground: #fdfcfb;
+    --color-destructive: #dc7874;
+    --color-destructive-foreground: #1e1b18;
+    --color-success: #86a791;
+    --color-success-foreground: #1e1b18;
+    --color-warning: #cfae79;
+    --color-warning-foreground: #1e1b18;
+    --color-border: #332e2a;
+    --color-input: #332e2a;
+    --color-ring: #87abcf;
+
+    /* Chart colors for dark theme */
+    --color-chart-1: #87abcf;
+    --color-chart-2: #86a791;
+    --color-chart-3: #cfae79;
+    --color-chart-4: #dc7874;
+    --color-chart-5: #4f7399;
+
+    /* Sidebar colors for dark theme */
+    --color-sidebar-background: #292521;
+    --color-sidebar-foreground: #fdfcfb;
+    --color-sidebar-primary: #87abcf;
+    --color-sidebar-primary-foreground: #1e1b18;
+    --color-sidebar-accent: #332e2a;
+    --color-sidebar-accent-foreground: #fdfcfb;
+    --color-sidebar-border: #332e2a;
+    --color-sidebar-ring: #87abcf;
+  }
+}
+
+@layer base {
+  body {
+    font-family: 'Manrope', Arial, Helvetica, sans-serif;
+    @apply bg-background text-foreground;
+    /* Smooth transitions for theme changes */
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  /* Notion-style focus outlines */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  /* Improved text selection */
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Typography improvements */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-foreground);
+  }
+
+  p {
+    line-height: 1.6;
+  }
+
+  /* Code blocks styling */
+  code {
+    background-color: var(--color-muted);
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875em;
+  }
+
+  pre {
+    background-color: var(--color-muted);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+
+  pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+}
