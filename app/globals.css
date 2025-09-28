@@ -13,40 +13,40 @@
   --color-card-foreground: #37352f;
   --color-popover: #ffffff;
   --color-popover-foreground: #37352f;
-  --color-primary: #4f7399;
+  --color-primary: #2e3440;
   --color-primary-foreground: #ffffff;
   --color-secondary: #fbfaf9;
   --color-secondary-foreground: #37352f;
-  --color-muted: #fbfaf9;
-  --color-muted-foreground: #6b6761;
-  --color-accent: #f8f7f5;
+  --color-muted: #f7f6f3;
+  --color-muted-foreground: #787066;
+  --color-accent: #f1f0ee;
   --color-accent-foreground: #37352f;
-  --color-destructive: #c2504c;
+  --color-destructive: #d73502;
   --color-destructive-foreground: #ffffff;
-  --color-success: #668771;
+  --color-success: #0f7b6c;
   --color-success-foreground: #ffffff;
-  --color-warning: #b78e59;
+  --color-warning: #cb6040;
   --color-warning-foreground: #ffffff;
-  --color-border: #edebe9;
-  --color-input: #edebe9;
-  --color-ring: #4f7399;
+  --color-border: #e9e5e2;
+  --color-input: #e9e5e2;
+  --color-ring: #2e3440;
 
   /* Chart colors */
-  --color-chart-1: #4f7399;
-  --color-chart-2: #668771;
-  --color-chart-3: #b78e59;
-  --color-chart-4: #c2504c;
-  --color-chart-5: #87abcf;
+  --color-chart-1: #2e3440;
+  --color-chart-2: #0f7b6c;
+  --color-chart-3: #cb6040;
+  --color-chart-4: #d73502;
+  --color-chart-5: #5e6ad2;
 
   /* Sidebar colors */
   --color-sidebar-background: #fbfaf9;
   --color-sidebar-foreground: #37352f;
-  --color-sidebar-primary: #4f7399;
+  --color-sidebar-primary: #2e3440;
   --color-sidebar-primary-foreground: #ffffff;
-  --color-sidebar-accent: #f8f7f5;
+  --color-sidebar-accent: #f1f0ee;
   --color-sidebar-accent-foreground: #37352f;
-  --color-sidebar-border: #edebe9;
-  --color-sidebar-ring: #4f7399;
+  --color-sidebar-border: #e9e5e2;
+  --color-sidebar-ring: #2e3440;
 
   /* Border radius system */
   --radius-xs: 0.125rem; /* 2px */
@@ -92,46 +92,46 @@
 @layer base {
   .dark {
     /* Dark theme - Enhanced Notion-inspired colors */
-    --color-background: #1e1b18;
-    --color-foreground: #fdfcfb;
-    --color-card: #292521;
-    --color-card-foreground: #fdfcfb;
-    --color-popover: #292521;
-    --color-popover-foreground: #fdfcfb;
-    --color-primary: #87abcf;
-    --color-primary-foreground: #1e1b18;
-    --color-secondary: #292521;
-    --color-secondary-foreground: #fdfcfb;
-    --color-muted: #292521;
-    --color-muted-foreground: #a8a29e;
-    --color-accent: #332e2a;
-    --color-accent-foreground: #fdfcfb;
-    --color-destructive: #dc7874;
-    --color-destructive-foreground: #1e1b18;
-    --color-success: #86a791;
-    --color-success-foreground: #1e1b18;
-    --color-warning: #cfae79;
-    --color-warning-foreground: #1e1b18;
-    --color-border: #332e2a;
-    --color-input: #332e2a;
-    --color-ring: #87abcf;
+    --color-background: #191919;
+    --color-foreground: #f7f6f4;
+    --color-card: #2f2f2f;
+    --color-card-foreground: #f7f6f4;
+    --color-popover: #2f2f2f;
+    --color-popover-foreground: #f7f6f4;
+    --color-primary: #6366f1;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #373737;
+    --color-secondary-foreground: #f7f6f4;
+    --color-muted: #2a2a2a;
+    --color-muted-foreground: #9b9b9b;
+    --color-accent: #404040;
+    --color-accent-foreground: #f7f6f4;
+    --color-destructive: #ef4444;
+    --color-destructive-foreground: #ffffff;
+    --color-success: #10b981;
+    --color-success-foreground: #ffffff;
+    --color-warning: #f59e0b;
+    --color-warning-foreground: #000000;
+    --color-border: #404040;
+    --color-input: #404040;
+    --color-ring: #6366f1;
 
     /* Chart colors for dark theme */
-    --color-chart-1: #87abcf;
-    --color-chart-2: #86a791;
-    --color-chart-3: #cfae79;
-    --color-chart-4: #dc7874;
-    --color-chart-5: #4f7399;
+    --color-chart-1: #6366f1;
+    --color-chart-2: #10b981;
+    --color-chart-3: #f59e0b;
+    --color-chart-4: #ef4444;
+    --color-chart-5: #8b5cf6;
 
     /* Sidebar colors for dark theme */
-    --color-sidebar-background: #292521;
-    --color-sidebar-foreground: #fdfcfb;
-    --color-sidebar-primary: #87abcf;
-    --color-sidebar-primary-foreground: #1e1b18;
-    --color-sidebar-accent: #332e2a;
-    --color-sidebar-accent-foreground: #fdfcfb;
-    --color-sidebar-border: #332e2a;
-    --color-sidebar-ring: #87abcf;
+    --color-sidebar-background: #2a2a2a;
+    --color-sidebar-foreground: #f7f6f4;
+    --color-sidebar-primary: #6366f1;
+    --color-sidebar-primary-foreground: #ffffff;
+    --color-sidebar-accent: #404040;
+    --color-sidebar-accent-foreground: #f7f6f4;
+    --color-sidebar-border: #404040;
+    --color-sidebar-ring: #6366f1;
   }
 }
 

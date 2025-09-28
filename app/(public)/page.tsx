@@ -1,126 +1,291 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CreditCard, Database } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  ArrowRight,
+  CreditCard,
+  Database,
+  Zap,
+  Shield,
+  Globe,
+  Users,
+  Sparkles,
+  CheckCircle,
+  Github,
+  ExternalLink,
+} from 'lucide-react';
 import { Terminal } from './terminal';
+import { cn } from '@/lib/design-system';
 
 export default function HomePage() {
+  const features = [
+    {
+      icon: Zap,
+      title: 'Next.js 15 & React',
+      description:
+        'Built with the latest Next.js App Router and React Server Components for optimal performance and developer experience.',
+      color: 'text-orange-500',
+    },
+    {
+      icon: Database,
+      title: 'PostgreSQL & Drizzle ORM',
+      description:
+        'Type-safe database operations with Drizzle ORM and PostgreSQL for robust data management.',
+      color: 'text-blue-500',
+    },
+    {
+      icon: CreditCard,
+      title: 'Complete Stripe Integration',
+      description:
+        'Full subscription management, customer portal, and webhook handling for seamless payments.',
+      color: 'text-purple-500',
+    },
+    {
+      icon: Shield,
+      title: 'Enterprise Authentication',
+      description:
+        'BetterAuth with multi-provider OAuth, organizations, and role-based access control.',
+      color: 'text-green-500',
+    },
+    {
+      icon: Globe,
+      title: 'Production Ready',
+      description:
+        'Professional email templates, monitoring, logging, and deployment configurations included.',
+      color: 'text-indigo-500',
+    },
+    {
+      icon: Users,
+      title: 'Multi-tenant Architecture',
+      description:
+        'Built-in organization management with member invitations and role-based permissions.',
+      color: 'text-pink-500',
+    },
+  ];
+
+  const highlights = [
+    'Enterprise-grade authentication',
+    'Complete payment processing',
+    'Multi-tenant organizations',
+    'Professional email system',
+    'Modern design system',
+    'Production-ready deployment',
+  ];
+
   return (
-    <main>
-      <section className="py-20">
-        <div className="page-container">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-            <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
-              <h1 className="text-4xl font-bold text-foreground tracking-tight sm:text-5xl md:text-6xl">
-                Build Your SaaS
-                <span className="block text-primary">Faster Than Ever</span>
-              </h1>
-              <p className="mt-3 text-base text-muted-foreground sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-                Launch your SaaS product in record time with our powerful,
-                ready-to-use template. Packed with modern technologies and
-                essential integrations.
-              </p>
-              <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
-                <a
-                  href="https://vercel.com/templates/next.js/next-js-saas-starter"
-                  target="_blank"
+    <main className="relative">
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-16 sm:pt-24 sm:pb-20 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
+        <div className="absolute inset-0 bg-grid-foreground/[0.02] bg-[size:60px_60px]" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-12 lg:items-center">
+            <div className="lg:col-span-6">
+              {/* Badge */}
+              <div className="flex items-center gap-2 mb-8">
+                <Badge
+                  variant="secondary"
+                  className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary border-primary/20"
                 >
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="text-lg rounded-full"
-                  >
-                    Deploy your own
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </a>
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Enterprise SaaS Starter
+                </Badge>
               </div>
-            </div>
-            <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
-              <Terminal />
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="py-16 bg-card w-full">
-        <div className="page-container">
-          <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-            <div>
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary text-primary-foreground">
-                <svg viewBox="0 0 24 24" className="h-6 w-6">
-                  <path
-                    fill="currentColor"
-                    d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"
-                  />
-                </svg>
-              </div>
-              <div className="mt-5">
-                <h2 className="text-lg font-medium text-foreground">
-                  Next.js and React
-                </h2>
-                <p className="mt-2 text-base text-muted-foreground">
-                  Leverage the power of modern web technologies for optimal
-                  performance and developer experience.
-                </p>
-              </div>
-            </div>
+              {/* Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+                Build Your SaaS
+                <span className="block bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
+                  Faster Than Ever
+                </span>
+              </h1>
 
-            <div className="mt-10 lg:mt-0">
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary text-primary-foreground">
-                <Database className="h-6 w-6" />
-              </div>
-              <div className="mt-5">
-                <h2 className="text-lg font-medium text-foreground">
-                  Postgres and Drizzle ORM
-                </h2>
-                <p className="mt-2 text-base text-muted-foreground">
-                  Robust database solution with an intuitive ORM for efficient
-                  data management and scalability.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-10 lg:mt-0">
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary text-primary-foreground">
-                <CreditCard className="h-6 w-6" />
-              </div>
-              <div className="mt-5">
-                <h2 className="text-lg font-medium text-foreground">
-                  Stripe Integration
-                </h2>
-                <p className="mt-2 text-base text-muted-foreground">
-                  Seamless payment processing and subscription management with
-                  industry-leading Stripe integration.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-muted">
-        <div className="page-container">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
-                Ready to launch your SaaS?
-              </h2>
-              <p className="mt-3 max-w-3xl text-lg text-muted-foreground">
-                Our template provides everything you need to get your SaaS up
-                and running quickly. Don't waste time on boilerplate - focus on
-                what makes your product unique.
+              {/* Description */}
+              <p className="mt-6 text-xl leading-relaxed text-muted-foreground max-w-2xl">
+                Launch your SaaS product in record time with our
+                production-ready template. Packed with enterprise features,
+                modern technologies, and essential integrations.
               </p>
-            </div>
-            <div className="mt-8 lg:mt-0 flex justify-center lg:justify-end">
-              <a href="https://github.com/nextjs/saas-starter" target="_blank">
+
+              {/* Highlights */}
+              <div className="mt-8 grid grid-cols-2 gap-3">
+                {highlights.map((highlight, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 text-sm text-foreground"
+                  >
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span>{highlight}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  className="text-base px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-lg rounded-full"
+                  className="text-base px-8 py-3 rounded-lg border-border/50 hover:border-border transition-all"
+                  asChild
                 >
-                  View the code
-                  <ArrowRight className="ml-3 h-6 w-6" />
+                  <a
+                    href="https://github.com/Monsoft-Solutions/saas-starter"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github className="mr-2 h-5 w-5" />
+                    View on GitHub
+                  </a>
                 </Button>
-              </a>
+              </div>
+            </div>
+
+            {/* Terminal Demo */}
+            <div className="mt-16 lg:mt-0 lg:col-span-6">
+              <div className="relative">
+                <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-transparent to-accent/20 rounded-2xl blur-2xl" />
+                <div className="relative">
+                  <Terminal />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Everything you need to build a modern SaaS
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              A complete, production-ready foundation with enterprise features
+              and modern architecture.
+            </p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="group relative p-8 bg-card rounded-xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-200 hover:border-border"
+              >
+                {/* Icon */}
+                <div
+                  className={cn(
+                    'flex items-center justify-center w-12 h-12 rounded-lg mb-6 transition-transform group-hover:scale-110',
+                    'bg-gradient-to-br from-background to-muted border border-border/50'
+                  )}
+                >
+                  <feature.icon className={cn('w-6 h-6', feature.color)} />
+                </div>
+
+                {/* Content */}
+                <h3 className="text-lg font-semibold text-foreground mb-3 leading-tight">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="relative bg-card rounded-2xl border border-border/50 shadow-lg overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-grid-foreground/[0.02] bg-[size:32px_32px]" />
+
+            <div className="relative p-8 sm:p-12 lg:p-16">
+              <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
+                <div>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6 leading-tight">
+                    Ready to launch your SaaS?
+                  </h2>
+                  <p className="text-xl text-muted-foreground leading-relaxed mb-8">
+                    Stop building boilerplate and start building features. Our
+                    enterprise-grade template gives you everything you need to
+                    focus on what makes your product unique.
+                  </p>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-3 gap-6 mb-8">
+                    <div className="text-center lg:text-left">
+                      <div className="text-2xl font-bold text-primary">10+</div>
+                      <div className="text-sm text-muted-foreground">
+                        Integrations
+                      </div>
+                    </div>
+                    <div className="text-center lg:text-left">
+                      <div className="text-2xl font-bold text-primary">
+                        100%
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        TypeScript
+                      </div>
+                    </div>
+                    <div className="text-center lg:text-left">
+                      <div className="text-2xl font-bold text-primary">
+                        24/7
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Production Ready
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 lg:mt-0 flex flex-col gap-4">
+                  <Button
+                    size="lg"
+                    className="text-base px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                    asChild
+                  >
+                    <a
+                      href="https://vercel.com/templates/next.js/next-js-saas-starter"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Deploy to Vercel
+                      <ExternalLink className="ml-2 h-5 w-5" />
+                    </a>
+                  </Button>
+
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-base px-8 py-3 rounded-lg border-border/50 hover:border-border transition-all"
+                    asChild
+                  >
+                    <a
+                      href="https://github.com/Monsoft-Solutions/saas-starter"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Github className="mr-2 h-5 w-5" />
+                      View Documentation
+                    </a>
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
