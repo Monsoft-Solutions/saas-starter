@@ -16,7 +16,10 @@
     "verify:design-tokens": "npx tsx lib/design-system/scripts/verify-tokens.ts",
     "test": "vitest run",
     "test:emails": "vitest run tests/emails/templates.test.ts",
-    "preview:emails": "tsx scripts/preview-emails.ts"
+    "preview:emails": "tsx scripts/preview-emails.ts",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
