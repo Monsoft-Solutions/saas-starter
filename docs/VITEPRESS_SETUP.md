@@ -26,7 +26,7 @@ Your documentation has been successfully adapted for VitePress! Here's what was 
 
 The documentation is now organized into logical sections:
 
-```
+```text
 docs/
 ├── Getting Started
 │   ├── Overview (README.md)

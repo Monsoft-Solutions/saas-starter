@@ -53,7 +53,10 @@ export default defineConfig({
             text: 'Checkout & Billing',
             link: '/stripe/checkout-and-billing-portal',
           },
-          { text: 'Metadata Validation', link: '/stripe-metadata-validation' },
+          {
+            text: 'Metadata Validation',
+            link: '/stripe/stripe-metadata-validation',
+          },
         ],
       },
       {
@@ -74,7 +77,10 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/yourusername/saas-starter' },
+      {
+        icon: 'github',
+        link: 'https://github.com/Monsoft-Solutions/saas-starter',
+      },
     ],
 
     footer: {
@@ -84,7 +90,7 @@ export default defineConfig({
 
     editLink: {
       pattern:
-        'https://github.com/yourusername/saas-starter/edit/main/docs/:path',
+        'https://github.com/Monsoft-Solutions/saas-starter/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
     },
 

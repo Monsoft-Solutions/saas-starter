@@ -1,12 +1,13 @@
 ---
 description: Guidelines for creating and editing Pull Request on Github
-globs: 
+globs:
 alwaysApply: false
 ---
+
 ## 📌 Repository Info
 
 - **Owner**: `Monsoft-Solutions`
-- **Repo**: `praxis-notes`
+- **Repo**: `saas-starter`
 
 ---
 

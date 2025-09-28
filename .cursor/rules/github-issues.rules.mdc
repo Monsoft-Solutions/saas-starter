@@ -1,17 +1,18 @@
 ---
 description: When creating or updating issues in GitHub, **follow these guidelines**
-globs: 
+globs:
 alwaysApply: false
 ---
-
 
 ---
 
 ## 📌 Repository Info
-- **Owner**: `Monsoft-Solutions`
-- **Repo**: `website-template`
 
-#ight Template
+- **Owner**: `Monsoft-Solutions`
+- **Repo**: `saas-starter`
+
+# Right Template
+
 - For **feature requests**, use: [feature_request.md](mdc:.github/ISSUE_TEMPLATE/feature_request.md)
 - For **bug reports**, use: [bug_report.md](mdc:.github/ISSUE_TEMPLATE/bug_report.md)
 - Ensure the issue title and body match the tone and structure of the selected template
@@ -19,6 +20,7 @@ alwaysApply: false
 ---
 
 ## 🛠️ Implementation Plan (Required)
+
 - Every issue must include a **proposed implementation plan**
 - Investigate the current codebase if necessary to:
   - Understand context and dependencies
@@ -31,6 +33,7 @@ alwaysApply: false
 ---
 
 ## ✅ Best Practices
+
 - Use **clear, concise language**
 - Add **labels** (`bug`, `feature`, `enhancement`, etc.)
 - Assign to the appropriate team member(s) if known
