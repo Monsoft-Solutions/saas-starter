@@ -3,22 +3,28 @@
 layout: home
 
 hero:
-  name: 'Saas Starter'
-  text: 'A robust Saas Starter Project'
-  tagline: My great project tagline
+  name: 'SaaS Starter'
+  text: 'Next.js 15 SaaS Boilerplate'
+  tagline: Production-ready SaaS starter with BetterAuth, Stripe, and shadcn/ui
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Get Started
+      link: /README
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: View on GitHub
+      link: https://github.com/yourusername/saas-starter
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: 🔐 Multi-Tenant Authentication
+    details: BetterAuth with organization support, social providers (Google, Facebook, LinkedIn, TikTok), and role-based access control
+  - title: 💳 Stripe Integration
+    details: Complete subscription management, webhooks, billing portal, and automated setup scripts for quick deployment
+  - title: 🎨 Modern UI Design System
+    details: Token-based design system with Notion-inspired components, dark mode support, and shadcn/ui components
+  - title: 📧 Email System
+    details: Transactional emails with Resend, beautiful templates, and automated notifications for user actions
+  - title: 🗄️ Type-Safe Database
+    details: PostgreSQL with Drizzle ORM, migrations, seeding, and comprehensive type inference throughout
+  - title: 🚀 Production Ready
+    details: Next.js 15 with App Router, TypeScript, Zod validation, testing framework, and comprehensive documentation
 ---

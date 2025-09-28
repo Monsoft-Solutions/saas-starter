@@ -40,3 +40,7 @@ next-env.d.ts
 postgres_data/
 .env*.local
 email-preview.html
+
+# vitepress
+docs/.vitepress/cache
+docs/.vitepress/dist
