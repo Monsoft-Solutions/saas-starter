@@ -1,0 +1,89 @@
+[
+  {
+    "slug": "authentication",
+    "label": "Authentication & Access",
+    "headline": "Multi-tenant auth flows with BetterAuth",
+    "summary": "Offer multi-organization account management, social logins, and strict server-side protection out of the box.",
+    "highlightBullets": [
+      "Multi-tenant organization model with role-based access control for owners and members.",
+      "Pre-configured OAuth providers for Google, Facebook, LinkedIn, and TikTok.",
+      "Server-side validation patterns using middleware, guarded server actions, and session refresh handling."
+    ],
+    "primaryDocs": [
+      { "title": "Authentication & Authorization", "href": "/docs/auth" },
+      {
+        "title": "Server Authorization Overview",
+        "href": "/docs/auth/server-authorization-overview"
+      },
+      {
+        "title": "Server Actions & Hooks",
+        "href": "/docs/auth/server-actions-and-hooks"
+      }
+    ]
+  },
+  {
+    "slug": "stripe-billing",
+    "label": "Stripe Billing",
+    "headline": "Subscription billing ready for launch",
+    "summary": "Manage the full customer billing lifecycle with resilient Stripe automation and type-safe webhooks.",
+    "highlightBullets": [
+      "Automated Stripe setup script seeds products, prices, and webhook endpoints in minutes.",
+      "Webhook handlers keep subscription state in sync and trigger lifecycle emails on payment events.",
+      "Customer self-service billing portal and checkout flows wired for upgrades and downgrades."
+    ],
+    "primaryDocs": [
+      { "title": "Stripe Integration Overview", "href": "/docs/stripe" },
+      {
+        "title": "Setup Script Guide",
+        "href": "/docs/stripe/setup-script-guide"
+      },
+      {
+        "title": "Webhooks Configuration",
+        "href": "/docs/stripe/webhooks-configuration"
+      }
+    ]
+  },
+  {
+    "slug": "design-system",
+    "label": "Design System",
+    "headline": "Token-driven UI that stays on brand",
+    "summary": "Ship polished marketing and product screens with reusable tokens, utility classes, and shadcn/ui primitives.",
+    "highlightBullets": [
+      "Centralized color, spacing, and typography tokens mirrored between Tailwind and CSS variables.",
+      "Prebuilt utilities like page containers and stack layouts accelerate marketing page assembly.",
+      "Dark mode QA checklist ensures components meet accessibility and contrast requirements."
+    ],
+    "primaryDocs": [
+      { "title": "Design System Tokens", "href": "/docs/design-system" }
+    ]
+  },
+  {
+    "slug": "transactional-email",
+    "label": "Transactional Email",
+    "headline": "Operational email with audit-ready logging",
+    "summary": "Deliver branded transactional emails via Resend with React templates, logging, and webhook feedback loops.",
+    "highlightBullets": [
+      "Resend client wrapper enforces defaults, idempotency guards, and structured error handling.",
+      "React Email templates cover onboarding, subscription, and payment scenarios with shared design tokens.",
+      "Webhook pipeline tracks delivery lifecycle and syncs statuses into Postgres for compliance."
+    ],
+    "primaryDocs": [
+      {
+        "title": "Resend Transactional Email Integration",
+        "href": "/docs/emails"
+      }
+    ]
+  },
+  {
+    "slug": "testing",
+    "label": "Testing & Quality",
+    "headline": "Confident releases backed by Vitest",
+    "summary": "Use the built-in Vitest setup with in-memory Postgres to validate business logic without flakey suites.",
+    "highlightBullets": [
+      "One-command test runner with focused vitest config and project-wide test utilities.",
+      "In-memory Postgres harness migrates schemas before each run for realistic data workflows.",
+      "Email template snapshots and helper scripts catch regressions in transactional messaging."
+    ],
+    "primaryDocs": [{ "title": "Unit Testing", "href": "/docs/unit-testing" }]
+  }
+]
