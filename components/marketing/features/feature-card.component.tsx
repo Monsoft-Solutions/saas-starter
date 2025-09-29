@@ -19,15 +19,15 @@ import {
 import type { FeatureDefinition } from '@/lib/marketing/features.schema';
 
 /**
- * Default call-to-action label surfaced when the feature card is rendered as a link.
+ * Default CTA label rendered when the feature card links to a detail page.
  */
 const DEFAULT_CTA_LABEL = 'Explore feature';
 
-const highlightListStyles: CSSProperties = {
+const listStyles: CSSProperties = {
   gap: notionSpacing.elementGap,
 };
 
-const highlightItemStyles: CSSProperties = {
+const listItemStyles: CSSProperties = {
   gap: notionSpacing.microGap,
 };
 
@@ -40,7 +40,7 @@ const ctaStyles: CSSProperties = {
 };
 
 /**
- * Props describing how the reusable feature card should render within marketing grids.
+ * Props describing how a feature card should render within marketing grids.
  */
 export type FeatureCardProps = {
   feature: FeatureDefinition;
@@ -51,7 +51,7 @@ export type FeatureCardProps = {
 };
 
 /**
- * Marketing feature card presenting a concise summary, highlight bullets, and optional CTA.
+ * Marketing feature card summarizing a feature pillar with highlight bullets and optional CTA.
  */
 export function FeatureCard({
   feature,
@@ -80,10 +80,8 @@ export function FeatureCard({
       >
         <Badge
           variant="outline"
-          style={{
-            borderRadius: notionRadius.badge,
-          }}
           className="w-fit bg-muted/70 text-muted-foreground"
+          style={{ borderRadius: notionRadius.badge }}
         >
           {feature.label}
         </Badge>
@@ -97,13 +95,13 @@ export function FeatureCard({
       <CardContent className="flex flex-1 flex-col" style={cardContentStyles}>
         <ul
           className="flex flex-col text-sm leading-relaxed text-muted-foreground"
-          style={highlightListStyles}
+          style={listStyles}
         >
           {feature.highlightBullets.map((bullet) => (
             <li
               key={bullet}
               className="flex items-start"
-              style={highlightItemStyles}
+              style={listItemStyles}
             >
               <Check
                 className="mt-0.5 h-4 w-4"

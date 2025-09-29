@@ -13,12 +13,12 @@ import {
 import type { FeatureDefinition } from '@/lib/marketing/features.schema';
 
 /**
- * Heading used above the highlight bullet list when no override is provided.
+ * Default heading displayed above the highlights list when no override is provided.
  */
 const DEFAULT_HIGHLIGHT_HEADING = 'Key highlights';
 
 /**
- * Heading used above the supporting documentation links when no override is provided.
+ * Default heading displayed above the related docs list when no override is provided.
  */
 const DEFAULT_DOCS_HEADING = 'Learn more in the docs';
 
@@ -48,7 +48,7 @@ const docsListSpacing: CSSProperties = {
 };
 
 /**
- * Props configuring the marketing feature detail layout.
+ * Props configuring the feature detail layout.
  */
 export type FeatureDetailProps = {
   feature: FeatureDefinition;
