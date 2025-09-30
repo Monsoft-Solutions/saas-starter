@@ -120,7 +120,10 @@ describe('Logger Utility Functions', () => {
     it('should handle non-Error objects', async () => {
       const { logError } = await import('./logger.service');
 
-      const errorObj = { code: 'CUSTOM_ERROR', details: 'Something went wrong' };
+      const errorObj = {
+        code: 'CUSTOM_ERROR',
+        details: 'Something went wrong',
+      };
       logError('Custom error occurred', errorObj);
 
       expect(mockError).toHaveBeenCalledWith('Custom error occurred', {
@@ -142,13 +145,15 @@ describe('Logger Utility Functions', () => {
       const { logError } = await import('./logger.service');
 
       const error = new Error('Test error with stack');
-      error.stack = 'Error: Test error with stack\n    at someFunction (file.ts:10:5)';
+      error.stack =
+        'Error: Test error with stack\n    at someFunction (file.ts:10:5)';
 
       logError('Error with stack', error);
 
       expect(mockError).toHaveBeenCalledWith('Error with stack', {
         error: 'Test error with stack',
-        stack: 'Error: Test error with stack\n    at someFunction (file.ts:10:5)',
+        stack:
+          'Error: Test error with stack\n    at someFunction (file.ts:10:5)',
       });
     });
   });
@@ -159,10 +164,7 @@ describe('Logger Utility Functions', () => {
 
       logWarn('Test warning message');
 
-      expect(mockWarn).toHaveBeenCalledWith(
-        'Test warning message',
-        undefined
-      );
+      expect(mockWarn).toHaveBeenCalledWith('Test warning message', undefined);
     });
 
     it('should log warning message with metadata', async () => {
@@ -181,10 +183,7 @@ describe('Logger Utility Functions', () => {
 
       logDebug('Test debug message');
 
-      expect(mockDebug).toHaveBeenCalledWith(
-        'Test debug message',
-        undefined
-      );
+      expect(mockDebug).toHaveBeenCalledWith('Test debug message', undefined);
     });
 
     it('should log debug message with metadata', async () => {

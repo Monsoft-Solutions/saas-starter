@@ -47,7 +47,8 @@ describe('Logger Service', () => {
 
       const { default: logger } = await import('./logger.service');
 
-      const consoleTransport = logger.transports[0] as winston.transports.ConsoleTransportInstance;
+      const consoleTransport = logger
+        .transports[0] as winston.transports.ConsoleTransportInstance;
       expect(consoleTransport.level).toBe('debug');
     });
   });
