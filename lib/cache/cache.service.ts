@@ -197,3 +197,6 @@ class CacheService {
 
 // Export singleton instance
 export const cacheService = new CacheService();
+
+// Export class for testing purposes
+export { CacheService };
