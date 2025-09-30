@@ -1,5 +1,6 @@
 import { getActiveOrganization } from '../queries/organization.query';
 import type { UserSubscriptionStatus } from '@/lib/types/payments';
+import logger from '@/lib/logger/logger.service';
 
 /**
  * Get the current user's active subscription details
@@ -23,7 +24,7 @@ export async function getUserSubscriptionStatus(): Promise<UserSubscriptionStatu
       stripeCustomerId: organization.stripeCustomerId ?? null,
     };
   } catch (error) {
-    console.error('Failed to get user subscription status:', error);
+    logger.error('Failed to get user subscription status', { error });
     return null;
   }
 }

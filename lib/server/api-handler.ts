@@ -13,6 +13,7 @@ import {
   ok,
   type ApiResponse,
 } from '@/lib/http/response';
+import logger from '@/lib/logger/logger.service';
 
 type RouteParamRecord = Record<string, string | string[]>;
 
@@ -139,7 +140,7 @@ export function createApiHandler<T>(
       const stack =
         unknownError instanceof Error ? unknownError.stack : undefined;
 
-      console.error(logName, {
+      logger.error(logName, {
         message,
         stack,
         url: request.nextUrl?.pathname ?? request.url,

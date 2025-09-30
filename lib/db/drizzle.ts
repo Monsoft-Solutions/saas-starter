@@ -9,4 +9,4 @@ if (!env.POSTGRES_URL) {
 }
 
 export const client = postgres(env.POSTGRES_URL);
-export const db = drizzle(client, { schema, logger: true });
+export const db = drizzle(client, { schema, logger: false });

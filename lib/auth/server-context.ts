@@ -9,6 +9,7 @@ import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db/drizzle';
 import { organization as organizationTable } from '@/lib/db/schemas';
+import logger from '@/lib/logger/logger.service';
 
 /**
  * Captures the request headers object returned by Next.js.
@@ -229,7 +230,7 @@ async function loadOrganization(
               body: { organizationId },
             });
           } catch (error) {
-            console.warn('Failed to set active organization', error);
+            logger.warn('Failed to set active organization', { error });
           }
         }
       }
@@ -273,10 +274,9 @@ async function loadOrganization(
         subscriptionStatus: subscriptionInfo?.subscriptionStatus ?? undefined,
       };
     } catch (error) {
-      console.error(
-        'Failed to resolve organization for the current request',
-        error
-      );
+      logger.error('Failed to resolve organization for the current request', {
+        error,
+      });
       return null;
     }
   });

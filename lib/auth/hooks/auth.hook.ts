@@ -3,6 +3,7 @@ import { ActivityType } from '@/lib/types';
 import { sendWelcomeEmail } from '@/lib/emails/dispatchers';
 import { generateOrganizationSlug } from '@/lib/utils';
 import { logActivity } from '@/lib/db/queries';
+import logger from '@/lib/logger/logger.service';
 
 export const databaseHooks = {
   user: {
@@ -36,7 +37,7 @@ export const databaseHooks = {
             await logActivity(user.id, ActivityType.CREATE_ORGANIZATION);
           }
         } catch (error) {
-          console.error('Failed to create default organization for user:', {
+          logger.error('Failed to create default organization for user', {
             userId: user.id,
             error,
           });

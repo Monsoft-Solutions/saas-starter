@@ -14,6 +14,7 @@ import {
 import { env } from '@/lib/env';
 import { createApiHandler } from '@/lib/server/api-handler';
 import { error as errorResponse } from '@/lib/http/response';
+import logger from '@/lib/logger/logger.service';
 
 const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
@@ -22,7 +23,7 @@ export const POST = createApiHandler(async ({ request }) => {
   const signature = request.headers.get('stripe-signature');
 
   if (!signature) {
-    console.error('Stripe webhook missing signature header', {
+    logger.error('Stripe webhook missing signature header', {
       url: request.nextUrl?.pathname ?? request.url,
     });
     return errorResponse('Webhook signature header missing.', { status: 400 });
@@ -36,7 +37,7 @@ export const POST = createApiHandler(async ({ request }) => {
     const message = err instanceof Error ? err.message : 'Unknown error';
     const stack = err instanceof Error ? err.stack : undefined;
 
-    console.error('Stripe webhook signature verification failed', {
+    logger.error('Stripe webhook signature verification failed', {
       message,
       stack,
     });
@@ -149,13 +150,13 @@ export const POST = createApiHandler(async ({ request }) => {
         break;
       }
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        logger.info(`Unhandled Stripe webhook event type: ${event.type}`);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     const stack = error instanceof Error ? error.stack : undefined;
 
-    console.error('Error handling Stripe webhook event', {
+    logger.error('Error handling Stripe webhook event', {
       message,
       stack,
       eventType: event.type,

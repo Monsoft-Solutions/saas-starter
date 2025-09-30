@@ -9,6 +9,7 @@ import {
   ResendRecipientList,
 } from '@/lib/types';
 import { logSentEmail } from './logger';
+import logger from '@/lib/logger/logger.service';
 
 /**
  * Error wrapper to ensure consumers can consistently handle Resend failures.
@@ -75,7 +76,7 @@ export const sendEmail = async (payload: ResendEmailPayload) => {
   }
 
   if (isDevelopment) {
-    console.info('[resend] dispatching email', {
+    logger.info('[resend] dispatching email', {
       subject: payload.subject,
       to,
       from,
@@ -97,7 +98,7 @@ export const sendEmail = async (payload: ResendEmailPayload) => {
   });
 
   if (response.error) {
-    console.error('[resend] email send failed', {
+    logger.error('[resend] email send failed', {
       message: response.error.message,
       code: response.error.name,
     });
@@ -111,7 +112,7 @@ export const sendEmail = async (payload: ResendEmailPayload) => {
   }
 
   if (isDevelopment) {
-    console.info('[resend] email dispatched', response.data);
+    logger.info('[resend] email dispatched', response.data);
   }
 
   // Log the email to the database
