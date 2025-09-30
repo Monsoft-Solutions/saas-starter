@@ -118,6 +118,15 @@ export const POST = createApiHandler(async ({ request }) => {
           subscription.customer as string
         );
         if (organization) {
+          // Invalidate organization subscription cache
+          const { cacheService, CacheKeys } = await import('@/lib/cache');
+          await cacheService.delete(
+            CacheKeys.organizationSubscription(organization.id)
+          );
+          await cacheService.delete(
+            CacheKeys.stripeCustomer(subscription.customer as string)
+          );
+
           const ownerId = await getOrganizationOwner(organization.id);
           if (ownerId) {
             await logActivity(
@@ -137,6 +146,15 @@ export const POST = createApiHandler(async ({ request }) => {
           subscription.customer as string
         );
         if (organization) {
+          // Invalidate organization subscription cache
+          const { cacheService, CacheKeys } = await import('@/lib/cache');
+          await cacheService.delete(
+            CacheKeys.organizationSubscription(organization.id)
+          );
+          await cacheService.delete(
+            CacheKeys.stripeCustomer(subscription.customer as string)
+          );
+
           const ownerId = await getOrganizationOwner(organization.id);
           if (ownerId) {
             await logActivity(

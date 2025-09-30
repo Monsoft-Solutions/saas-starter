@@ -250,19 +250,27 @@ async function loadOrganization(
         return null;
       }
 
-      const subscriptionData = await db
-        .select({
-          stripeCustomerId: organizationTable.stripeCustomerId,
-          stripeSubscriptionId: organizationTable.stripeSubscriptionId,
-          stripeProductId: organizationTable.stripeProductId,
-          planName: organizationTable.planName,
-          subscriptionStatus: organizationTable.subscriptionStatus,
-        })
-        .from(organizationTable)
-        .where(eq(organizationTable.id, organizationId))
-        .limit(1);
+      // Cache subscription data lookup
+      const { cacheService, CacheKeys } = await import('@/lib/cache');
+      const subscriptionInfo = await cacheService.getOrSet(
+        CacheKeys.organizationSubscription(organizationId),
+        async () => {
+          const subscriptionData = await db
+            .select({
+              stripeCustomerId: organizationTable.stripeCustomerId,
+              stripeSubscriptionId: organizationTable.stripeSubscriptionId,
+              stripeProductId: organizationTable.stripeProductId,
+              planName: organizationTable.planName,
+              subscriptionStatus: organizationTable.subscriptionStatus,
+            })
+            .from(organizationTable)
+            .where(eq(organizationTable.id, organizationId))
+            .limit(1);
 
-      const subscriptionInfo = subscriptionData[0];
+          return subscriptionData[0] || null;
+        },
+        { ttl: 300 } // Cache for 5 minutes
+      );
 
       return {
         ...betterAuthOrganization,
