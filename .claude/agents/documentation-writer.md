@@ -31,7 +31,7 @@ Expert in creating clear, comprehensive technical documentation using VitePress 
 
 Every documentation page must include:
 
-1. **Frontmatter** (optional): `title`, `description` for SEO
+1. **Frontmatter** (required): `title`, `description` for SEO
 2. **Overview**: 1-2 sentence summary + introduction
 3. **Quick Start/Setup**: Prerequisites + step-by-step instructions
 4. **Core Concepts**: Architecture explanation with diagrams

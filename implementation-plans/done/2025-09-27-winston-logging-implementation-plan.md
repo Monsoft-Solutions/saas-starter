@@ -73,14 +73,33 @@ The proposed logging architecture will be:
   3.  Wrap the application entry point to catch unhandled promise rejections and log them.
 - **Testing**: Intentionally introduce errors in different parts of the application (e.g., a server component, an API route) and verify that they are caught and logged correctly.
 
-#### Phase 5: Documentation and Usage Guidelines
+#### Phase 5: Unit Testing
+
+- **Objective**: Create comprehensive unit tests for the logging service.
+- **Tasks**:
+  1. Set up testing infrastructure (Jest/Vitest configuration).
+  2. Create unit tests for `logger.service.ts` covering:
+     - Logger initialization in different environments
+     - Transport configuration verification
+     - Log format validation
+     - Log level filtering
+  3. Create unit tests for logger utilities covering:
+     - `logInfo()`, `logError()`, `logWarn()`, `logDebug()` functions
+     - Metadata handling
+     - Error object serialization
+  4. Test edge cases and error scenarios.
+  5. Ensure tests are isolated and don't create actual log files.
+- **Testing**: Run test suite and verify all tests pass with adequate coverage.
+
+#### Phase 6: Documentation and Usage Guidelines
 
 - **Objective**: Document the new logging service for the team.
 - **Tasks**:
-  1.  Create a new markdown file in `docs-dev/logging.md`.
-  2.  Document how to import and use the logger.
-  3.  Provide examples of logging simple messages, objects, and errors.
-  4.  Explain the different log levels and when to use them.
+  1. Create comprehensive documentation in `docs/logging.md`.
+  2. Document how to import and use the logger.
+  3. Provide examples of logging simple messages, objects, and errors.
+  4. Explain the different log levels and when to use them.
+  5. Document testing approach and patterns.
 - **Testing**: Have a team member review the documentation for clarity and completeness.
 
 ### Folder Structure
@@ -94,8 +113,6 @@ saas-starter/
 │       └── logger.service.ts
 ├── logs/
 │   └── .gitkeep
-├── docs-dev/
-│   └── logging.md
 └── ...
 ```
 

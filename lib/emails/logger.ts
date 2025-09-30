@@ -1,5 +1,6 @@
 import { NewEmailLog } from '@/lib/types';
 import { insertEmailLog, updateEmailLogStatus } from '@/lib/db/queries';
+import logger from '@/lib/logger/logger.service';
 
 /**
  * Logs a sent email to the database.
@@ -23,10 +24,7 @@ export async function updateEmailStatus(
   try {
     await updateEmailLogStatus(emailId, status);
   } catch (error) {
-    console.error(
-      `Failed to update email status for emailId ${emailId}:`,
-      error
-    );
+    logger.error('Failed to update email status', { emailId, error });
     // Optional: Add more robust error handling
   }
 }

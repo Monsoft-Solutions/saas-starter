@@ -2,6 +2,7 @@ import 'server-only';
 
 import { env } from '@/lib/env';
 import { sendEmail } from '@/lib/emails/resend.client';
+import logger from '@/lib/logger/logger.service';
 
 // Simple in-memory cache for idempotency (in production, use Redis or similar)
 const emailCache = new Map<string, number>();
@@ -125,10 +126,9 @@ export const sendWelcomeEmail = async ({
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
     if (checkEmailCache('welcome', recipientEmail)) {
-      console.info(
-        '[email] Skipping duplicate welcome email to',
-        recipientEmail
-      );
+      logger.info('[email] Skipping duplicate welcome email', {
+        recipient: recipientEmail,
+      });
       return;
     }
   }
@@ -169,10 +169,9 @@ export const sendPasswordResetEmail = async ({
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
     if (checkEmailCache('passwordReset', recipientEmail)) {
-      console.info(
-        '[email] Skipping duplicate password reset email to',
-        recipientEmail
-      );
+      logger.info('[email] Skipping duplicate password reset email', {
+        recipient: recipientEmail,
+      });
       return;
     }
   }
@@ -210,10 +209,9 @@ export const sendPasswordChangedEmail = async ({
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
     if (checkEmailCache('passwordChanged', recipientEmail)) {
-      console.info(
-        '[email] Skipping duplicate password changed email to',
-        recipientEmail
-      );
+      logger.info('[email] Skipping duplicate password changed email', {
+        recipient: recipientEmail,
+      });
       return;
     }
   }
@@ -251,10 +249,9 @@ export const sendEmailChangeConfirmationEmail = async ({
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
     if (checkEmailCache('emailChange', recipientEmail, props.newEmail)) {
-      console.info(
-        '[email] Skipping duplicate email change confirmation to',
-        recipientEmail
-      );
+      logger.info('[email] Skipping duplicate email change confirmation', {
+        recipient: recipientEmail,
+      });
       return;
     }
   }
@@ -292,10 +289,9 @@ export const sendTeamInvitationEmail = async ({
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
     if (checkEmailCache('teamInvitation', recipientEmail, props.teamName)) {
-      console.info(
-        '[email] Skipping duplicate team invitation to',
-        recipientEmail
-      );
+      logger.info('[email] Skipping duplicate team invitation', {
+        recipient: recipientEmail,
+      });
       return;
     }
   }
@@ -336,10 +332,9 @@ export const sendSubscriptionCreatedEmail = async ({
     if (
       checkEmailCache('subscriptionCreated', recipientEmail, props.planName)
     ) {
-      console.info(
-        '[email] Skipping duplicate subscription created email to',
-        recipientEmail
-      );
+      logger.info('[email] Skipping duplicate subscription created email', {
+        recipient: recipientEmail,
+      });
       return;
     }
   }
@@ -378,10 +373,9 @@ export const sendPaymentFailedEmail = async ({
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
     if (checkEmailCache('paymentFailed', recipientEmail)) {
-      console.info(
-        '[email] Skipping duplicate payment failed email to',
-        recipientEmail
-      );
+      logger.info('[email] Skipping duplicate payment failed email', {
+        recipient: recipientEmail,
+      });
       return;
     }
   }

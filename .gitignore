@@ -45,3 +45,7 @@ email-preview.html
 # vitepress
 docs/.vitepress/cache
 docs/.vitepress/dist
+
+# logs
+logs/**
+!logs/.gitkeep

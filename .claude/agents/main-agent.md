@@ -8,8 +8,9 @@ capabilities:
     agent-coordination,
     multi-agent-orchestration,
   ]
-version: 1.0.0
+version: 1.1.0
 created: 2025-09-30
+updated: 2025-09-30
 author: system
 ---
 
@@ -21,10 +22,10 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 1. **Agent Discovery**: Maintain up-to-date registry of all available agents
 2. **Agent Routing**: Direct tasks to appropriate specialized agents
-3. **Registry Updates**: Keep agent metadata current across all locations
-4. **Agent Coordination**: Ensure consistency between Cursor, Claude, and documentation locations
+3. **Registry Updates**: Keep agent metadata current
+4. **Agent Coordination**: Ensure consistency within Claude agents ecosystem
 
-## Available Agents
+## Available Agents (Claude)
 
 ### agent-creator-expert
 
@@ -32,7 +33,7 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 **Summary**: Creates agent rules following best practices, maintains registry, and ensures consistency across the agent ecosystem.
 
-**Locations**: `/agents/`, `.cursor/rules/`, `.claude/agents/`
+**Location**: `.claude/agents/agent-creator-expert.md`
 
 ### software-arquitect
 
@@ -40,7 +41,7 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 **Summary**: Analyzes projects and creates detailed implementation plans for complex development tasks.
 
-**Locations**: `/agents/`
+**Location**: `.claude/agents/software-arquitect.md`
 
 ### software-engineer
 
@@ -48,15 +49,15 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 **Summary**: Handles coding, debugging, and software development across the full stack.
 
-**Locations**: `/agents/`
+**Location**: `.claude/agents/software-engineer.md`
 
 ### ui-tester
 
 **Purpose**: UI testing and quality assurance
 
-**Summary**: Specialized agent for testing user interfaces and ensuring quality standards.
+**Summary**: Specialized agent for testing user interfaces and ensuring quality standards using Chrome DevTools MCP.
 
-**Locations**: `/agents/`
+**Location**: `.claude/agents/ui-tester.md`
 
 ### ui-ux-designer
 
@@ -64,7 +65,7 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 **Summary**: Creates exceptional user experiences using shadcn/ui components and design system tokens.
 
-**Locations**: `/agents/`
+**Location**: `.claude/agents/ui-ux-designer.md`
 
 ### database-optimizer
 
@@ -72,7 +73,7 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 **Summary**: Specializes in identifying performance bottlenecks, optimizing queries, and implementing caching solutions.
 
-**Locations**: `/agents/`, `.cursor/rules/`, `.claude/agents/`
+**Location**: `.claude/agents/database-optimizer.md`
 
 ### documentation-writer
 
@@ -80,15 +81,23 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 **Summary**: Expert in writing clear, comprehensive, and well-structured documentation for SaaS applications using VitePress, with knowledge of markdown extensions, proper formatting, and documentation architecture.
 
-**Locations**: `/agents/`, `.claude/agents/`, `.cursor/rules/`
+**Location**: `.claude/agents/documentation-writer.md`
 
-## Agent Deployment Locations
+### typescript
 
-**`/agents/`**: Primary agent documentation with examples and user-facing descriptions
+**Purpose**: TypeScript best practices, naming conventions, and coding standards expert
 
-**`.cursor/rules/`**: Cursor IDE-specific rules in MDC format with file targeting
+**Summary**: Ensures code follows TypeScript best practices, maintains type safety, and enforces consistent naming conventions across the codebase.
 
-**`.claude/agents/`**: Claude-optimized agent definitions and capabilities
+**Location**: `.claude/agents/typescript.md`
+
+### unit-testing
+
+**Purpose**: Comprehensive unit testing expert specializing in Vitest, TypeScript, and modern testing best practices
+
+**Summary**: Specializes in writing comprehensive unit tests using Vitest, with expertise in mocking, test organization, and achieving high code coverage.
+
+**Location**: `.claude/agents/unit-testing.md`
 
 ## Routing Logic
 
@@ -101,6 +110,8 @@ When a task is received, route it to the appropriate specialized agent:
 5. **UI/UX design** → `ui-ux-designer`
 6. **Database optimization** → `database-optimizer`
 7. **Documentation** → `documentation-writer`
+8. **TypeScript best practices** → `typescript`
+9. **Unit Testing** → `unit-testing`
 
 ## Usage Pattern
 
@@ -114,15 +125,24 @@ Agents automatically apply their rules based on file types and contexts as defin
 
 ## Registry Maintenance
 
-When adding/updating agents:
+When adding/updating agents in Claude:
 
-1. Update `/agents/main-agent.rules.md`
-2. Update `.claude/agents/main-agent.md`
-3. Update `.cursor/rules/main-agent.mdc`
-4. Ensure agent exists in all appropriate locations
-5. Update total agent count and last updated date
+1. Create/update agent in `.claude/agents/`
+2. Update this `main-agent.md` file
+3. Use proper YAML frontmatter
+4. Update total agent count and last updated date
+
+## Application Access
+
+To access the app on protected routes (_/app/_) you should use the chrome-dev MCP
+
+**Application Access Credentials:**
+
+- **URL**: Navigate to `/sign-in`
+- **Email**: `admin@email.com`
+- **Password**: `admin123`
 
 ---
 
 _Last updated: 2025-09-30_  
-_Total agents: 7_
+_Total Claude agents: 9 (including main-agent)_

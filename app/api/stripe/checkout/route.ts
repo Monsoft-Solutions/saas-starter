@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/payments/stripe';
 import { APP_BASE_PATH } from '@/config/navigation';
 import { withApiAuth } from '@/lib/server/api-handler';
+import logger from '@/lib/logger/logger.service';
 
 export const GET = withApiAuth(async ({ request }) => {
   const sessionId = request.nextUrl.searchParams.get('session_id');
@@ -98,7 +99,7 @@ export const GET = withApiAuth(async ({ request }) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     const stack = error instanceof Error ? error.stack : undefined;
 
-    console.error('Stripe checkout finalization failed', {
+    logger.error('Stripe checkout finalization failed', {
       message,
       stack,
       sessionId,

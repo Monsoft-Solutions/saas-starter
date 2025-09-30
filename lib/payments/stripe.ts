@@ -20,6 +20,7 @@ import {
   FeaturesArraySchema,
   FeatureKeySchema,
 } from '@/lib/types/payments/stripe-metadata.schema';
+import logger from '@/lib/logger/logger.service';
 
 /**
  * Shared Stripe SDK client configured with the project's canonical API version.
@@ -186,7 +187,7 @@ export async function handleSubscriptionChange(
   const organization = await getOrganizationByStripeCustomerId(customerId);
 
   if (!organization) {
-    console.error('Organization not found for Stripe customer:', customerId);
+    logger.error('Organization not found for Stripe customer', { customerId });
     return;
   }
 
@@ -273,7 +274,7 @@ function parseProductFeatures(metadata: Record<string, string>): string[] {
         const validatedFeatures = FeaturesArraySchema.parse(parsedFeatures);
         return validatedFeatures;
       } catch (parseError) {
-        console.warn('Invalid JSON in features metadata:', parseError);
+        logger.warn('Invalid JSON in features metadata', { error: parseError });
         // Continue to next method
       }
     }
@@ -311,7 +312,7 @@ function parseProductFeatures(metadata: Record<string, string>): string[] {
 
     return features;
   } catch (validationError) {
-    console.error('Invalid metadata structure:', validationError);
+    logger.error('Invalid metadata structure', { error: validationError });
     return [];
   }
 }
@@ -328,10 +329,9 @@ function parseProductPopularity(metadata: Record<string, string>): boolean {
       validatedMetadata.is_popular === 'true'
     );
   } catch (validationError) {
-    console.error(
-      'Invalid metadata structure for popularity:',
-      validationError
-    );
+    logger.error('Invalid metadata structure for popularity', {
+      error: validationError,
+    });
     return false;
   }
 }

@@ -3,6 +3,7 @@ import { resendWebhookEventSchema } from '@/lib/types';
 import { updateEmailLogStatus } from '@/lib/db/queries';
 import { Webhook } from 'svix';
 import { env } from '@/lib/env';
+import logger from '@/lib/logger/logger.service';
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
         'svix-signature': headers.get('svix-signature')!,
       });
     } catch (err) {
-      console.error('Error verifying webhook:', err);
+      logger.error('Error verifying Resend webhook signature', { error: err });
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: 'Webhook received' }, { status: 200 });
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    logger.error('Error processing Resend webhook', { error });
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }

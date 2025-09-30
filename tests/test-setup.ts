@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/pglite';
 import { migrate } from 'drizzle-orm/pglite/migrator';
 import { PGlite } from '@electric-sql/pglite';
@@ -11,6 +10,10 @@ vi.mock('@/lib/db/queries', () => ({
   // and the tests might try to use it.
   // The actual implementation of these queries would be in @/lib/db/queries
 }));
+
+// Load .env.local first (if present), then fallback to default .env without overriding existing vars.
+require('dotenv').config({ path: '.env.local' });
+require('dotenv').config();
 
 if (!process.env.POSTGRES_URL) {
   throw new Error('POSTGRES_URL environment variable is not set');
