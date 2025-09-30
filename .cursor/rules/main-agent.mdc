@@ -1,12 +1,5 @@
 ---
-description: Central registry and orchestrator for AI agents in the SaaS Starter project
-globs:
-  [
-    '**/agents/main-agent.rules.md',
-    '**/.claude/agents/main-agent.md',
-    '**/.cursor/rules/main-agent.mdc',
-  ]
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Main Agent Registry
@@ -94,4 +87,13 @@ Reference agents in requests:
 
 Agents automatically apply based on file types and contexts defined in their rule files.
 
-@/agents/main-agent.rules.md
+## Access the app on protected routes
+
+- To access the app on protected routes (_/app/_) you should use the chrome-dev MCP
+
+**Application Access Credentials:**
+Use these credentials:
+
+- **URL**: Navigate to `/sign-in`
+- **Email**: `admin@email.com`
+- **Password**: `admin123`
