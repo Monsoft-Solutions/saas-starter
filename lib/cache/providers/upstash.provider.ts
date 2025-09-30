@@ -24,7 +24,7 @@ import { env } from '@/lib/env';
  */
 export class UpstashCacheProvider implements ICacheProvider {
   private redis: Redis;
-  private stats: { hits: number; misses: number };
+  private readonly STATS_KEY = '__cache:stats';
 
   constructor() {
     if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
@@ -37,8 +37,6 @@ export class UpstashCacheProvider implements ICacheProvider {
       url: env.UPSTASH_REDIS_REST_URL,
       token: env.UPSTASH_REDIS_REST_TOKEN,
     });
-
-    this.stats = { hits: 0, misses: 0 };
   }
 
   async initialize(): Promise<void> {
@@ -57,12 +55,12 @@ export class UpstashCacheProvider implements ICacheProvider {
       const value = await this.redis.get<T>(key);
 
       if (value === null) {
-        this.stats.misses++;
+        await this.incrementStat('misses');
         logDebug(`Cache MISS: ${key}`);
         return null;
       }
 
-      this.stats.hits++;
+      await this.incrementStat('hits');
       logDebug(`Cache HIT: ${key}`);
       return value;
     } catch (error) {
@@ -104,7 +102,6 @@ export class UpstashCacheProvider implements ICacheProvider {
   async clear(): Promise<void> {
     try {
       await this.redis.flushdb();
-      this.stats = { hits: 0, misses: 0 };
       logWarn('Cache CLEARED: All entries removed');
     } catch (error) {
       logError('Cache CLEAR error', error);
@@ -143,15 +140,20 @@ export class UpstashCacheProvider implements ICacheProvider {
   }
 
   async getStats(): Promise<CacheStats> {
-    const total = this.stats.hits + this.stats.misses;
-    const hitRate = total > 0 ? this.stats.hits / total : 0;
-
     try {
+      const stats = await this.redis.hgetall<Record<string, number>>(
+        this.STATS_KEY
+      );
+      const hits = stats?.hits || 0;
+      const misses = stats?.misses || 0;
+      const total = hits + misses;
+      const hitRate = total > 0 ? hits / total : 0;
+
       const dbsize = await this.redis.dbsize();
 
       return {
-        hits: this.stats.hits,
-        misses: this.stats.misses,
+        hits,
+        misses,
         keys: dbsize,
         hitRate,
       };
@@ -159,17 +161,29 @@ export class UpstashCacheProvider implements ICacheProvider {
       logError('Cache STATS error', error);
 
       return {
-        hits: this.stats.hits,
-        misses: this.stats.misses,
+        hits: 0,
+        misses: 0,
         keys: 0,
-        hitRate,
+        hitRate: 0,
       };
     }
   }
 
   async disconnect(): Promise<void> {
     // Upstash Redis uses HTTP REST API, no persistent connection to close
-    this.stats = { hits: 0, misses: 0 };
     logInfo('Upstash Redis cache provider disconnected');
+  }
+
+  /**
+   * Increment a stat counter in Redis
+   * @private
+   */
+  private async incrementStat(stat: 'hits' | 'misses'): Promise<void> {
+    try {
+      await this.redis.hincrby(this.STATS_KEY, stat, 1);
+    } catch (error) {
+      // Don't fail the cache operation if stats update fails
+      logError(`Failed to increment stat: ${stat}`, error);
+    }
   }
 }
