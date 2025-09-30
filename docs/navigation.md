@@ -25,6 +25,15 @@ appNav.items.push({
 
 Once the item is in the tree, the sidebar and command palette pick it up automatically, and middleware treats the resolved path as protected.
 
+## 1.1 Marketing Features Area
+
+The public marketing experience now includes a `/features` landing page plus `/features/[slug]` detail routes. Both pages source their content from the shared registry in `lib/marketing/features.data.ts`, so navigation and marketing copy stay in sync.
+
+- Use `sortedFeatures()` to render the feature grid (see `app/(public)/features/page.tsx`).
+- Detail routes call `getFeatureBySlug(slug)` and render `<FeatureDetail />` from `components/marketing/features`.
+- When adding a new feature, update `lib/marketing/features.schema.ts` with the slug, extend `features-inventory.json`, and the marketing navigation link will automatically surface the new detail page.
+- The marketing header resolves URLs via `resolveRoute('marketing.features')`, so always register new marketing destinations in `config/navigation.ts` before linking to them.
+
 ## 2. Toggling Visibility
 
 `NavigationItem` supports a few fields to hide items without deleting them:

@@ -1,67 +1,19 @@
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { FeatureCard } from '@/components/marketing/features';
 import {
   ArrowRight,
-  CreditCard,
-  Database,
-  Zap,
-  Shield,
-  Globe,
-  Users,
   Sparkles,
   CheckCircle,
   Github,
   ExternalLink,
 } from 'lucide-react';
 import { Terminal } from './terminal';
-import { cn } from '@/lib/design-system';
+import { sortedFeatures } from '@/lib/marketing/features.data';
 
 export default function HomePage() {
-  const features = [
-    {
-      icon: Zap,
-      title: 'Next.js 15 & React',
-      description:
-        'Built with the latest Next.js App Router and React Server Components for optimal performance and developer experience.',
-      color: 'text-orange-500',
-    },
-    {
-      icon: Database,
-      title: 'PostgreSQL & Drizzle ORM',
-      description:
-        'Type-safe database operations with Drizzle ORM and PostgreSQL for robust data management.',
-      color: 'text-blue-500',
-    },
-    {
-      icon: CreditCard,
-      title: 'Complete Stripe Integration',
-      description:
-        'Full subscription management, customer portal, and webhook handling for seamless payments.',
-      color: 'text-purple-500',
-    },
-    {
-      icon: Shield,
-      title: 'Enterprise Authentication',
-      description:
-        'BetterAuth with multi-provider OAuth, organizations, and role-based access control.',
-      color: 'text-green-500',
-    },
-    {
-      icon: Globe,
-      title: 'Production Ready',
-      description:
-        'Professional email templates, monitoring, logging, and deployment configurations included.',
-      color: 'text-indigo-500',
-    },
-    {
-      icon: Users,
-      title: 'Multi-tenant Architecture',
-      description:
-        'Built-in organization management with member invitations and role-based permissions.',
-      color: 'text-pink-500',
-    },
-  ];
-
+  const features = sortedFeatures();
   const highlights = [
     'Enterprise-grade authentication',
     'Complete payment processing',
@@ -172,36 +124,26 @@ export default function HomePage() {
               Everything you need to build a modern SaaS
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              A complete, production-ready foundation with enterprise features
-              and modern architecture.
+              Each pillar links directly to deep-dive documentation so you can
+              validate the implementation details before adopting the stack.
             </p>
+            <div className="mt-6 flex justify-center">
+              <Button asChild variant="secondary">
+                <Link href="/features">Explore all features</Link>
+              </Button>
+            </div>
           </div>
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="group relative p-8 bg-card rounded-xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-200 hover:border-border"
-              >
-                {/* Icon */}
-                <div
-                  className={cn(
-                    'flex items-center justify-center w-12 h-12 rounded-lg mb-6 transition-transform group-hover:scale-110',
-                    'bg-gradient-to-br from-background to-muted border border-border/50'
-                  )}
-                >
-                  <feature.icon className={cn('w-6 h-6', feature.color)} />
-                </div>
-
-                {/* Content */}
-                <h3 className="text-lg font-semibold text-foreground mb-3 leading-tight">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
+            {features.map((feature) => (
+              <FeatureCard
+                key={feature.slug}
+                feature={feature}
+                href={`/features/${feature.slug}`}
+                className="h-full"
+                ctaLabel="View feature"
+              />
             ))}
           </div>
         </div>
