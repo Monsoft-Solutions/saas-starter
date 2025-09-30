@@ -1,5 +1,6 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import { env } from '../env';
 
 /**
  * Winston Logger Service
@@ -54,7 +55,7 @@ const consoleFormat = winston.format.combine(
 // Define transports based on environment
 const transports: winston.transport[] = [];
 
-if (process.env.NODE_ENV === 'production') {
+if (env.NODE_ENV === 'production') {
   // Production: File logging with daily rotation
   const fileRotateTransport = new DailyRotateFile({
     filename: 'logs/application-%DATE%.log',
@@ -96,7 +97,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // Create the logger
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level: env.NODE_ENV === 'production' ? 'info' : 'debug',
   levels,
   format,
   transports,
@@ -105,7 +106,7 @@ const logger = winston.createLogger({
 });
 
 // Handle uncaught exceptions and unhandled promise rejections
-if (process.env.NODE_ENV === 'production') {
+if (env.NODE_ENV === 'production') {
   logger.exceptions.handle(
     new winston.transports.File({
       filename: 'logs/exceptions.log',
