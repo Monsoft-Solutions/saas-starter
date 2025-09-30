@@ -15,6 +15,8 @@ hero:
       link: https://github.com/yourusername/saas-starter
 
 features:
+  - title: 🌍 Type-Safe Environment Config
+    details: Multi-environment support with Zod validation, interactive setup script, and secure secrets management for local, staging, and production
   - title: 🔐 Multi-Tenant Authentication
     details: BetterAuth with organization support, social providers (Google, Facebook, LinkedIn, TikTok), and role-based access control
   - title: 💳 Stripe Integration

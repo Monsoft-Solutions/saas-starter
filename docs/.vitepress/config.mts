@@ -11,6 +11,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/README' },
+      { text: 'Configuration', link: '/environment-configuration' },
       { text: 'Authentication', link: '/auth/' },
       { text: 'Payments', link: '/stripe/' },
       { text: 'Design System', link: '/design-system' },
@@ -23,6 +24,10 @@ export default defineConfig({
           { text: 'Overview', link: '/README' },
           { text: 'Quick Start', link: '/README#quick-start' },
           { text: 'Architecture', link: '/README#architecture-overview' },
+          {
+            text: 'Environment Configuration',
+            link: '/environment-configuration',
+          },
         ],
       },
       {

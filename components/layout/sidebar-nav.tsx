@@ -1,25 +1,85 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Settings,
   ChevronDown,
   ChevronRight,
   PanelLeftClose,
   PanelLeft,
+  Loader2,
+  LogOut,
+  UserRound,
 } from 'lucide-react';
 import { cn } from '@/lib/design-system';
+import { notionSpacing } from '@/lib/design-system';
 import { appNav } from '@/config/navigation';
 import { resolveRoute } from '@/lib/navigation/resolve-route.util';
 import { filterNavigationItems } from '@/lib/navigation/filter-navigation-items.util';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
+import { signOut } from '@/app/(login)/actions';
+import type { User } from '@/lib/db/schemas';
+
+/**
+ * Fetches the authenticated user record from the session-backed API endpoint.
+ */
+const userFetcher = async (url: string): Promise<User> => {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error('Unable to load user profile.');
+  }
+
+  return (await response.json()) as User;
+};
+
+/**
+ * Derives the initials to display in the avatar fallback from the user profile.
+ */
+function getUserInitials(user?: User | null) {
+  if (!user) {
+    return 'U';
+  }
+
+  const source = user.name || user.email || 'User';
+  const initials = source
+    .split(' ')
+    .map((segment) => segment.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  return initials || 'U';
+}
+
+/**
+ * Resolves the preferred display name for the authenticated user.
+ */
+function getUserDisplayName(user?: User | null) {
+  if (!user) {
+    return 'Unnamed user';
+  }
+
+  return user.name || user.email || 'Unnamed user';
+}
 
 interface SidebarNavProps {
   className?: string;
@@ -33,8 +93,30 @@ export function SidebarNav({
   onToggleCollapse,
 }: SidebarNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [settingsOpen, setSettingsOpen] = useState(true);
+  const [isSigningOut, startSignOutTransition] = useTransition();
   const navigationItems = filterNavigationItems(appNav.items);
+  const { data: user } = useSWR<User>('/api/user', userFetcher);
+
+  const userInitials = useMemo(() => getUserInitials(user), [user]);
+  const userDisplayName = useMemo(() => getUserDisplayName(user), [user]);
+  const userEmail = user?.email || 'No email available';
+
+  const handleSignOut = () => {
+    if (isSigningOut) {
+      return;
+    }
+
+    startSignOutTransition(async () => {
+      try {
+        await signOut();
+        router.push('/sign-in');
+      } catch (error) {
+        console.error('Failed to sign out user:', error);
+      }
+    });
+  };
 
   return (
     <div className={cn('flex flex-col h-full bg-muted/20 border-r', className)}>
@@ -119,11 +201,101 @@ export function SidebarNav({
       </div>
 
       {/* Sidebar Footer */}
-      {!collapsed && (
-        <div className="border-t p-4">
-          <div className="text-xs text-muted-foreground">Dashboard v1.0</div>
+      <div
+        className="border-t"
+        style={{
+          padding: notionSpacing.sidebarPadding,
+        }}
+      >
+        <div
+          className={cn(
+            'flex items-center',
+            collapsed ? 'justify-center' : 'justify-between'
+          )}
+        >
+          {!collapsed && (
+            <div className="text-xs text-muted-foreground">Dashboard v1.0</div>
+          )}
+          <ThemeToggle />
         </div>
-      )}
+
+        <div className={cn('mt-4', collapsed ? 'flex justify-center' : '')}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  'w-full h-auto px-2 py-2',
+                  collapsed
+                    ? 'flex items-center justify-center'
+                    : 'flex items-center justify-start gap-3'
+                )}
+              >
+                <Avatar className="h-10 w-10">
+                  {user?.image ? (
+                    <AvatarImage src={user.image} alt={userDisplayName} />
+                  ) : (
+                    <AvatarFallback>{userInitials}</AvatarFallback>
+                  )}
+                </Avatar>
+                {!collapsed && (
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium text-foreground">
+                      {userDisplayName}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {userEmail}
+                    </span>
+                  </div>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuLabel>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9">
+                    {user?.image ? (
+                      <AvatarImage src={user.image} alt={userDisplayName} />
+                    ) : (
+                      <AvatarFallback>{userInitials}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">
+                      {userDisplayName}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {userEmail}
+                    </span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/app/general" className="flex items-center gap-2">
+                  <UserRound className="h-4 w-4" />
+                  Account settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={handleSignOut}
+                disabled={isSigningOut}
+              >
+                <span className="flex items-center gap-2">
+                  {isSigningOut ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <LogOut className="h-4 w-4" />
+                  )}
+                  {isSigningOut ? 'Signing out...' : 'Sign out'}
+                </span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
     </div>
   );
 }

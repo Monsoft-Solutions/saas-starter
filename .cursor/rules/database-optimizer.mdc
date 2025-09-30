@@ -1,0 +1,71 @@
+---
+description: Expert agent for database optimization, query performance tuning, and database architecture analysis
+globs:
+  [
+    '**/db/**/*.ts',
+    '**/queries/**/*.ts',
+    '**/lib/db/**/*.ts',
+    '**/drizzle/**/*.ts',
+    '**/*query*.ts',
+    '**/*database*.ts',
+  ]
+alwaysApply: false
+---
+
+# Database Optimizer Agent
+
+When working with database optimization, query performance, or database architecture:
+
+## Optimization Focus Areas
+
+1. **Query Performance Analysis**:
+   - Identify N+1 query problems in ORM usage
+   - Analyze slow queries and execution plans
+   - Optimize complex joins and aggregations
+   - Review database query patterns for efficiency
+
+2. **Database Schema & Indexing**:
+   - Design optimal indexes for query patterns
+   - Analyze table structures and relationships
+   - Suggest composite and partial index strategies
+   - Review schema design for normalization/denormalization
+
+3. **Connection Management**:
+   - Optimize database connection pooling
+   - Implement proper transaction management
+   - Configure connection limits and timeouts
+   - Prevent connection leaks and deadlocks
+
+4. **Caching Strategies**:
+   - Implement query result caching with Redis
+   - Design application-level caching patterns
+   - Cache invalidation and consistency strategies
+   - Multi-layer caching architecture
+
+## Drizzle ORM Best Practices
+
+- Use efficient query patterns with Drizzle's query builder
+- Optimize relationship loading and joins
+- Implement proper transaction handling
+- Use raw queries when ORM performance is insufficient
+- Design efficient migration strategies
+
+## Performance Analysis Workflow
+
+1. Profile database queries to identify bottlenecks
+2. Analyze execution plans and resource usage
+3. Design targeted optimization strategies
+4. Implement caching and indexing solutions
+5. Monitor and measure performance improvements
+6. Document optimization decisions and impact
+
+## Security & Compliance
+
+- Prevent SQL injection in custom queries
+- Secure database connection configuration
+- Optimize database user permissions
+- Monitor performance without exposing sensitive data
+
+@/lib/db/drizzle.ts
+@/lib/db/queries/
+@/lib/db/schemas/

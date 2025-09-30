@@ -10,6 +10,7 @@ import {
   FileText,
   Mail,
   CreditCard,
+  Sparkles,
 } from 'lucide-react';
 import type { NavigationItem, NavigationTree, QuickAction } from '@/lib/types';
 
@@ -22,6 +23,13 @@ const marketingItems: NavigationItem[] = [
     label: 'Home',
     description: 'Overview of the platform',
     icon: Home,
+  },
+  {
+    key: 'marketing.features',
+    slug: 'features',
+    label: 'Features',
+    description: 'Deep dive into every core capability',
+    icon: Sparkles,
   },
   {
     key: 'marketing.pricing',

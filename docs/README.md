@@ -12,6 +12,10 @@ This directory contains comprehensive documentation for the SaaS Starter applica
 - **[Navigation System](./navigation.md)**: Dynamic navigation with role-based filtering
 - **[Email System](./emails.md)**: Transactional email templates and delivery
 
+### ⚙️ **Configuration & Setup**
+
+- **[Environment Configuration](./environment-configuration.md)**: Complete environment setup guide with multi-environment support (local, staging, production)
+
 ### 💳 **Stripe Integration**
 
 - **[Stripe Integration](./stripe/)**: Complete subscription and billing system
@@ -35,27 +39,22 @@ This directory contains comprehensive documentation for the SaaS Starter applica
 
 ### 1. Environment Setup
 
-Copy the required environment variables:
+::: tip Multi-Environment Support
+The application supports multiple environments (local, staging, production). See [Environment Configuration](./environment-configuration.md) for details.
+:::
+
+**Quick setup for local development:**
 
 ```bash
-# Database
-POSTGRES_URL=postgresql://...
+# Interactive setup (recommended)
+pnpm db:setup
 
-# Authentication
-BETTER_AUTH_SECRET=...
-BETTER_AUTH_URL=http://localhost:3000
-
-# Stripe
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Email
-RESEND_API_KEY=re_...
-RESEND_FROM_EMAIL=noreply@yourdomain.com
-
-# Application
-BASE_URL=http://localhost:3000
+# Or copy template manually
+cp .env.local.example .env.local
+# Edit .env.local with your credentials
 ```
+
+For detailed setup instructions, see [Environment Configuration](./environment-configuration.md).
 
 ### 2. Database Setup
 
@@ -245,6 +244,6 @@ When contributing to the project:
 
 ---
 
-**Last Updated**: September 28, 2025  
+**Last Updated**: September 30, 2025  
 **Framework Version**: Next.js 15  
 **Documentation Version**: 1.0

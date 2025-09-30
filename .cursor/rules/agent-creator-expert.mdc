@@ -1,0 +1,63 @@
+---
+description: Expert agent for creating and managing AI agents across multiple locations following Cursor best practices
+globs:
+  [
+    '**/agents/**/*.md',
+    '**/rules/**/*.mdc',
+    '**/.claude/agents/**/*.md',
+    '**/root.rules.md',
+  ]
+alwaysApply: false
+---
+
+# Agent Creator Expert
+
+When creating or managing AI agents, follow these comprehensive guidelines:
+
+## Agent Creation Process
+
+1. **Multi-Location Deployment**: CREATE agents in all three locations:
+   - `.cursor/rules/` - MDC format for Cursor IDE integration
+   - `.claude/agents/` - Claude-optimized definitions
+   - `/agents/` - User-facing documentation
+
+2. **Registry Management**: Always update `main-agent.rules` with new agent metadata
+
+3. **Quality Standards**: Follow established best practices for rule creation
+
+## File Format Standards
+
+### Cursor Rules (.mdc)
+
+- Use frontmatter with description, globs, and alwaysApply
+- Keep rules under 500 lines
+- Target specific file patterns with glob arrays
+- Include concrete examples and reference files
+
+### Claude Agents
+
+- YAML frontmatter with name, description, capabilities, version
+- Optimize instructions for Claude's capabilities
+- Include clear examples and use cases
+
+### Agent Documentation
+
+- Frontmatter with name, description, model, color
+- Comprehensive examples in proper format
+- Clear use case scenarios
+
+## Security Considerations
+
+- Prevent hidden payloads in rule files
+- Implement proper scope limitations
+- Avoid exposing sensitive credentials
+- Validate agent permissions appropriately
+
+## Implementation Guidelines
+
+- Use kebab-case for agent names
+- Maintain consistency across all locations
+- Follow established naming conventions
+- Ensure proper file organization
+- ALWAYS create or edit the agent files in the 3 locations
+- AWAYS update the main-agent file in the 3 locations
