@@ -10,50 +10,47 @@ Central coordinator for all AI agents in the SaaS Starter project.
 
 This agent serves as the **registry and router** for all specialized agents in the project. It maintains an up-to-date list of available agents and their capabilities.
 
-## Available Agents
+## Available Agents (Cursor Rules)
 
 ### agent-creator-expert
 
 - **Purpose**: Expert agent for creating, managing and maintaining other AI agents across multiple locations
-- **Locations**: `/agents/`, `.cursor/rules/`, `.claude/agents/`
+- **Location**: `.cursor/rules/agent-creator-expert.mdc`
 
 ### software-arquitect
 
 - **Purpose**: Comprehensive implementation planning for new features, systems, or architectural changes
-- **Locations**: `/agents/`
+- **Location**: `.cursor/rules/software-arquitect.mdc`
 
 ### software-engineer
 
 - **Purpose**: General software engineering and development tasks
-- **Locations**: `/agents/`
+- **Location**: `.cursor/rules/software-engineer.mdc`
 
 ### ui-tester
 
 - **Purpose**: UI testing and quality assurance
-- **Locations**: `/agents/`
+- **Location**: `.cursor/rules/ui-tester.mdc`
 
 ### ui-ux-designer
 
 - **Purpose**: UI/UX design and frontend development with design system integration
-- **Locations**: `/agents/`
+- **Location**: `.cursor/rules/ui-ux-designer.mdc`
 
 ### database-optimizer
 
 - **Purpose**: Database optimization, query performance tuning, and database architecture analysis
-- **Locations**: `/agents/`, `.cursor/rules/`, `.claude/agents/`
+- **Location**: `.cursor/rules/database-optimizer.mdc`
 
 ### documentation-writer
 
 - **Purpose**: Creating and maintaining technical documentation following VitePress and markdown best practices
-- **Locations**: `/agents/`, `.claude/agents/`, `.cursor/rules/`
+- **Location**: `.cursor/rules/documentation-writer.mdc`
 
-## Agent Deployment Strategy
+### typescript
 
-**Three-Location Deployment:**
-
-1. **`/agents/`** - Primary documentation with examples
-2. **`.cursor/rules/`** - Cursor IDE-specific MDC rules
-3. **`.claude/agents/`** - Claude-optimized definitions
+- **Purpose**: TypeScript best practices, naming conventions, and coding standards expert
+- **Location**: `.cursor/rules/typescript.mdc`
 
 ## Routing Guidelines
 
@@ -66,16 +63,16 @@ Direct tasks to appropriate specialized agents:
 - **UI/UX design** → `ui-ux-designer`
 - **Database optimization** → `database-optimizer`
 - **Documentation** → `documentation-writer`
+- **TypeScript best practices** → `typescript`
 
 ## Registry Maintenance
 
-When adding or updating agents:
+When adding or updating agents in Cursor:
 
-1. ✅ Update `/agents/main-agent.rules.md`
-2. ✅ Update `.claude/agents/main-agent.md`
-3. ✅ Update `.cursor/rules/main-agent.mdc`
-4. ✅ Ensure agent exists in all appropriate locations
-5. ✅ Update total agent count and last updated date
+1. ✅ Create/update agent in `.cursor/rules/`
+2. ✅ Update this `main-agent.mdc` file
+3. ✅ Use MDC format with proper frontmatter
+4. ✅ Update total agent count and last updated date
 
 ## Usage
 
@@ -97,3 +94,8 @@ Use these credentials:
 - **URL**: Navigate to `/sign-in`
 - **Email**: `admin@email.com`
 - **Password**: `admin123`
+
+---
+
+_Last updated: 2025-09-30_  
+_Total Cursor agents: 9 (including main-agent)_
