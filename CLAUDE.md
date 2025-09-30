@@ -5,20 +5,59 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ```bash
-# Development
-pnpm dev                 # Start development server with Turbopack
+# Development (Multi-Environment Support)
+pnpm dev                 # Start development server with Turbopack (uses .env.local if present)
+pnpm dev:local          # Explicitly use .env.local
+pnpm dev:staging        # Run dev server with staging environment
+pnpm dev:prod           # Run dev server with production environment
 pnpm build              # Build for production
+pnpm build:staging      # Build with staging environment
+pnpm build:prod         # Build with production environment
 pnpm start              # Start production server
+pnpm start:staging      # Start with staging environment
+pnpm start:prod         # Start with production environment
 
-# Database
-pnpm db:setup           # Create .env file (interactive setup)
-pnpm db:migrate         # Run database migrations
+# Database (Multi-Environment Support)
+pnpm db:setup           # Create .env file (interactive setup for local)
+pnpm db:setup:staging   # Setup staging database
+pnpm db:setup:prod      # Setup production database
+pnpm db:migrate         # Run database migrations (local)
+pnpm db:migrate:staging # Run migrations on staging
+pnpm db:migrate:prod    # Run migrations on production
 pnpm db:seed            # Seed database with test user (test@test.com / admin123)
+pnpm db:seed:staging    # Seed staging database
+pnpm db:seed:prod       # Seed production database
 pnpm db:generate        # Generate Drizzle migrations
-pnpm db:studio          # Open Drizzle Studio
+pnpm db:studio          # Open Drizzle Studio (local)
+pnpm db:studio:staging  # Open Drizzle Studio for staging
+pnpm db:studio:prod     # Open Drizzle Studio for production
 
 # Stripe (for local testing)
 stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+## Environment Configuration
+
+The application supports multiple environments. See [Environment Configuration Guide](./docs/environment-configuration.md) for details.
+
+### Environment Files
+
+- `.env.local` - Local development (gitignored, use for secrets)
+- `.env.development` - Shared development environment (committed, no secrets)
+- `.env.staging` - Staging environment (committed, no secrets)
+- `.env.production` - Production environment (committed, no secrets)
+- `.env.example` - Template file (committed)
+- `.env.local.example` - Local template (committed)
+
+### Quick Setup
+
+```bash
+# First time setup - copy local template
+cp .env.local.example .env.local
+
+# Edit .env.local with your credentials
+# Then run
+pnpm dev
 ```
 
 ## Architecture Overview
