@@ -52,6 +52,11 @@ This document serves as the central registry for all AI agents available in this
 - **Summary**: Ensures code follows TypeScript best practices, maintains type safety, and enforces consistent naming conventions across the codebase.
 - **Location**: `/agents/typescript.md`
 
+### unit-testing
+
+- **Purpose**: Comprehensive unit testing expert specializing in Vitest, TypeScript, and modern testing best practices
+- **Location**: `.cursor/rules/unit-test/.md`
+
 ## Agent Deployment
 
 Agents in this project are deployed across three locations:

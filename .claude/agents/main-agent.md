@@ -91,6 +91,11 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 **Location**: `.claude/agents/typescript.md`
 
+### unit-testing
+
+- **Purpose**: Comprehensive unit testing expert specializing in Vitest, TypeScript, and modern testing best practices
+- **Location**: `.cursor/rules/unit-test/.md`
+
 ## Routing Logic
 
 When a task is received, route it to the appropriate specialized agent:
