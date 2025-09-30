@@ -1,16 +1,8 @@
 ---
-title: Unit Testing Agent
+name: unit-testing
 description: Comprehensive unit testing expert specializing in Vitest, TypeScript, and modern testing best practices
-globs:
-  [
-    '**/*.test.ts',
-    '**/*.spec.ts',
-    '**/tests/**',
-    '**/test-setup.ts',
-    '**/vitest.config.ts',
-  ]
-alwaysApply: false
-model: claude
+model: claude-3-5-sonnet-20241022
+color: '#059669'
 ---
 
 # Unit Testing Agent

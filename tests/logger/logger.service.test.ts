@@ -1,5 +1,5 @@
 import winston from 'winston';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 /**
  * Unit tests for Winston Logger Service
@@ -17,13 +17,44 @@ describe('Logger Service', () => {
     vi.resetModules();
   });
 
+  afterEach(async () => {
+    // Clean up logger instances and process handlers
+    try {
+      // Get the current logger instance if it exists
+      const loggerModule = await import('../../lib/logger/logger.service');
+      const logger = loggerModule.default;
+
+      // Close the logger instance to clean up transports and handlers
+      if (logger && typeof logger.close === 'function') {
+        await logger.close();
+      }
+    } catch (error) {
+      // Ignore errors during cleanup (module might not be loaded)
+    }
+
+    // Remove any process-level event listeners that might have been added
+    // by the logger's exception and rejection handlers
+    process.removeAllListeners('uncaughtException');
+    process.removeAllListeners('unhandledRejection');
+
+    // Clear all mocks, spies, and stubs to prevent test interference
+    vi.restoreAllMocks();
+    vi.resetAllMocks();
+    vi.clearAllMocks();
+
+    // Reset modules to ensure clean state for next test
+    vi.resetModules();
+  });
+
   describe('Development Environment', () => {
     it('should create logger with console transport in development', async () => {
       vi.doMock('../env', () => ({
         env: { NODE_ENV: 'development' },
       }));
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       expect(logger).toBeDefined();
       expect(logger.transports).toHaveLength(1);
@@ -35,7 +66,9 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       expect(logger.level).toBe('debug');
     });
@@ -45,7 +78,9 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       const consoleTransport = logger
         .transports[0] as winston.transports.ConsoleTransportInstance;
@@ -55,33 +90,40 @@ describe('Logger Service', () => {
 
   describe('Production Environment', () => {
     it('should create logger with file and console transports in production', async () => {
-      vi.doMock('../env', () => ({
-        env: { NODE_ENV: 'production' },
-      }));
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.resetModules();
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       expect(logger).toBeDefined();
       // Production has 3 main transports + 2 exception/rejection handlers
       expect(logger.transports.length).toBeGreaterThanOrEqual(3);
+
+      vi.unstubAllEnvs();
     });
 
     it('should use info level in production', async () => {
-      vi.doMock('../env', () => ({
-        env: { NODE_ENV: 'production' },
-      }));
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.resetModules();
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       expect(logger.level).toBe('info');
+
+      vi.unstubAllEnvs();
     });
 
     it('should have console transport with warn level in production', async () => {
-      vi.doMock('../env', () => ({
-        env: { NODE_ENV: 'production' },
-      }));
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.resetModules();
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       const consoleTransport = logger.transports.find(
         (transport) => transport instanceof winston.transports.Console
@@ -89,17 +131,22 @@ describe('Logger Service', () => {
 
       expect(consoleTransport).toBeDefined();
       expect(consoleTransport.level).toBe('warn');
+
+      vi.unstubAllEnvs();
     });
 
     it('should configure exception and rejection handlers in production', async () => {
-      vi.doMock('../env', () => ({
-        env: { NODE_ENV: 'production' },
-      }));
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.resetModules();
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       expect(logger.exceptions.handlers).toBeDefined();
       expect(logger.rejections.handlers).toBeDefined();
+
+      vi.unstubAllEnvs();
     });
   });
 
@@ -109,7 +156,9 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       expect(logger.exitOnError).toBe(false);
     });
@@ -119,7 +168,9 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       expect(logger.levels).toEqual({
         error: 0,
@@ -137,7 +188,7 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { morganStream } = await import('./logger.service');
+      const { morganStream } = await import('../../lib/logger/logger.service');
 
       expect(morganStream).toBeDefined();
       expect(morganStream.write).toBeInstanceOf(Function);
@@ -149,7 +200,7 @@ describe('Logger Service', () => {
       }));
 
       const { default: logger, morganStream } = await import(
-        './logger.service'
+        '../../lib/logger/logger.service'
       );
 
       const httpSpy = vi.spyOn(logger, 'http');
@@ -166,7 +217,7 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { logInfo } = await import('./logger.service');
+      const { logInfo } = await import('../../lib/logger/logger.service');
 
       expect(logInfo).toBeInstanceOf(Function);
     });
@@ -176,7 +227,7 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { logError } = await import('./logger.service');
+      const { logError } = await import('../../lib/logger/logger.service');
 
       expect(logError).toBeInstanceOf(Function);
     });
@@ -186,7 +237,7 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { logWarn } = await import('./logger.service');
+      const { logWarn } = await import('../../lib/logger/logger.service');
 
       expect(logWarn).toBeInstanceOf(Function);
     });
@@ -196,7 +247,7 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { logDebug } = await import('./logger.service');
+      const { logDebug } = await import('../../lib/logger/logger.service');
 
       expect(logDebug).toBeInstanceOf(Function);
     });
@@ -206,7 +257,7 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { logHttp } = await import('./logger.service');
+      const { logHttp } = await import('../../lib/logger/logger.service');
 
       expect(logHttp).toBeInstanceOf(Function);
     });
@@ -218,7 +269,9 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'production' },
       }));
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       const infoSpy = vi.spyOn(logger, 'info');
       const debugSpy = vi.spyOn(logger, 'debug');
@@ -238,7 +291,9 @@ describe('Logger Service', () => {
         env: { NODE_ENV: 'development' },
       }));
 
-      const { default: logger } = await import('./logger.service');
+      const { default: logger } = await import(
+        '../../lib/logger/logger.service'
+      );
 
       const infoSpy = vi.spyOn(logger, 'info');
 

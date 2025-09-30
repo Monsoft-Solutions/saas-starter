@@ -47,5 +47,5 @@ docs/.vitepress/cache
 docs/.vitepress/dist
 
 # logs
-logs/
+logs/**
 !logs/.gitkeep

@@ -1,6 +1,8 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { env } from '../env';
+import type { ErrorPayload, LogMetadata, ErrorInput } from './logger.types';
+import { isError, isPlainObject } from './logger.types';
 
 /**
  * Winston Logger Service
@@ -122,6 +124,59 @@ if (env.NODE_ENV === 'production') {
   );
 }
 
+/**
+ * Normalizes error input into a consistent ErrorPayload structure
+ *
+ * @param error - Error instance, plain object, or unknown value
+ * @returns Standardized error payload
+ */
+function normalizeErrorPayload(error: ErrorInput): ErrorPayload {
+  if (isError(error)) {
+    // Extract additional enumerable properties safely
+    const details: Record<string, unknown> = {};
+
+    // Copy enumerable properties that aren't standard Error properties
+    for (const [key, value] of Object.entries(error)) {
+      if (!['name', 'message', 'stack', 'cause'].includes(key)) {
+        try {
+          // Only include serializable values
+          if (typeof value !== 'function' && typeof value !== 'symbol') {
+            details[key] = value;
+          }
+        } catch {
+          // Skip properties that can't be serialized
+          continue;
+        }
+      }
+    }
+
+    return {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      ...(Object.keys(details).length > 0 && { details }),
+    };
+  }
+
+  if (isPlainObject(error)) {
+    // Handle plain objects
+    const { message, name, stack, ...rest } = error;
+
+    return {
+      message: typeof message === 'string' ? message : 'Unknown error',
+      ...(typeof name === 'string' && { name }),
+      ...(typeof stack === 'string' && { stack }),
+      ...(Object.keys(rest).length > 0 && { details: rest }),
+    };
+  }
+
+  // Handle primitives and other unknown types
+  return {
+    message: typeof error === 'string' ? error : 'Unknown error occurred',
+    details: { originalValue: error },
+  };
+}
+
 // Create a stream object for Morgan HTTP logging
 export const morganStream = {
   write: (message: string) => {
@@ -133,22 +188,27 @@ export const morganStream = {
 export default logger;
 
 // Export convenience methods for common logging patterns
-export const logInfo = (message: string, meta?: any) =>
+export const logInfo = (message: string, meta?: LogMetadata) =>
   logger.info(message, meta);
-export const logError = (message: string, error?: Error | any, meta?: any) => {
-  if (error instanceof Error) {
-    logger.error(message, {
-      error: error.message,
-      stack: error.stack,
-      ...meta,
-    });
-  } else {
-    logger.error(message, { error, ...meta });
-  }
+
+export const logError = (
+  message: string,
+  error?: ErrorInput,
+  meta?: LogMetadata
+) => {
+  const errorPayload = error ? normalizeErrorPayload(error) : undefined;
+
+  logger.error(message, {
+    ...(errorPayload && { error: errorPayload }),
+    ...meta,
+  });
 };
-export const logWarn = (message: string, meta?: any) =>
+
+export const logWarn = (message: string, meta?: LogMetadata) =>
   logger.warn(message, meta);
-export const logDebug = (message: string, meta?: any) =>
+
+export const logDebug = (message: string, meta?: LogMetadata) =>
   logger.debug(message, meta);
-export const logHttp = (message: string, meta?: any) =>
+
+export const logHttp = (message: string, meta?: LogMetadata) =>
   logger.http(message, meta);

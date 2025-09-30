@@ -15,5 +15,13 @@ export {
   logHttp,
 } from './logger.service';
 
+// Export logger types for type safety
+export type {
+  ErrorPayload,
+  LogMetadata,
+  ErrorInput,
+  LoggerMethods,
+} from './logger.types';
+
 // Re-export winston types for convenience
 export type { LeveledLogMethod, LogEntry } from 'winston';

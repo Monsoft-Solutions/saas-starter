@@ -11,9 +11,9 @@ vi.mock('@/lib/db/queries', () => ({
   // The actual implementation of these queries would be in @/lib/db/queries
 }));
 
-require('dotenv').config({
-  path: ['.env.local', '.env'],
-});
+// Load .env.local first (if present), then fallback to default .env without overriding existing vars.
+require('dotenv').config({ path: '.env.local' });
+require('dotenv').config();
 
 if (!process.env.POSTGRES_URL) {
   throw new Error('POSTGRES_URL environment variable is not set');

@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { createApiHandler } from '@/lib/server/api-handler';
+import { error } from '@/lib/http/response';
 import logger from '@/lib/logger/logger.service';
+import { clientErrorPayloadSchema } from '@/lib/types/logger/client-error-payload.schema';
 
 /**
  * Client Error Logging API Route
@@ -8,34 +10,52 @@ import logger from '@/lib/logger/logger.service';
  * Receives error reports from client-side code and logs them using Winston.
  * This allows client-side errors to be captured in server logs without
  * bundling Winston in the client.
+ *
+ * Validates all incoming payloads with Zod to ensure type safety and prevent
+ * abuse. Returns 400 for invalid payloads.
  */
-
-type ClientErrorPayload = {
-  message: string;
-  error?: {
-    message: string;
-    stack?: string;
-    digest?: string;
-    name: string;
-  };
-  timestamp: string;
-  userAgent?: string;
-  url?: string;
-};
 
 export const POST = createApiHandler(
   async ({ request }: { request: NextRequest }) => {
-    const payload = (await request.json()) as ClientErrorPayload;
+    const rawPayload = await request.json();
 
+    // Validate payload with Zod schema
+    const parseResult = clientErrorPayloadSchema.safeParse(rawPayload);
+
+    if (!parseResult.success) {
+      const validationErrors = parseResult.error.errors
+        .map((err) => `${err.path.join('.')}: ${err.message}`)
+        .join('; ');
+
+      logger.warn('Invalid client error payload received', {
+        meta: {
+          validationErrors: parseResult.error.errors,
+          receivedPayload: rawPayload,
+        },
+      });
+
+      return error('Invalid payload', {
+        status: 400,
+        details: validationErrors,
+      });
+    }
+
+    const payload = parseResult.data;
+
+    // Log the error with structured metadata to avoid field collisions
     logger.error('Client-side error', {
-      message: payload.message,
-      error: payload.error?.message,
-      stack: payload.error?.stack,
-      digest: payload.error?.digest,
-      name: payload.error?.name,
-      userAgent: payload.userAgent,
-      url: payload.url,
-      timestamp: payload.timestamp,
+      meta: {
+        clientError: {
+          clientMessage: payload.message,
+          errorName: payload.error?.name,
+          errorMessage: payload.error?.message,
+          errorStack: payload.error?.stack,
+          errorDigest: payload.error?.digest,
+          userAgent: payload.userAgent,
+          url: payload.url,
+          timestamp: payload.timestamp,
+        },
+      },
     });
 
     return { success: true };

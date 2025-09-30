@@ -1,4 +1,5 @@
-import logger from './logger.service';
+import { logError, logInfo } from './logger.service';
+import type { LogMetadata } from './logger.types';
 
 /**
  * Error Handler Utility
@@ -16,11 +17,7 @@ export function initializeErrorHandlers() {
   // Handle uncaught exceptions
   if (typeof process !== 'undefined') {
     process.on('uncaughtException', (error: Error) => {
-      logger.error('Uncaught Exception', {
-        error: error.message,
-        stack: error.stack,
-        name: error.name,
-      });
+      logError('Uncaught Exception', error);
 
       // In production, you might want to exit the process
       // or perform cleanup operations here
@@ -31,22 +28,25 @@ export function initializeErrorHandlers() {
     });
 
     // Handle unhandled promise rejections
-    process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-      logger.error('Unhandled Promise Rejection', {
-        reason: reason instanceof Error ? reason.message : String(reason),
-        stack: reason instanceof Error ? reason.stack : undefined,
-        promise: String(promise),
-      });
+    process.on(
+      'unhandledRejection',
+      (reason: unknown, promise: Promise<unknown>) => {
+        const meta: LogMetadata = {
+          promise: String(promise),
+        };
 
-      // In production, you might want to exit the process
-      if (process.env.NODE_ENV === 'production') {
-        console.error('Unhandled Rejection - Process will exit');
-        process.exit(1);
+        logError('Unhandled Promise Rejection', reason, meta);
+
+        // In production, you might want to exit the process
+        if (process.env.NODE_ENV === 'production') {
+          console.error('Unhandled Rejection - Process will exit');
+          process.exit(1);
+        }
       }
-    });
+    );
 
     // Log that error handlers have been initialized
-    logger.info('Global error handlers initialized');
+    logInfo('Global error handlers initialized');
   }
 }
 
@@ -56,10 +56,9 @@ export function initializeErrorHandlers() {
  * Wraps an async function to catch and log any errors.
  * Useful for wrapping API routes, server actions, etc.
  */
-export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  context?: string
-): T {
+export function withErrorHandling<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(fn: T, context?: string): T {
   return (async (...args: Parameters<T>) => {
     try {
       return await fn(...args);
@@ -68,11 +67,11 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
         ? `Error in ${context}`
         : 'Error in async function';
 
-      logger.error(errorMessage, {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
+      const meta: LogMetadata = {
         args: args.length > 0 ? JSON.stringify(args) : undefined,
-      });
+      };
+
+      logError(errorMessage, error, meta);
 
       throw error;
     }
@@ -96,10 +95,7 @@ export async function safeAsync<T>(
       ? `Error in ${context}`
       : 'Error in async function';
 
-    logger.error(errorMessage, {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    logError(errorMessage, error);
 
     return undefined;
   }

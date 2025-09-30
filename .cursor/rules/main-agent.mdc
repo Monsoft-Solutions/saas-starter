@@ -55,21 +55,21 @@ This agent serves as the **registry and router** for all specialized agents in t
 ### unit-testing
 
 - **Purpose**: Comprehensive unit testing expert specializing in Vitest, TypeScript, and modern testing best practices
-- **Location**: `.cursor/rules/unit-test/.md`
+- **Location**: `.cursor/rules/unit-testing.mdc`
 
 ## Routing Guidelines
 
 Direct tasks to appropriate specialized agents:
 
 - **Agent creation/management** → `agent-creator-expert`
-- **Crafting IMplementation PLans** → `software-arquitect`
+- **Crafting Implementation Plans** → `software-arquitect`
 - **Coding/development** → `software-engineer`
 - **UI testing** → `ui-tester`
 - **UI/UX design** → `ui-ux-designer`
 - **Database optimization** → `database-optimizer`
 - **Documentation** → `documentation-writer`
 - **TypeScript best practices** → `typescript`
-- **Unit Testing** -> `unit-testing`
+- **Unit Testing** → `unit-testing`
 
 ## Registry Maintenance
 

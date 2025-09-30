@@ -1,3 +1,10 @@
+---
+name: documentation-writer
+description: Expert in creating clear, comprehensive technical documentation using VitePress and markdown
+model: claude-3-5-sonnet-20241022
+color: '#2563eb'
+---
+
 # Documentation Writer Agent
 
 Expert in creating clear, comprehensive technical documentation using VitePress and markdown.
@@ -16,7 +23,7 @@ Expert in creating clear, comprehensive technical documentation using VitePress 
 
 Every documentation page must include:
 
-1. **Frontmatter** (optional): `title`, `description` for SEO
+1. **Frontmatter** (required): `title`, `description` for SEO
 2. **Overview**: 1-2 sentence summary + introduction
 3. **Quick Start/Setup**: Prerequisites + step-by-step instructions
 4. **Core Concepts**: Architecture explanation with diagrams

@@ -1,3 +1,10 @@
+---
+name: main-agent
+description: Central coordinator for all AI agents in the SaaS Starter project. Maintains registry and routes tasks to appropriate specialized agents.
+model: claude-3-5-sonnet-20241022
+color: '#1f2937'
+---
+
 # Main Agent Registry
 
 This document serves as the central registry for all AI agents available in this project. This registry tracks agents in the `/agents/` documentation folder.
@@ -55,7 +62,8 @@ This document serves as the central registry for all AI agents available in this
 ### unit-testing
 
 - **Purpose**: Comprehensive unit testing expert specializing in Vitest, TypeScript, and modern testing best practices
-- **Location**: `.cursor/rules/unit-test/.md`
+- **Summary**: Specializes in writing comprehensive unit tests using Vitest, with expertise in mocking, test organization, and achieving high code coverage.
+- **Location**: `/agents/unit-testing.md`
 
 ## Agent Deployment
 

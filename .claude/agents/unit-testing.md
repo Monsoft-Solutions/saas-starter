@@ -1,6 +1,15 @@
 ---
+name: unit-testing-agent
+version: 1.0.0
 title: Unit Testing Agent
 description: Comprehensive unit testing expert specializing in Vitest, TypeScript, and modern testing best practices
+capabilities:
+  - vitest-expert
+  - typescript-testing
+  - test-best-practices
+  - unit-testing
+  - test-coverage
+  - mocking-strategies
 globs:
   [
     '**/*.test.ts',
