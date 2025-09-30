@@ -40,6 +40,12 @@ This document serves as the central registry for all AI agents available in this
 - **Summary**: Specializes in identifying performance bottlenecks, optimizing queries, and implementing caching solutions.
 - **Locations**: `/agents/`, `.cursor/rules/`, `.claude/agents/`
 
+### documentation-writer
+
+- **Purpose**: Creating and maintaining technical documentation following VitePress and markdown best practices
+- **Summary**: Expert in writing clear, comprehensive, and well-structured documentation for SaaS applications using VitePress, with knowledge of markdown extensions, proper formatting, and documentation architecture.
+- **Locations**: `/agents/`, `.claude/agents/`
+
 ## Agent Locations
 
 **`/agents/`**: Primary agent documentation with examples and user-facing descriptions  
@@ -58,5 +64,5 @@ Agents automatically apply their rules based on file types and contexts as defin
 
 ---
 
-_Last updated: 2025-09-28_
-_Total agents: 6_
+_Last updated: 2025-09-30_  
+_Total agents: 7_

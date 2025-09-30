@@ -1,0 +1,97 @@
+---
+description: Central registry and orchestrator for AI agents in the SaaS Starter project
+globs:
+  [
+    '**/agents/main-agent.rules.md',
+    '**/.claude/agents/main-agent.md',
+    '**/.cursor/rules/main-agent.mdc',
+  ]
+alwaysApply: false
+---
+
+# Main Agent Registry
+
+Central coordinator for all AI agents in the SaaS Starter project.
+
+## Core Functionality
+
+This agent serves as the **registry and router** for all specialized agents in the project. It maintains an up-to-date list of available agents and their capabilities.
+
+## Available Agents
+
+### agent-creator-expert
+
+- **Purpose**: Expert agent for creating, managing and maintaining other AI agents across multiple locations
+- **Locations**: `/agents/`, `.cursor/rules/`, `.claude/agents/`
+
+### software-arquitect
+
+- **Purpose**: Comprehensive implementation planning for new features, systems, or architectural changes
+- **Locations**: `/agents/`
+
+### software-engineer
+
+- **Purpose**: General software engineering and development tasks
+- **Locations**: `/agents/`
+
+### ui-tester
+
+- **Purpose**: UI testing and quality assurance
+- **Locations**: `/agents/`
+
+### ui-ux-designer
+
+- **Purpose**: UI/UX design and frontend development with design system integration
+- **Locations**: `/agents/`
+
+### database-optimizer
+
+- **Purpose**: Database optimization, query performance tuning, and database architecture analysis
+- **Locations**: `/agents/`, `.cursor/rules/`, `.claude/agents/`
+
+### documentation-writer
+
+- **Purpose**: Creating and maintaining technical documentation following VitePress and markdown best practices
+- **Locations**: `/agents/`, `.claude/agents/`, `.cursor/rules/`
+
+## Agent Deployment Strategy
+
+**Three-Location Deployment:**
+
+1. **`/agents/`** - Primary documentation with examples
+2. **`.cursor/rules/`** - Cursor IDE-specific MDC rules
+3. **`.claude/agents/`** - Claude-optimized definitions
+
+## Routing Guidelines
+
+Direct tasks to appropriate specialized agents:
+
+- **Agent creation/management** → `agent-creator-expert`
+- **Architecture planning** → `software-arquitect`
+- **Coding/development** → `software-engineer`
+- **UI testing** → `ui-tester`
+- **UI/UX design** → `ui-ux-designer`
+- **Database optimization** → `database-optimizer`
+- **Documentation** → `documentation-writer`
+
+## Registry Maintenance
+
+When adding or updating agents:
+
+1. ✅ Update `/agents/main-agent.rules.md`
+2. ✅ Update `.claude/agents/main-agent.md`
+3. ✅ Update `.cursor/rules/main-agent.mdc`
+4. ✅ Ensure agent exists in all appropriate locations
+5. ✅ Update total agent count and last updated date
+
+## Usage
+
+Reference agents in requests:
+
+```
+"I'll use the [agent-name] agent to [specific task]"
+```
+
+Agents automatically apply based on file types and contexts defined in their rule files.
+
+@/agents/main-agent.rules.md
