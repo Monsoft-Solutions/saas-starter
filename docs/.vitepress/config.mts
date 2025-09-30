@@ -15,6 +15,7 @@ export default defineConfig({
       { text: 'Authentication', link: '/auth/' },
       { text: 'Payments', link: '/stripe/' },
       { text: 'Design System', link: '/design-system' },
+      { text: 'Logging', link: '/logging' },
     ],
 
     sidebar: [
@@ -77,7 +78,10 @@ export default defineConfig({
       },
       {
         text: 'Development',
-        items: [{ text: 'Unit Testing', link: '/unit-testing' }],
+        items: [
+          { text: 'Unit Testing', link: '/unit-testing' },
+          { text: 'Logging System', link: '/logging' },
+        ],
       },
     ],
 

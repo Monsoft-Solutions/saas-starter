@@ -76,11 +76,7 @@ The proposed logging architecture will be:
 #### Phase 5: Documentation and Usage Guidelines
 
 - **Objective**: Document the new logging service for the team.
-- **Tasks**:
-  1.  Create a new markdown file in `docs-dev/logging.md`.
-  2.  Document how to import and use the logger.
-  3.  Provide examples of logging simple messages, objects, and errors.
-  4.  Explain the different log levels and when to use them.
+- **Tasks**: 2. Document how to import and use the logger. 3. Provide examples of logging simple messages, objects, and errors. 4. Explain the different log levels and when to use them.
 - **Testing**: Have a team member review the documentation for clarity and completeness.
 
 ### Folder Structure
@@ -94,8 +90,6 @@ saas-starter/
 │       └── logger.service.ts
 ├── logs/
 │   └── .gitkeep
-├── docs-dev/
-│   └── logging.md
 └── ...
 ```
 
