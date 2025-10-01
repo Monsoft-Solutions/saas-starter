@@ -15,6 +15,7 @@ export default defineConfig({
       { text: 'Authentication', link: '/auth/' },
       { text: 'Payments', link: '/stripe/' },
       { text: 'Cache System', link: '/cache/' },
+      { text: 'Background Jobs', link: '/async-job-processing' },
       { text: 'Design System', link: '/design-system' },
       { text: 'Logging', link: '/logging' },
     ],
@@ -76,6 +77,15 @@ export default defineConfig({
       {
         text: 'Communication',
         items: [{ text: 'Email System', link: '/emails' }],
+      },
+      {
+        text: 'Background Processing',
+        items: [
+          {
+            text: 'Async Job Processing',
+            link: '/async-job-processing',
+          },
+        ],
       },
       {
         text: 'Development',
