@@ -113,7 +113,7 @@ export function NotificationItem({
   return (
     <Card
       className={cn(
-        'group relative transition-all duration-200 gap-3',
+        'group relative transition-all duration-200 gap-2 py-3',
         'hover:shadow-md hover:border-border/80 hover:scale-[1.01]',
         notification.isRead
           ? 'bg-background/50 border-border/50'
@@ -124,16 +124,16 @@ export function NotificationItem({
     >
       {/* Priority Icon - Top Right Corner */}
       {priorityIcon && (
-        <div className="absolute top-3 right-3 z-10">{priorityIcon}</div>
+        <div className="absolute top-2 right-2 z-10">{priorityIcon}</div>
       )}
 
-      <CardHeader className="pb-0">
-        <div className="flex gap-3">
+      <CardHeader className="pb-0 px-4">
+        <div className="flex gap-2">
           {/* Category Icon & Title */}
           <CardTitle className="text-sm truncate flex-1 flex gap-2 justify-start items-center flex-row">
             <div
               className={cn(
-                'flex h-10 w-10 shrink-0 items-center justify-center transition-all',
+                'flex h-8 w-8 shrink-0 items-center justify-center transition-all',
                 notification.isRead
                   ? ' text-muted-foreground'
                   : 'text-foreground '
@@ -165,14 +165,14 @@ export function NotificationItem({
       </CardHeader>
 
       {/* Message */}
-      <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground/90 leading-relaxed line-clamp-2">
+      <CardContent className="pt-0 px-4">
+        <p className="text-sm text-muted-foreground/90 leading-snug line-clamp-2">
           {notification.message}
         </p>
       </CardContent>
 
       {/* Footer: Timestamp and Action */}
-      <CardFooter className="pt-0 justify-between">
+      <CardFooter className="pt-0 px-4 justify-between">
         <span className="text-xs text-muted-foreground/70 font-medium">
           {formatTimestamp(notification.createdAt)}
         </span>
