@@ -99,17 +99,20 @@ QStash is purpose-built for serverless environments and addresses key limitation
 ### QStash Architecture Patterns
 
 **1. Message Publishing (Enqueue)**
+
 - Use QStash client to publish JSON messages to worker endpoints
 - Configure retry policies, delays, and callbacks
 - Set appropriate headers for content type and custom metadata
 
 **2. Worker Endpoint (Process)**
+
 - Verify QStash signature for security
 - Parse and validate job payload
 - Execute business logic
 - Return appropriate HTTP status (200 for success, 5xx for retry)
 
 **3. Scheduling (CRON)**
+
 - Create scheduled jobs using CRON expressions
 - Configure destination URL and payload
 - Set timezone-aware schedules as needed
@@ -167,16 +170,19 @@ QStash is purpose-built for serverless environments and addresses key limitation
 Extensible job type system using a registry pattern:
 
 **Job Type Enumeration:**
+
 - Define all job types as const object
 - Export type-safe JobType union type
 - Centralize job type definitions for maintainability
 
 **Job Configuration:**
+
 - Create JobConfig interface with type, endpoint, retries, timeout, description
 - Build registry mapping each job type to its configuration
 - Provide getter function for type-safe config access
 
 **Registry Structure:**
+
 - Email jobs: 3 retries, 30s timeout
 - Webhook jobs: 5 retries, 60s timeout
 - Export jobs: 2 retries, 300s timeout
@@ -188,11 +194,13 @@ Extensible job type system using a registry pattern:
 Type-safe job payloads using Zod:
 
 **Base Job Schema:**
+
 - Define BaseJobMetadata with userId, organizationId, createdAt, idempotencyKey
 - Create BaseJob schema with jobId (UUID), type, metadata
 - Enable type inference for all schemas
 
 **Job-Specific Schemas:**
+
 - Extend BaseJob for each job type
 - Use literal type for job type discrimination
 - Define payload structure with proper validation
@@ -204,18 +212,22 @@ Type-safe job payloads using Zod:
 ### Phase 1: Core Infrastructure (Days 1-2)
 
 **1.1 Install Dependencies**
+
 - Add @upstash/qstash package
 
 **1.2 Environment Configuration**
+
 - Add QStash environment variables to .env.example
 - Add validation for QSTASH_URL, QSTASH_TOKEN, QSTASH_CURRENT_SIGNING_KEY, QSTASH_NEXT_SIGNING_KEY in lib/env.ts
 
 **1.3 Create QStash Client**
+
 - Create server-only QStash client instance
 - Initialize Client with token from environment
 - Export receiver factory function for signature verification
 
 **1.4 Create Job Types Registry**
+
 - Define job type enumeration with all supported job types
 - Create JobConfig type interface
 - Build job registry mapping types to configuration
@@ -223,11 +235,13 @@ Type-safe job payloads using Zod:
 - Export all types and registry from index
 
 **1.5 Create Base Job Schema**
+
 - Define BaseJobMetadata schema with optional user/org context
 - Create BaseJob schema with jobId, type, and metadata
 - Export inferred TypeScript types
 
 **1.6 Create Job Execution Tracking**
+
 - Create job_executions table schema with Drizzle
 - Include fields: id, jobId, jobType, status, payload, result, error, retryCount
 - Add userId, organizationId for context
@@ -235,6 +249,7 @@ Type-safe job payloads using Zod:
 - Export table type definitions
 
 **1.7 Create Job Execution Queries**
+
 - Implement createJobExecution query
 - Implement updateJobExecution query with automatic updatedAt
 - Implement getJobExecutionByJobId query
@@ -247,6 +262,7 @@ Type-safe job payloads using Zod:
 **2.1 Create Job Dispatcher**
 
 Create JobDispatcher service class:
+
 - Initialize with BASE_URL from environment
 - Implement enqueue method:
   - Accept job type, payload, metadata, and optional configurations
@@ -266,6 +282,7 @@ Create JobDispatcher service class:
 **2.2 Create Job Worker Base Handler**
 
 Create generic job worker handler factory:
+
 - Define JobWorkerHandler interface for type safety
 - Implement createJobWorker factory function:
   - Verify QStash signature for security
@@ -284,6 +301,7 @@ Create generic job worker handler factory:
 **3.1 Create Email Job Schema**
 
 Define email job payload schema:
+
 - Extend BaseJobSchema
 - Use literal type for SEND_EMAIL job type
 - Define payload with email template enum (welcome, passwordReset, passwordChanged, emailChange, teamInvitation, subscriptionCreated, paymentFailed)
@@ -294,6 +312,7 @@ Define email job payload schema:
 **3.2 Create Email Job Worker Route**
 
 Create API route for email job processing:
+
 - Import email dispatcher functions
 - Implement emailJobHandler function:
   - Extract template, to, and data from payload
@@ -306,6 +325,7 @@ Create API route for email job processing:
 **3.3 Create Email Job Service**
 
 Create email job service:
+
 - Implement enqueueEmailJob function
 - Accept payload and metadata (userId, organizationId)
 - Call jobDispatcher.enqueue with SEND_EMAIL type
@@ -316,6 +336,7 @@ Create email job service:
 **3.4 Migrate Email Dispatchers to Use Jobs**
 
 Gradual migration strategy:
+
 - Keep existing synchronous email dispatchers
 - Create async variants with "Async" suffix
 - Import enqueueEmailJob service
@@ -327,6 +348,7 @@ Gradual migration strategy:
 **4.1 Webhook Processing Job**
 
 Create webhook job schema:
+
 - Extend BaseJobSchema
 - Define source enum (stripe, resend, custom)
 - Include event name and data payload
@@ -334,6 +356,7 @@ Create webhook job schema:
 - Export inferred types
 
 Create webhook job worker route:
+
 - Implement webhookJobHandler
 - Switch on webhook source
 - Route to appropriate handler based on source
@@ -346,12 +369,14 @@ Create webhook job worker route:
 **4.2 Stripe Webhook Job**
 
 Create Stripe webhook job schema:
+
 - Extend BaseJobSchema for Stripe-specific events
 - Define payload with event type and Stripe event object
 - Validate against known Stripe event types
 - Export inferred types
 
 Create Stripe webhook worker route:
+
 - Implement handler for async Stripe webhook processing
 - Process complex operations that shouldn't block webhook endpoint
 - Handle subscription updates, invoice finalization, etc.
@@ -361,12 +386,14 @@ Create Stripe webhook worker route:
 **4.3 Report Generation Job**
 
 Create report generation job schema:
+
 - Define report types enum
 - Include parameters for report generation
 - Add date range, filters, and output format
 - Export inferred types
 
 Create report job worker route:
+
 - Implement report generation handler
 - Generate analytics reports
 - Export data in requested format
@@ -376,12 +403,14 @@ Create report job worker route:
 ### Phase 5: Scheduled Jobs Setup (Day 5)
 
 **5.1 Create Scheduled Jobs Manager**
+
 - Define scheduled job configurations
 - Implement setup script for creating CRON schedules
 - Configure cleanup jobs, report generation, etc.
 - Add timezone support for scheduling
 
 **5.2 Create Setup Script**
+
 - Build initialization script for scheduled jobs
 - Check existing schedules to avoid duplicates
 - Create or update scheduled jobs in QStash
@@ -393,6 +422,7 @@ Create report job worker route:
 **6.1 Create Unit Tests**
 
 Test coverage for job system:
+
 - Job dispatcher enqueue and schedule methods
 - Job schema validation with Zod
 - Job registry configuration and getters
@@ -404,6 +434,7 @@ Test coverage for job system:
 **6.2 Create Integration Tests**
 
 End-to-end testing:
+
 - Email job flow from enqueue to completion
 - Webhook job processing
 - Stripe webhook async handling
@@ -414,6 +445,7 @@ End-to-end testing:
 **6.3 Create Documentation**
 
 Documentation deliverables:
+
 - Overview of async job architecture
 - Guide for adding new job types
 - Job enqueue patterns and best practices
@@ -425,16 +457,19 @@ Documentation deliverables:
 ### Phase 7: Database Migration & Deployment (Day 7)
 
 **7.1 Generate Database Migration**
+
 - Run Drizzle migration generation
 - Review generated migration SQL
 - Verify job_executions table structure
 
 **7.2 Run Database Migration**
+
 - Execute migration on local database
 - Test migration rollback if needed
 - Verify table creation and indexes
 
 **7.3 Setup Scheduled Jobs**
+
 - Run scheduled jobs setup script
 - Verify CRON schedules in QStash dashboard
 - Test scheduled job execution
@@ -542,6 +577,7 @@ Monitor:
 ### Request Signature Verification
 
 Security requirements for job worker endpoints:
+
 - Verify QStash signature on every request
 - Use Receiver with current and next signing keys
 - Reject requests with invalid signatures (401 status)
@@ -551,6 +587,7 @@ Security requirements for job worker endpoints:
 ### Payload Validation
 
 Data validation requirements:
+
 - Parse all job payloads with Zod schemas
 - Validate at the boundary (worker endpoint)
 - Return appropriate errors for invalid payloads
@@ -560,6 +597,7 @@ Data validation requirements:
 ### Environment Variables
 
 Secret management guidelines:
+
 - Store QStash credentials in environment variables only
 - Never commit secrets to version control
 - Rotate signing keys periodically
@@ -599,11 +637,13 @@ Secret management guidelines:
 **Pattern for Migration:**
 
 Synchronous approach (blocks HTTP request):
+
 - Database operation followed by immediate email send
 - User waits for email service response
 - Failures in email service affect user experience
 
 Asynchronous approach (non-blocking):
+
 - Database operation followed by job enqueue
 - Job enqueue is fast (<50ms)
 - Email processing happens in background
@@ -611,6 +651,7 @@ Asynchronous approach (non-blocking):
 - Automatic retries on failure
 
 **Key Changes:**
+
 - Replace direct email dispatcher calls with enqueueEmailJob
 - Pass template name and data to job payload
 - Include user context in metadata
@@ -619,24 +660,28 @@ Asynchronous approach (non-blocking):
 ### Gradual Migration Strategy
 
 **Phase 1: Create Async Variants**
+
 - Keep existing synchronous functions
 - Create new async variants with "Async" suffix
 - Test async variants in parallel with sync versions
 - Monitor job execution and success rates
 
 **Phase 2: Migrate Non-Critical Paths**
+
 - Update background notifications to async
 - Migrate audit emails to job queue
 - Convert analytics updates to async
 - Monitor performance and reliability
 
 **Phase 3: Migrate Critical Paths**
+
 - Update user onboarding emails after validation
 - Migrate payment notifications with extra monitoring
 - Convert security alerts to async with alerting
 - Maintain fallback mechanisms during transition
 
 **Phase 4: Remove Sync Variants**
+
 - Mark sync functions as deprecated
 - Update all remaining call sites
 - Remove deprecated code
@@ -647,6 +692,7 @@ Asynchronous approach (non-blocking):
 This implementation provides a production-ready async job processing system optimized for serverless deployment. The extensible architecture allows easy addition of new job types, and the QStash integration ensures reliable delivery with automatic retries.
 
 **Key Benefits Achieved:**
+
 - Non-blocking job processing for improved user experience
 - Automatic retry logic with exponential backoff
 - Job execution tracking and monitoring
@@ -657,6 +703,7 @@ This implementation provides a production-ready async job processing system opti
 
 **Implementation Status:**
 The core infrastructure has been successfully implemented with:
+
 - ✅ Job dispatcher and worker system
 - ✅ Email job processing
 - ✅ Stripe webhook async processing

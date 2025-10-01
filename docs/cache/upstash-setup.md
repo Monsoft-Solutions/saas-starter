@@ -108,8 +108,8 @@ CACHE_PROVIDER=upstash
 CACHE_DEFAULT_TTL=3600
 
 # Upstash Redis Configuration
-UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AX...your-token-here
+REDIS_REST_URL=https://your-instance.upstash.io
+REDIS_REST_TOKEN=AX...your-token-here
 ```
 
 ### Production Environment
@@ -118,8 +118,8 @@ Update your production environment variables:
 
 ```bash
 # Vercel
-vercel env add UPSTASH_REDIS_REST_URL
-vercel env add UPSTASH_REDIS_REST_TOKEN
+vercel env add REDIS_REST_URL
+vercel env add REDIS_REST_TOKEN
 vercel env add CACHE_PROVIDER
 
 # Or via Vercel dashboard:
@@ -131,8 +131,8 @@ vercel env add CACHE_PROVIDER
 #### Railway
 
 ```bash
-railway variables set UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-railway variables set UPSTASH_REDIS_REST_TOKEN=AX...your-token
+railway variables set REDIS_REST_URL=https://your-instance.upstash.io
+railway variables set REDIS_REST_TOKEN=AX...your-token
 railway variables set CACHE_PROVIDER=upstash
 ```
 
@@ -141,8 +141,8 @@ railway variables set CACHE_PROVIDER=upstash
 ```bash
 # Via Render dashboard:
 # Environment → Add Environment Variable
-UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AX...your-token
+REDIS_REST_URL=https://your-instance.upstash.io
+REDIS_REST_TOKEN=AX...your-token
 CACHE_PROVIDER=upstash
 ```
 
@@ -151,8 +151,8 @@ CACHE_PROVIDER=upstash
 ```dockerfile
 # Dockerfile
 ENV CACHE_PROVIDER=upstash
-ENV UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-ENV UPSTASH_REDIS_REST_TOKEN=AX...your-token
+ENV REDIS_REST_URL=https://your-instance.upstash.io
+ENV REDIS_REST_TOKEN=AX...your-token
 ```
 
 ## Step 5: Test Connection
@@ -164,8 +164,8 @@ ENV UPSTASH_REDIS_REST_TOKEN=AX...your-token
 import { Redis } from '@upstash/redis';
 
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  url: process.env.REDIS_REST_URL!,
+  token: process.env.REDIS_REST_TOKEN!,
 });
 
 async function testConnection() {
@@ -306,8 +306,8 @@ export class OptimizedUpstashProvider {
 
   constructor() {
     this.redis = new Redis({
-      url: env.UPSTASH_REDIS_REST_URL,
-      token: env.UPSTASH_REDIS_REST_TOKEN,
+      url: env.REDIS_REST_URL,
+      token: env.REDIS_REST_TOKEN,
       // Optimize for your use case
       retry: {
         retries: 3,
@@ -386,8 +386,8 @@ export async function checkCacheHealth() {
 ```typescript
 // Increase timeout settings
 const redis = new Redis({
-  url: env.UPSTASH_REDIS_REST_URL,
-  token: env.UPSTASH_REDIS_REST_TOKEN,
+  url: env.REDIS_REST_URL,
+  token: env.REDIS_REST_TOKEN,
   timeout: 10000, // 10 seconds
 });
 ```
@@ -497,10 +497,10 @@ export async function checkUsage() {
 
    ```bash
    # Development
-   UPSTASH_REDIS_REST_TOKEN=dev_token_here
+   REDIS_REST_TOKEN=dev_token_here
 
    # Production
-   UPSTASH_REDIS_REST_TOKEN=prod_token_here
+   REDIS_REST_TOKEN=prod_token_here
    ```
 
 ### Network Security

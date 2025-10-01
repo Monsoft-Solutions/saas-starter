@@ -68,6 +68,7 @@ pnpm dev
 ```
 
 This command automatically starts:
+
 - Next.js development server (Turbopack)
 - Stripe webhook listener
 - **QStash local server** (`npx qstash dev`)
@@ -115,13 +116,14 @@ await jobDispatcher.enqueue(
   {
     template: 'welcome',
     to: 'test@example.com',
-    data: { recipientName: 'Test User' }
+    data: { recipientName: 'Test User' },
   },
   { userId: 1 }
 );
 ```
 
 Check the logs to see job processing:
+
 ```
 [jobs] Enqueueing job
 [jobs] Job enqueued successfully
@@ -142,6 +144,7 @@ For production deployment, use Upstash's cloud-hosted QStash service.
 #### Step 2: Get Credentials
 
 From the QStash dashboard, copy:
+
 - QStash URL (usually `https://qstash.upstash.io`)
 - QStash Token
 - Current Signing Key
@@ -202,6 +205,7 @@ export const JOB_REGISTRY: Record<JobType, JobConfig> = {
 ```
 
 **Configuration Properties:**
+
 - `type` - Unique job type identifier
 - `endpoint` - API route that processes the job
 - `retries` - Number of retry attempts on failure
@@ -302,6 +306,7 @@ await jobDispatcher.enqueue(
 ```
 
 **Retry Behavior:**
+
 - Exponential backoff between retries
 - Each retry increments `retryCount` in the database
 - After all retries exhausted, job status set to `failed`
@@ -318,25 +323,18 @@ import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
 import { JOB_TYPES } from '@/lib/types/jobs';
 
 // Basic enqueueing
-const jobId = await jobDispatcher.enqueue(
-  JOB_TYPES.SEND_EMAIL,
-  {
-    template: 'welcome',
-    to: 'user@example.com',
-    data: { recipientName: 'John Doe' }
-  }
-);
+const jobId = await jobDispatcher.enqueue(JOB_TYPES.SEND_EMAIL, {
+  template: 'welcome',
+  to: 'user@example.com',
+  data: { recipientName: 'John Doe' },
+});
 
 // With metadata for tracking
-await jobDispatcher.enqueue(
-  JOB_TYPES.SEND_EMAIL,
-  payload,
-  {
-    userId: 123,
-    organizationId: 456,
-    idempotencyKey: 'unique-operation-id'
-  }
-);
+await jobDispatcher.enqueue(JOB_TYPES.SEND_EMAIL, payload, {
+  userId: 123,
+  organizationId: 456,
+  idempotencyKey: 'unique-operation-id',
+});
 
 // With custom options
 await jobDispatcher.enqueue(
@@ -347,7 +345,7 @@ await jobDispatcher.enqueue(
     delay: 60000, // Delay 60 seconds
     retries: 5,
     callback: 'https://example.com/callback',
-    headers: { 'X-Custom': 'value' }
+    headers: { 'X-Custom': 'value' },
   }
 );
 ```
@@ -362,45 +360,61 @@ Send transactional emails asynchronously:
 import { sendWelcomeEmailAsync } from '@/lib/emails/enqueue';
 
 // Welcome email
-await sendWelcomeEmailAsync({
-  to: 'user@example.com',
-  recipientName: 'John Doe',
-}, { userId: 123 });
+await sendWelcomeEmailAsync(
+  {
+    to: 'user@example.com',
+    recipientName: 'John Doe',
+  },
+  { userId: 123 }
+);
 
 // Password reset
-await sendPasswordResetEmailAsync({
-  to: 'user@example.com',
-  recipientName: 'John Doe',
-  resetUrl: 'https://example.com/reset/token',
-}, { userId: 123 });
+await sendPasswordResetEmailAsync(
+  {
+    to: 'user@example.com',
+    recipientName: 'John Doe',
+    resetUrl: 'https://example.com/reset/token',
+  },
+  { userId: 123 }
+);
 
 // Team invitation
-await sendTeamInvitationEmailAsync({
-  to: 'invited@example.com',
-  recipientName: 'Jane Doe',
-  inviterName: 'John Doe',
-  organizationName: 'Acme Corp',
-  invitationUrl: 'https://example.com/invite/token',
-}, { userId: 123, organizationId: 456 });
+await sendTeamInvitationEmailAsync(
+  {
+    to: 'invited@example.com',
+    recipientName: 'Jane Doe',
+    inviterName: 'John Doe',
+    organizationName: 'Acme Corp',
+    invitationUrl: 'https://example.com/invite/token',
+  },
+  { userId: 123, organizationId: 456 }
+);
 
 // Subscription notifications
-await sendSubscriptionCreatedEmailAsync({
-  to: 'user@example.com',
-  recipientName: 'John Doe',
-  planName: 'Pro Plan',
-  amount: '29.99',
-  dashboardUrl: 'https://example.com/app/general',
-}, { userId: 123, organizationId: 456 });
+await sendSubscriptionCreatedEmailAsync(
+  {
+    to: 'user@example.com',
+    recipientName: 'John Doe',
+    planName: 'Pro Plan',
+    amount: '29.99',
+    dashboardUrl: 'https://example.com/app/general',
+  },
+  { userId: 123, organizationId: 456 }
+);
 
-await sendPaymentFailedEmailAsync({
-  to: 'user@example.com',
-  recipientName: 'John Doe',
-  amountDue: '29.99',
-  paymentDetailsUrl: 'https://example.com/app/settings/billing',
-}, { userId: 123, organizationId: 456 });
+await sendPaymentFailedEmailAsync(
+  {
+    to: 'user@example.com',
+    recipientName: 'John Doe',
+    amountDue: '29.99',
+    paymentDetailsUrl: 'https://example.com/app/settings/billing',
+  },
+  { userId: 123, organizationId: 456 }
+);
 ```
 
 **Supported Email Templates:**
+
 - `welcome` - Welcome new users
 - `passwordReset` - Password reset link
 - `passwordChanged` - Password change confirmation
@@ -418,24 +432,18 @@ import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
 import { JOB_TYPES } from '@/lib/types/jobs';
 
 // Generic webhook processing
-await jobDispatcher.enqueue(
-  JOB_TYPES.PROCESS_WEBHOOK,
-  {
-    source: 'github',
-    event: 'pull_request',
-    data: webhookPayload,
-  }
-);
+await jobDispatcher.enqueue(JOB_TYPES.PROCESS_WEBHOOK, {
+  source: 'github',
+  event: 'pull_request',
+  data: webhookPayload,
+});
 
 // Stripe webhook processing
-await jobDispatcher.enqueue(
-  JOB_TYPES.PROCESS_STRIPE_WEBHOOK,
-  {
-    eventType: 'customer.subscription.updated',
-    eventData: stripeEvent.data.object,
-    ipAddress: request.headers.get('x-forwarded-for'),
-  }
-);
+await jobDispatcher.enqueue(JOB_TYPES.PROCESS_STRIPE_WEBHOOK, {
+  eventType: 'customer.subscription.updated',
+  eventData: stripeEvent.data.object,
+  ipAddress: request.headers.get('x-forwarded-for'),
+});
 ```
 
 #### Report Generation Jobs
@@ -639,6 +647,7 @@ await enqueueSmsJob(
 The application provides two approaches for sending emails:
 
 **Synchronous (Direct):**
+
 ```typescript
 import { sendWelcomeEmail } from '@/lib/emails/dispatchers';
 
@@ -650,25 +659,31 @@ await sendWelcomeEmail({
 ```
 
 **Asynchronous (Job Queue):**
+
 ```typescript
 import { sendWelcomeEmailAsync } from '@/lib/emails/enqueue';
 
 // Returns immediately, email sent in background
-await sendWelcomeEmailAsync({
-  to: 'user@example.com',
-  recipientName: 'John Doe',
-}, { userId: 123 });
+await sendWelcomeEmailAsync(
+  {
+    to: 'user@example.com',
+    recipientName: 'John Doe',
+  },
+  { userId: 123 }
+);
 ```
 
 ### When to Use Async Email Jobs
 
 Use async email jobs when:
+
 - Sending emails from API routes that need fast response times
 - Sending multiple emails in a batch operation
 - Email delivery is not critical to the user experience
 - You want automatic retries on failure
 
 Use sync email sending when:
+
 - Email delivery needs to be confirmed before proceeding
 - Debugging email issues in development
 - Sending critical security-related emails where immediate feedback is needed
@@ -699,6 +714,7 @@ const emailJobHandler = async (payload: SendEmailJobPayload, job: BaseJob) => {
 To migrate existing synchronous email calls to asynchronous:
 
 **Before:**
+
 ```typescript
 import { sendTeamInvitationEmail } from '@/lib/emails/dispatchers';
 
@@ -712,6 +728,7 @@ await sendTeamInvitationEmail({
 ```
 
 **After:**
+
 ```typescript
 import { sendTeamInvitationEmailAsync } from '@/lib/emails/enqueue';
 
@@ -725,7 +742,7 @@ await sendTeamInvitationEmailAsync(
   },
   {
     userId: currentUser.id,
-    organizationId: org.id
+    organizationId: org.id,
   }
 );
 ```
@@ -750,14 +767,11 @@ export async function POST(request: Request) {
   );
 
   // Enqueue job for async processing
-  await jobDispatcher.enqueue(
-    JOB_TYPES.PROCESS_STRIPE_WEBHOOK,
-    {
-      eventType: event.type,
-      eventData: event.data.object,
-      ipAddress: request.headers.get('x-forwarded-for'),
-    }
-  );
+  await jobDispatcher.enqueue(JOB_TYPES.PROCESS_STRIPE_WEBHOOK, {
+    eventType: event.type,
+    eventData: event.data.object,
+    ipAddress: request.headers.get('x-forwarded-for'),
+  });
 
   // Return 200 immediately to Stripe
   return new Response(JSON.stringify({ received: true }), {
@@ -767,6 +781,7 @@ export async function POST(request: Request) {
 ```
 
 **Handled Stripe Events:**
+
 - `checkout.session.completed` - Subscription created
 - `invoice.payment_failed` - Payment failure
 - `customer.subscription.updated` - Subscription changes
@@ -777,14 +792,11 @@ export async function POST(request: Request) {
 For other webhook sources:
 
 ```typescript
-await jobDispatcher.enqueue(
-  JOB_TYPES.PROCESS_WEBHOOK,
-  {
-    source: 'github',
-    event: 'push',
-    data: webhookPayload,
-  }
-);
+await jobDispatcher.enqueue(JOB_TYPES.PROCESS_WEBHOOK, {
+  source: 'github',
+  event: 'push',
+  data: webhookPayload,
+});
 ```
 
 ## Monitoring & Debugging
@@ -833,10 +845,7 @@ GROUP BY job_type, status;
 The application provides helper functions for querying job executions:
 
 ```typescript
-import {
-  getJobExecutionByJobId,
-  updateJobExecution
-} from '@/lib/db/queries';
+import { getJobExecutionByJobId, updateJobExecution } from '@/lib/db/queries';
 
 // Get job status
 const execution = await getJobExecutionByJobId(jobId);
@@ -855,10 +864,12 @@ await updateJobExecution(jobId, {
 Access the QStash dashboard for real-time monitoring:
 
 **Local Development:**
+
 - QStash CLI runs at `http://localhost:8080`
 - No web dashboard for local server
 
 **Production:**
+
 - Log in to [Upstash Console](https://console.upstash.com)
 - Navigate to QStash section
 - View messages, schedules, and delivery logs
@@ -875,6 +886,7 @@ import logger from '@/lib/logger/logger.service';
 ```
 
 **Key Log Patterns:**
+
 ```
 [jobs] Enqueueing job { jobId, type, url }
 [jobs] Job enqueued successfully { jobId, type }
@@ -890,11 +902,13 @@ import logger from '@/lib/logger/logger.service';
 **Error:** `Invalid QStash signature`
 
 **Causes:**
+
 - Incorrect signing keys in environment variables
 - Request URL mismatch (check BASE_URL)
 - Local QStash server restarted with new keys
 
 **Solution:**
+
 ```bash
 # Ensure environment variables match QStash CLI output
 QSTASH_CURRENT_SIGNING_KEY=...
@@ -909,11 +923,13 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 **Error:** Job stuck in `pending` status
 
 **Causes:**
+
 - QStash can't reach your endpoint
 - Firewall blocking QStash IP addresses
 - Incorrect endpoint URL in job registry
 
 **Solution:**
+
 ```typescript
 // Verify endpoint is correct in job registry
 export const JOB_REGISTRY = {
@@ -932,11 +948,13 @@ curl http://localhost:3000/api/jobs/email
 **Error:** `Invalid job payload`
 
 **Causes:**
+
 - Payload doesn't match Zod schema
 - Missing required fields
 - Incorrect data types
 
 **Solution:**
+
 ```typescript
 // Validate payload before enqueueing
 import { SendEmailJobPayloadSchema } from '@/lib/types/jobs/schemas/send-email-job.schema';
@@ -952,11 +970,13 @@ if (!result.success) {
 **Error:** Job fails after timeout period
 
 **Causes:**
+
 - Job takes longer than configured timeout
 - External API not responding
 - Database query too slow
 
 **Solution:**
+
 ```typescript
 // Increase timeout in job registry
 export const JOB_REGISTRY = {
@@ -1064,7 +1084,7 @@ describe('Job Dispatcher Service', () => {
     // Setup mocks
     vi.doMock('@/lib/jobs/qstash.client', () => ({ qstash: mockQStash }));
     vi.doMock('@/lib/db/queries', () => ({
-      createJobExecution: mockCreateJobExecution
+      createJobExecution: mockCreateJobExecution,
     }));
   });
 
@@ -1108,19 +1128,22 @@ import { POST } from '@/app/api/jobs/email/route';
 describe('Email Job Worker', () => {
   it('should process welcome email job', async () => {
     const mockRequest = {
-      text: () => Promise.resolve(JSON.stringify({
-        jobId: 'test-job-id',
-        type: 'send-email',
-        payload: {
-          template: 'welcome',
-          to: 'test@example.com',
-          data: { recipientName: 'Test User' },
-        },
-        metadata: {
-          userId: 1,
-          createdAt: new Date().toISOString(),
-        },
-      })),
+      text: () =>
+        Promise.resolve(
+          JSON.stringify({
+            jobId: 'test-job-id',
+            type: 'send-email',
+            payload: {
+              template: 'welcome',
+              to: 'test@example.com',
+              data: { recipientName: 'Test User' },
+            },
+            metadata: {
+              userId: 1,
+              createdAt: new Date().toISOString(),
+            },
+          })
+        ),
       headers: {
         get: (name: string) =>
           name === 'Upstash-Signature' ? 'valid-signature' : null,
@@ -1291,7 +1314,7 @@ export async function GET() {
     .where(sql`created_at > NOW() - INTERVAL '1 hour'`)
     .groupBy(jobExecutions.status);
 
-  const failureRate = stats.find(s => s.status === 'failed')?.count || 0;
+  const failureRate = stats.find((s) => s.status === 'failed')?.count || 0;
   const totalJobs = stats.reduce((sum, s) => sum + s.count, 0);
 
   return Response.json({
@@ -1304,6 +1327,7 @@ export async function GET() {
 ```
 
 **Alert on:**
+
 - Failed job rate > 5%
 - Jobs stuck in `processing` > 10 minutes
 - No jobs processed in last hour (if expected)
@@ -1347,6 +1371,7 @@ Primary interface for enqueueing and scheduling jobs.
 Enqueues a job for processing.
 
 **Parameters:**
+
 - `type: JobType` - Job type from JOB_TYPES
 - `payload: T` - Job-specific payload
 - `metadata?: BaseJobMetadata` - Optional metadata (userId, organizationId, etc.)
@@ -1355,6 +1380,7 @@ Enqueues a job for processing.
 **Returns:** `Promise<string>` - The generated job ID
 
 **Example:**
+
 ```typescript
 const jobId = await jobDispatcher.enqueue(
   JOB_TYPES.SEND_EMAIL,
@@ -1369,6 +1395,7 @@ const jobId = await jobDispatcher.enqueue(
 Schedules a recurring job.
 
 **Parameters:**
+
 - `type: JobType` - Job type from JOB_TYPES
 - `cron: string` - Cron expression
 - `payload: Record<string, unknown>` - Job payload
@@ -1377,6 +1404,7 @@ Schedules a recurring job.
 **Returns:** `Promise<string>` - The QStash schedule ID
 
 **Example:**
+
 ```typescript
 const scheduleId = await jobDispatcher.schedule(
   JOB_TYPES.CLEANUP_OLD_DATA,
@@ -1395,11 +1423,13 @@ Factory function for creating job worker handlers.
 Wraps a job handler with QStash verification and execution tracking.
 
 **Parameters:**
+
 - `handler: JobWorkerHandler<T>` - Function that processes the job payload
 
 **Returns:** Next.js API route handler
 
 **Example:**
+
 ```typescript
 import { createJobWorker } from '@/lib/jobs/job-worker.handler';
 
@@ -1417,6 +1447,7 @@ export const POST = createJobWorker<MyPayload>(myJobHandler);
 Retrieves job configuration from the registry.
 
 **Parameters:**
+
 - `type: JobType` - Job type
 
 **Returns:** `JobConfig` - Job configuration object
@@ -1424,6 +1455,7 @@ Retrieves job configuration from the registry.
 **Throws:** `Error` if job type not found
 
 **Example:**
+
 ```typescript
 import { getJobConfig } from '@/lib/jobs/job-registry';
 
@@ -1438,11 +1470,13 @@ console.log(config.retries, config.timeout);
 Creates a new job execution record.
 
 **Parameters:**
+
 - `data: NewJobExecution` - Job execution data
 
 **Returns:** `Promise<JobExecution>` - Created job execution
 
 **Example:**
+
 ```typescript
 import { createJobExecution } from '@/lib/db/queries';
 
@@ -1460,11 +1494,13 @@ const execution = await createJobExecution({
 Retrieves a job execution by job ID.
 
 **Parameters:**
+
 - `jobId: string` - Job ID
 
 **Returns:** `Promise<JobExecution | undefined>` - Job execution or undefined
 
 **Example:**
+
 ```typescript
 const execution = await getJobExecutionByJobId('job-uuid');
 if (execution) {
@@ -1477,12 +1513,14 @@ if (execution) {
 Updates a job execution record.
 
 **Parameters:**
+
 - `jobId: string` - Job ID
 - `updates: Partial<JobExecution>` - Fields to update
 
 **Returns:** `Promise<void>`
 
 **Example:**
+
 ```typescript
 await updateJobExecution('job-uuid', {
   status: 'completed',

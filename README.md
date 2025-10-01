@@ -262,8 +262,8 @@ curl http://localhost:3000/api/cache/stats
    # Cache Production
    CACHE_PROVIDER=upstash
    CACHE_DEFAULT_TTL=3600
-   UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-   UPSTASH_REDIS_REST_TOKEN=your_upstash_token
+   REDIS_REST_URL=https://your-instance.upstash.io
+   REDIS_REST_TOKEN=your_upstash_token
 
    # Optional: Social Authentication
    GOOGLE_CLIENT_ID=production_google_id

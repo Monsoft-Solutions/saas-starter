@@ -165,8 +165,8 @@ CACHE_DEFAULT_TTL=3600
 ```bash
 CACHE_PROVIDER=upstash
 CACHE_DEFAULT_TTL=3600
-UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token
+REDIS_REST_URL=https://your-instance.upstash.io
+REDIS_REST_TOKEN=your-token
 ```
 
 ## Error Handling

@@ -79,8 +79,8 @@ CACHE_PROVIDER=in-memory  # Options: in-memory, upstash
 CACHE_DEFAULT_TTL=3600    # Default TTL in seconds (1 hour)
 
 # Upstash Configuration (production only)
-UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token-here
+REDIS_REST_URL=https://your-instance.upstash.io
+REDIS_REST_TOKEN=your-token-here
 ```
 
 ### External Services
@@ -220,8 +220,8 @@ const envSchema = z.object({
     .default('3600'),
 
   // Upstash Redis (optional, required in production if using upstash)
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  REDIS_REST_URL: z.string().url().optional(),
+  REDIS_REST_TOKEN: z.string().optional(),
 });
 
 // Add to envValues:
@@ -229,8 +229,8 @@ const envValues = {
   // ... existing values ...
   CACHE_PROVIDER: process.env.CACHE_PROVIDER,
   CACHE_DEFAULT_TTL: process.env.CACHE_DEFAULT_TTL || '3600',
-  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+  REDIS_REST_URL: process.env.REDIS_REST_URL,
+  REDIS_REST_TOKEN: process.env.REDIS_REST_TOKEN,
 };
 ```
 
@@ -497,15 +497,15 @@ export class UpstashCacheProvider implements ICacheProvider {
   private stats: { hits: number; misses: number };
 
   constructor() {
-    if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
+    if (!env.REDIS_REST_URL || !env.REDIS_REST_TOKEN) {
       throw new Error(
-        'Upstash Redis configuration missing. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN'
+        'Upstash Redis configuration missing. Set REDIS_REST_URL and REDIS_REST_TOKEN'
       );
     }
 
     this.redis = new Redis({
-      url: env.UPSTASH_REDIS_REST_URL,
-      token: env.UPSTASH_REDIS_REST_TOKEN,
+      url: env.REDIS_REST_URL,
+      token: env.REDIS_REST_TOKEN,
     });
 
     this.stats = { hits: 0, misses: 0 };
@@ -1395,8 +1395,8 @@ CACHE_PROVIDER=in-memory  # or 'upstash' for production
 CACHE_DEFAULT_TTL=3600
 
 # Upstash Redis (production only)
-UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token
+REDIS_REST_URL=https://your-instance.upstash.io
+REDIS_REST_TOKEN=your-token
 ```
 
 ### Package.json Scripts

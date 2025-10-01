@@ -98,12 +98,12 @@ The cache system follows a provider-agnostic architecture with three main layers
 
 ### Environment Variables
 
-| Variable                   | Type                       | Required | Default       | Description            |
-| -------------------------- | -------------------------- | -------- | ------------- | ---------------------- |
-| `CACHE_PROVIDER`           | `'in-memory' \| 'upstash'` | No       | `'in-memory'` | Cache provider to use  |
-| `CACHE_DEFAULT_TTL`        | `number`                   | No       | `3600`        | Default TTL in seconds |
-| `UPSTASH_REDIS_REST_URL`   | `string`                   | Yes\*    | -             | Upstash Redis REST URL |
-| `UPSTASH_REDIS_REST_TOKEN` | `string`                   | Yes\*    | -             | Upstash Redis token    |
+| Variable            | Type                       | Required | Default       | Description            |
+| ------------------- | -------------------------- | -------- | ------------- | ---------------------- |
+| `CACHE_PROVIDER`    | `'in-memory' \| 'upstash'` | No       | `'in-memory'` | Cache provider to use  |
+| `CACHE_DEFAULT_TTL` | `number`                   | No       | `3600`        | Default TTL in seconds |
+| `REDIS_REST_URL`    | `string`                   | Yes\*    | -             | Upstash Redis REST URL |
+| `REDIS_REST_TOKEN`  | `string`                   | Yes\*    | -             | Upstash Redis token    |
 
 \*Required only when using Upstash provider
 
@@ -119,8 +119,8 @@ CACHE_DEFAULT_TTL=3600
 # .env.production (production)
 CACHE_PROVIDER=upstash
 CACHE_DEFAULT_TTL=3600
-UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token-here
+REDIS_REST_URL=https://your-instance.upstash.io
+REDIS_REST_TOKEN=your-token-here
 ```
 
 ## API Reference
@@ -425,7 +425,7 @@ console.log('Cache initialized:', stats);
 
 **Solutions**:
 
-1. Verify `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are correct
+1. Verify `REDIS_REST_URL` and `REDIS_REST_TOKEN` are correct
 2. Check Upstash dashboard for service status
 3. Ensure your IP is whitelisted (if using IP restrictions)
 4. Test connection manually:
@@ -434,8 +434,8 @@ console.log('Cache initialized:', stats);
 import { Redis } from '@upstash/redis';
 
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  url: process.env.REDIS_REST_URL!,
+  token: process.env.REDIS_REST_TOKEN!,
 });
 
 try {
