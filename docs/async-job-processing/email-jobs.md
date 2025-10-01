@@ -129,24 +129,6 @@ await sendTeamInvitationEmailAsync(
 
 ## Email Job Patterns
 
-### Batch Email Sending
-
-For sending multiple emails:
-
-```typescript
-// Instead of multiple separate jobs (less efficient)
-await Promise.all([
-  sendWelcomeEmailAsync(user1Data),
-  sendWelcomeEmailAsync(user2Data),
-  sendWelcomeEmailAsync(user3Data),
-]);
-
-// Use a single batch job (more efficient)
-await jobDispatcher.enqueue(JOB_TYPES.SEND_BATCH_EMAIL, {
-  emails: [user1Data, user2Data, user3Data],
-});
-```
-
 ### Conditional Email Sending
 
 ```typescript
@@ -160,25 +142,6 @@ if (user.emailNotificationsEnabled) {
     { userId: user.id }
   );
 }
-```
-
-### Email with Attachments
-
-For emails that need file attachments:
-
-```typescript
-await sendReportEmailAsync(
-  {
-    to: 'user@example.com',
-    recipientName: 'John Doe',
-    reportData: reportContent,
-    attachment: {
-      filename: 'report.pdf',
-      content: pdfBuffer,
-    },
-  },
-  { userId: user.id }
-);
 ```
 
 ## Error Handling and Retry Logic

@@ -71,8 +71,10 @@ export class JobDispatcher {
       jobType: type,
       status: 'pending',
       payload: job,
-      userId: metadata.userId,
-      organizationId: metadata.organizationId,
+      userId: metadata.userId ? String(metadata.userId) : undefined,
+      organizationId: metadata.organizationId
+        ? String(metadata.organizationId)
+        : undefined,
     });
 
     const url = `${this.baseUrl}${config.endpoint}`;

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+require('dotenv').config();
+
 /**
  * Centralised environment validation for server-only secrets.
  * Expands over time as additional integrations require typed config.
@@ -37,6 +39,8 @@ const envSchema = z.object({
 
   // Optional email metadata
   RESEND_REPLY_TO: z.string().email('Invalid email address.').optional(),
+
+  // Optional email metadata  RESEND_REPLY_TO: z.string().email('Invalid email address.').optional(),
   APP_SUPPORT_EMAIL: z.string().email('Invalid email address.').optional(),
 
   // Cache Configuration
