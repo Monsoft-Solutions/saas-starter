@@ -158,6 +158,27 @@ export class CacheKeys {
     const key = context ? `${baseKey}:${encode(context)}` : baseKey;
     return createCacheKey(key);
   }
+
+  /**
+   * Notification cache keys
+   */
+  static userNotifications(
+    userId: string,
+    limit: number,
+    offset: number
+  ): CacheKey {
+    return createCacheKey(
+      `notifications:user:${userId}:limit:${limit}:offset:${offset}`
+    );
+  }
+
+  static userUnreadNotifications(userId: string): CacheKey {
+    return createCacheKey(`notifications:user:${userId}:unread`);
+  }
+
+  static userNotificationPattern(userId: string): CacheKey {
+    return createCacheKey(`notifications:user:${userId}:*`);
+  }
 }
 
 function createCacheKey(key: string): CacheKey {
