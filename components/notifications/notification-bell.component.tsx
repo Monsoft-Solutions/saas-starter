@@ -72,7 +72,7 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-[400px] p-0"
+        className="w-[90vw] max-w-[480px] p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <NotificationCenter />

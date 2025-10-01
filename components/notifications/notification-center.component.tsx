@@ -12,7 +12,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/design-system';
 import type { Notification } from '@/lib/types/notifications';
 import { useNotificationContext } from './notification-provider.component';
 import { NotificationItem } from './notification-item.component';
@@ -59,6 +60,19 @@ function groupNotificationsByTime(
 }
 
 /**
+ * Section header component for time groups
+ */
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <div className="sticky top-0 z-10  backdrop-blur-sm px-4 ">
+      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        {title}
+      </h4>
+    </div>
+  );
+}
+
+/**
  * NotificationCenter component
  * Displays grouped and filtered notifications with actions
  */
@@ -83,63 +97,97 @@ export function NotificationCenter() {
     [filteredNotifications]
   );
 
+  // Count notifications by filter
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.isRead).length,
+    [notifications]
+  );
+  const readCount = useMemo(
+    () => notifications.filter((n) => n.isRead).length,
+    [notifications]
+  );
+
   const hasNotifications = filteredNotifications.length > 0;
   const hasUnreadNotifications = notifications.some((n) => !n.isRead);
 
   return (
-    <Card>
+    <Card className="flex flex-col max-h-[600px] py-2 gap-1.5">
       {/* Header */}
-      <CardHeader className="flex items-center justify-between px-6 py-0">
-        <CardTitle className=" font-semibold">Notifications</CardTitle>
+      <CardHeader className="flex items-center justify-between px-6 py-3 shrink-0">
+        <div className="flex items-center justify-between w-full">
+          <CardTitle className="font-semibold">Notifications</CardTitle>
 
-        {/* Filter Tabs */}
-        <CardAction className="flex gap-2">
-          <button
-            onClick={() => setReadFilter('unread')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              readFilter === 'unread'
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:bg-muted/50'
-            }`}
-          >
-            Unread
-          </button>
-          <button
-            onClick={() => setReadFilter('read')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              readFilter === 'read'
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:bg-muted/50'
-            }`}
-          >
-            Read
-          </button>
-        </CardAction>
+          {/* Filter Tabs */}
+          <CardAction className="flex gap-2">
+            <button
+              onClick={() => setReadFilter('unread')}
+              className={cn(
+                'relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5',
+                readFilter === 'unread'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-muted/50'
+              )}
+              aria-label={`Show unread notifications (${unreadCount})`}
+            >
+              Unread
+              {unreadCount > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="h-5 min-w-[20px] px-1 text-xs"
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Badge>
+              )}
+            </button>
+            <button
+              onClick={() => setReadFilter('read')}
+              className={cn(
+                'relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5',
+                readFilter === 'read'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-muted/50'
+              )}
+              aria-label={`Show read notifications (${readCount})`}
+            >
+              Read
+              {readCount > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="h-5 min-w-[20px] px-1 text-xs"
+                >
+                  {readCount > 99 ? '99+' : readCount}
+                </Badge>
+              )}
+            </button>
+          </CardAction>
+        </div>
       </CardHeader>
 
       {/* Content */}
-      <CardContent className="flex h-[calc(100%-73px)] flex-col overflow-hidden p-0">
+      <CardContent className="flex flex-col flex-1 overflow-hidden p-0 min-h-0">
         {/* Loading State */}
         {isLoading && (
-          <div className="flex h-full items-center justify-center">
+          <div className="flex h-full items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
 
         {/* Empty State */}
-        {!isLoading && !hasNotifications && <NotificationEmpty />}
+        {!isLoading && !hasNotifications && (
+          <NotificationEmpty filter={readFilter} />
+        )}
 
         {/* Notifications List */}
         {!isLoading && hasNotifications && (
-          <>
+          <div className="flex flex-col flex-1 min-h-0">
             {/* Mark all read button */}
-            {hasUnreadNotifications && (
-              <div className=" flex justify-end pr-2 text-muted-foreground">
+            {hasUnreadNotifications && readFilter === 'unread' && (
+              <div className="flex justify-end px-4 py-2 border-b border-border/50 bg-muted/30 shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => markAllAsRead()}
-                  className="h-8 text-xs font-medium hover:bg-muted align-end justify-end"
+                  className="h-8 text-xs font-medium hover:bg-background"
                 >
                   <CheckCheck className="mr-1.5 h-3.5 w-3.5" />
                   Mark all as read
@@ -148,27 +196,28 @@ export function NotificationCenter() {
             )}
 
             <ScrollArea className="flex-1">
-              <div className="flex flex-col">
+              <div className="flex flex-col gap-2 p-2">
                 {/* Today */}
                 {groupedNotifications.today.length > 0 && (
                   <div className="flex flex-col">
-                    {groupedNotifications.today.map((notification) => (
-                      <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        onToggleRead={toggleRead}
-                      />
-                    ))}
+                    <SectionHeader title="Today" />
+                    <div className="flex flex-col gap-2 p-2">
+                      {groupedNotifications.today.map((notification) => (
+                        <NotificationItem
+                          key={notification.id}
+                          notification={notification}
+                          onToggleRead={toggleRead}
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {/* Yesterday */}
                 {groupedNotifications.yesterday.length > 0 && (
-                  <>
-                    {groupedNotifications.today.length > 0 && (
-                      <Separator className="my-2" />
-                    )}
-                    <div className="flex flex-col">
+                  <div className="flex flex-col">
+                    <SectionHeader title="Yesterday" />
+                    <div className="flex flex-col gap-2 p-2">
                       {groupedNotifications.yesterday.map((notification) => (
                         <NotificationItem
                           key={notification.id}
@@ -177,17 +226,14 @@ export function NotificationCenter() {
                         />
                       ))}
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {/* This Week */}
                 {groupedNotifications.thisWeek.length > 0 && (
-                  <>
-                    {(groupedNotifications.today.length > 0 ||
-                      groupedNotifications.yesterday.length > 0) && (
-                      <Separator className="my-2" />
-                    )}
-                    <div className="flex flex-col">
+                  <div className="flex flex-col">
+                    <SectionHeader title="Earlier this week" />
+                    <div className="flex flex-col gap-2 p-2">
                       {groupedNotifications.thisWeek.map((notification) => (
                         <NotificationItem
                           key={notification.id}
@@ -196,18 +242,14 @@ export function NotificationCenter() {
                         />
                       ))}
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {/* Earlier */}
                 {groupedNotifications.earlier.length > 0 && (
-                  <>
-                    {(groupedNotifications.today.length > 0 ||
-                      groupedNotifications.yesterday.length > 0 ||
-                      groupedNotifications.thisWeek.length > 0) && (
-                      <Separator className="my-2" />
-                    )}
-                    <div className="flex flex-col">
+                  <div className="flex flex-col">
+                    <SectionHeader title="Earlier" />
+                    <div className="flex flex-col gap-2 p-2">
                       {groupedNotifications.earlier.map((notification) => (
                         <NotificationItem
                           key={notification.id}
@@ -216,11 +258,11 @@ export function NotificationCenter() {
                         />
                       ))}
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </ScrollArea>
-          </>
+          </div>
         )}
       </CardContent>
     </Card>

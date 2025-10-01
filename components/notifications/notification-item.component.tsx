@@ -114,10 +114,10 @@ export function NotificationItem({
     <Card
       className={cn(
         'group relative transition-all duration-200 gap-2 py-3',
-        'hover:shadow-md hover:border-border/80 hover:scale-[1.01]',
+        'hover:shadow-md hover:border-border/80 hover:scale-[1.01] shadow-xs',
         notification.isRead
           ? 'bg-background/50 border-border/50'
-          : 'bg-blue-50/40 dark:bg-blue-950/20 border-l-4 border-l-blue-500 border-border/60',
+          : 'bg-primary-50/40 dark:bg-primary-950/20 border-l-primary-500 border-border/60',
         notification.metadata?.actionUrl ? 'cursor-pointer' : ''
       )}
       onClick={notification.metadata?.actionUrl ? handleClick : undefined}
