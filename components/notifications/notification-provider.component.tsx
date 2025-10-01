@@ -13,7 +13,7 @@ type NotificationContextType = {
   unreadCount: number;
   isLoading: boolean;
   error: Error | undefined;
-  markAsRead: (notificationId: number) => Promise<void>;
+  toggleRead: (notificationId: number) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   dismiss: (notificationId: number) => Promise<void>;
   refetch: () => void;
@@ -83,7 +83,7 @@ export function NotificationProvider({
         unreadCount: notificationHook.unreadCount,
         isLoading: notificationHook.isLoading,
         error: notificationHook.error,
-        markAsRead: notificationHook.markAsRead,
+        toggleRead: notificationHook.toggleRead,
         markAllAsRead: notificationHook.markAllAsRead,
         dismiss: notificationHook.dismiss,
         refetch: notificationHook.refetch,

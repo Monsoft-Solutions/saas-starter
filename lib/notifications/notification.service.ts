@@ -19,6 +19,7 @@ import {
   getUnreadCount,
   getNotificationById,
   markAsRead,
+  toggleRead,
   markMultipleAsRead,
   markAllAsRead,
   dismissNotification as dismissNotificationQuery,
@@ -195,6 +196,31 @@ export async function markNotificationAsRead(
   logger.info('[notifications] Marked notification as read', {
     notificationId,
     userId,
+  });
+}
+
+/**
+ * Toggle notification read status
+ *
+ * @param notificationId - Notification ID
+ * @param userId - User ID
+ */
+export async function toggleNotificationRead(
+  notificationId: number,
+  userId: string
+): Promise<void> {
+  // Get current notification to check read status
+  const notification = await getNotificationById(notificationId);
+  if (!notification) {
+    throw new Error('Notification not found');
+  }
+
+  await toggleRead(notificationId, userId, notification.isRead);
+
+  logger.info('[notifications] Toggled notification read status', {
+    notificationId,
+    userId,
+    newStatus: !notification.isRead,
   });
 }
 

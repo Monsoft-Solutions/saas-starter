@@ -148,7 +148,7 @@ To access the app on protected routes (_/app/_) you should use the chrome-dev MC
 **Application Access Credentials:**
 
 - **URL**: Navigate to `/sign-in`
-- **Email**: `admin@email.com`
+- **Email**: `admin@sitewavefl.com`
 - **Password**: `admin123`
 
 ---

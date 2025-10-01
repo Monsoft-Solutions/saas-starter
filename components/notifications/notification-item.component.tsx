@@ -5,17 +5,24 @@ import {
   AlertCircle,
   AlertTriangle,
   Bell,
+  Circle,
+  CircleCheck,
   CreditCard,
   Info,
   Lock,
   Package,
   Users,
-  X,
 } from 'lucide-react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/design-system';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardAction,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import { cn, notionRadius } from '@/lib/design-system';
 import type {
   Notification,
   NotificationCategory,
@@ -46,22 +53,14 @@ function getCategoryIcon(category: NotificationCategory) {
 }
 
 /**
- * Get priority badge variant and icon
+ * Get priority icon for top-right corner indicator
  */
-function getPriorityDisplay(priority: NotificationPriority) {
+function getPriorityIcon(priority: NotificationPriority) {
   switch (priority) {
     case 'critical':
-      return {
-        variant: 'destructive' as const,
-        icon: <AlertCircle className="h-3 w-3" />,
-        label: 'Critical',
-      };
+      return <AlertCircle className="h-4 w-4 text-destructive" />;
     case 'important':
-      return {
-        variant: 'default' as const,
-        icon: <AlertTriangle className="h-3 w-3" />,
-        label: 'Important',
-      };
+      return <AlertTriangle className="h-4 w-4 text-orange-500" />;
     case 'info':
     default:
       return null;
@@ -81,8 +80,7 @@ function formatTimestamp(date: Date): string {
 
 type NotificationItemProps = {
   notification: Notification;
-  onMarkAsRead: (id: number) => void;
-  onDismiss: (id: number) => void;
+  onToggleRead: (id: number) => void;
 };
 
 /**
@@ -91,111 +89,100 @@ type NotificationItemProps = {
  */
 export function NotificationItem({
   notification,
-  onMarkAsRead,
-  onDismiss,
+  onToggleRead,
 }: NotificationItemProps) {
-  const priorityDisplay = getPriorityDisplay(notification.priority);
+  const priorityIcon = getPriorityIcon(notification.priority);
 
   const handleClick = () => {
     if (!notification.isRead) {
-      onMarkAsRead(notification.id);
+      onToggleRead(notification.id);
+    }
+
+    // Navigate to action URL if present
+    if (notification.metadata?.actionUrl) {
+      window.location.href = notification.metadata.actionUrl;
     }
   };
 
-  const handleDismiss = (e: React.MouseEvent) => {
+  const handleToggleRead = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDismiss(notification.id);
+    e.preventDefault();
+    onToggleRead(notification.id);
   };
 
-  const content = (
-    <div
+  return (
+    <Card
       className={cn(
-        'relative flex gap-3 rounded-lg border p-4 transition-colors',
+        'group relative transition-all duration-200 gap-3',
+        'hover:shadow-md hover:border-border/80 hover:scale-[1.01]',
         notification.isRead
-          ? 'bg-background hover:bg-muted/50'
-          : 'bg-muted/30 hover:bg-muted/50 border-l-4 border-l-primary'
+          ? 'bg-background/50 border-border/50'
+          : 'bg-blue-50/40 dark:bg-blue-950/20 border-l-4 border-l-blue-500 border-border/60',
+        notification.metadata?.actionUrl ? 'cursor-pointer' : ''
       )}
-      onClick={handleClick}
+      onClick={notification.metadata?.actionUrl ? handleClick : undefined}
     >
-      {/* Category Icon */}
-      <div
-        className={cn(
-          'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-          notification.isRead ? 'bg-muted' : 'bg-primary/10'
-        )}
-      >
-        {getCategoryIcon(notification.category)}
-      </div>
+      {/* Priority Icon - Top Right Corner */}
+      {priorityIcon && (
+        <div className="absolute top-3 right-3 z-10">{priorityIcon}</div>
+      )}
 
-      {/* Content */}
-      <div className="flex-1 space-y-1">
-        {/* Title and Priority Badge */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium leading-none">
-              {notification.title}
-            </p>
-            {priorityDisplay && (
-              <Badge
-                variant={priorityDisplay.variant}
-                className="flex items-center gap-1"
-              >
-                {priorityDisplay.icon}
-                <span className="text-xs">{priorityDisplay.label}</span>
-              </Badge>
-            )}
-          </div>
+      <CardHeader className="pb-0">
+        <div className="flex gap-3">
+          {/* Category Icon & Title */}
+          <CardTitle className="text-sm truncate flex-1 flex gap-2 justify-start items-center flex-row">
+            <div
+              className={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center transition-all',
+                notification.isRead
+                  ? ' text-muted-foreground'
+                  : 'text-foreground '
+              )}
+              style={{ borderRadius: notionRadius.default }}
+            >
+              {getCategoryIcon(notification.category)}
+            </div>
+            <span className="text-sm truncate pr-6">{notification.title}</span>
+          </CardTitle>
+        </div>
+
+        {/* Toggle Read Button */}
+        <CardAction>
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 shrink-0"
-            onClick={handleDismiss}
+            className="z-20 h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted/80"
+            onClick={handleToggleRead}
+            aria-label={notification.isRead ? 'Mark as unread' : 'Mark as read'}
           >
-            <X className="h-3 w-3" />
-            <span className="sr-only">Dismiss notification</span>
+            {notification.isRead ? (
+              <CircleCheck className="h-4 w-4 text-green-600" />
+            ) : (
+              <Circle className="h-4 w-4" />
+            )}
           </Button>
-        </div>
+        </CardAction>
+      </CardHeader>
 
-        {/* Message */}
-        <p className="text-sm text-muted-foreground line-clamp-2">
+      {/* Message */}
+      <CardContent className="pt-0">
+        <p className="text-sm text-muted-foreground/90 leading-relaxed line-clamp-2">
           {notification.message}
         </p>
+      </CardContent>
 
-        {/* Footer: Timestamp and Action */}
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <span className="text-xs text-muted-foreground">
-            {formatTimestamp(notification.createdAt)}
+      {/* Footer: Timestamp and Action */}
+      <CardFooter className="pt-0 justify-between">
+        <span className="text-xs text-muted-foreground/70 font-medium">
+          {formatTimestamp(notification.createdAt)}
+        </span>
+
+        {notification.metadata?.actionUrl && (
+          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+            {notification.metadata.actionLabel || 'View'} →
           </span>
-
-          {notification.metadata?.actionUrl && (
-            <Button
-              variant="link"
-              size="sm"
-              className="h-auto p-0 text-xs"
-              asChild
-            >
-              <Link href={notification.metadata.actionUrl}>
-                {notification.metadata.actionLabel || 'View'}
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
+        )}
+      </CardFooter>
+    </Card>
   );
-
-  // If there's an action URL, wrap the whole item in a link
-  if (notification.metadata?.actionUrl) {
-    return (
-      <Link
-        href={notification.metadata.actionUrl}
-        className="block"
-        onClick={handleClick}
-      >
-        {content}
-      </Link>
-    );
-  }
-
-  return content;
 }

@@ -107,6 +107,37 @@ export async function markAsRead(
 }
 
 /**
+ * Toggle notification read status
+ *
+ * @param notificationId - Notification ID
+ * @param userId - User ID (for verification)
+ * @param currentReadStatus - Current read status
+ */
+export async function toggleRead(
+  notificationId: number,
+  userId: string,
+  currentReadStatus: boolean
+): Promise<void> {
+  const newReadStatus = !currentReadStatus;
+
+  await db
+    .update(notifications)
+    .set({
+      isRead: newReadStatus,
+      readAt: newReadStatus ? new Date() : null,
+    })
+    .where(
+      and(
+        eq(notifications.id, notificationId),
+        eq(notifications.userId, userId)
+      )
+    );
+
+  // Invalidate cache
+  await invalidateUserNotificationCache(userId);
+}
+
+/**
  * Mark multiple notifications as read
  *
  * @param notificationIds - Array of notification IDs

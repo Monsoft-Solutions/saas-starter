@@ -39,7 +39,7 @@ Quality comes first. Your testing approach should be:
 For testing the application, use these credentials:
 
 - **URL**: Navigate to `/sign-in`
-- **Email**: `admin@email.com`
+- **Email**: `admin@sitewavefl.com`
 - **Password**: `admin123`
 
 **Chrome DevTools MCP Capabilities:**

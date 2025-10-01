@@ -2,9 +2,6 @@
 
 import useSWR from 'swr';
 import type { Notification } from '@/lib/types/notifications';
-import { markAsReadAction } from '@/app/actions/notifications/mark-as-read.action';
-import { markAllAsReadAction } from '@/app/actions/notifications/mark-all-as-read.action';
-import { dismissNotificationAction } from '@/app/actions/notifications/dismiss-notification.action';
 
 /**
  * API response shape from GET /api/notifications
@@ -49,10 +46,19 @@ export function useNotifications() {
   );
 
   /**
-   * Mark a notification as read (optimistic update)
+   * Toggle notification read status (optimistic update)
    */
-  const markAsRead = async (notificationId: number) => {
+  const toggleRead = async (notificationId: number) => {
     if (!data) return;
+
+    // Find the notification to check current status
+    const notification = data.notifications.find(
+      (n) => n.id === notificationId
+    );
+    if (!notification) return;
+
+    const newReadStatus = !notification.isRead;
+    const unreadChange = newReadStatus ? -1 : 1; // -1 if marking as read, +1 if marking as unread
 
     // Optimistic update
     await mutate(
@@ -60,18 +66,33 @@ export function useNotifications() {
         ...data,
         notifications: data.notifications.map((n) =>
           n.id === notificationId
-            ? { ...n, isRead: true, readAt: new Date() }
+            ? {
+                ...n,
+                isRead: newReadStatus,
+                readAt: newReadStatus ? new Date() : null,
+              }
             : n
         ),
-        unreadCount: Math.max(0, data.unreadCount - 1),
+        unreadCount: Math.max(0, data.unreadCount + unreadChange),
       },
       false
     );
 
-    // Server update
+    // Server update via API route
     try {
-      await markAsReadAction({ notificationId }, new FormData());
+      const response = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'toggle_read' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle notification read status');
+      }
     } catch (error) {
+      console.error('Failed to toggle notification read status:', error);
       // Revert on error
       await mutate();
     }
@@ -97,10 +118,20 @@ export function useNotifications() {
       false
     );
 
-    // Server update
+    // Server update via API route
     try {
-      await markAllAsReadAction({}, new FormData());
+      const response = await fetch('/api/notifications/mark-all-read', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to mark all notifications as read');
+      }
     } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
       // Revert on error
       await mutate();
     }
@@ -131,10 +162,21 @@ export function useNotifications() {
       false
     );
 
-    // Server update
+    // Server update via API route
     try {
-      await dismissNotificationAction({ notificationId }, new FormData());
+      const response = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'dismiss' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to dismiss notification');
+      }
     } catch (error) {
+      console.error('Failed to dismiss notification:', error);
       // Revert on error
       await mutate();
     }
@@ -146,7 +188,7 @@ export function useNotifications() {
     pagination: data?.pagination,
     isLoading,
     error,
-    markAsRead,
+    toggleRead,
     markAllAsRead,
     dismiss,
     refetch: mutate,

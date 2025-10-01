@@ -4,14 +4,17 @@ import { useState, useMemo } from 'react';
 import { CheckCheck, Loader2 } from 'lucide-react';
 import { isToday, isYesterday, isThisWeek } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import type {
-  Notification,
-  NotificationCategory,
-} from '@/lib/types/notifications';
+import type { Notification } from '@/lib/types/notifications';
 import { useNotificationContext } from './notification-provider.component';
-import { NotificationFilters } from './notification-filters.component';
 import { NotificationItem } from './notification-item.component';
 import { NotificationEmpty } from './notification-empty.component';
 
@@ -60,26 +63,19 @@ function groupNotificationsByTime(
  * Displays grouped and filtered notifications with actions
  */
 export function NotificationCenter() {
-  const {
-    notifications,
-    unreadCount,
-    isLoading,
-    markAsRead,
-    markAllAsRead,
-    dismiss,
-  } = useNotificationContext();
+  const { notifications, isLoading, toggleRead, markAllAsRead } =
+    useNotificationContext();
 
-  const [activeCategory, setActiveCategory] = useState<
-    NotificationCategory | 'all'
-  >('all');
+  const [readFilter, setReadFilter] = useState<'read' | 'unread'>('unread');
 
-  // Filter notifications by category
+  // Filter notifications by read status
   const filteredNotifications = useMemo(() => {
-    if (activeCategory === 'all') {
-      return notifications;
+    if (readFilter === 'unread') {
+      return notifications.filter((n) => !n.isRead);
     }
-    return notifications.filter((n) => n.category === activeCategory);
-  }, [notifications, activeCategory]);
+    // Filter by read
+    return notifications.filter((n) => n.isRead);
+  }, [notifications, readFilter]);
 
   // Group filtered notifications by time
   const groupedNotifications = useMemo(
@@ -88,137 +84,145 @@ export function NotificationCenter() {
   );
 
   const hasNotifications = filteredNotifications.length > 0;
+  const hasUnreadNotifications = notifications.some((n) => !n.isRead);
 
   return (
-    <div className="flex h-[600px] w-full flex-col">
+    <Card>
       {/* Header */}
-      <div className="flex items-center justify-between border-b p-4">
-        <h2 className="text-lg font-semibold">Notifications</h2>
-        {unreadCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => markAllAsRead()}
-            className="text-xs"
+      <CardHeader className="flex items-center justify-between px-6 py-0">
+        <CardTitle className=" font-semibold">Notifications</CardTitle>
+
+        {/* Filter Tabs */}
+        <CardAction className="flex gap-2">
+          <button
+            onClick={() => setReadFilter('unread')}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              readFilter === 'unread'
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:bg-muted/50'
+            }`}
           >
-            <CheckCheck className="mr-2 h-4 w-4" />
-            Mark all as read
-          </Button>
+            Unread
+          </button>
+          <button
+            onClick={() => setReadFilter('read')}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              readFilter === 'read'
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:bg-muted/50'
+            }`}
+          >
+            Read
+          </button>
+        </CardAction>
+      </CardHeader>
+
+      {/* Content */}
+      <CardContent className="flex h-[calc(100%-73px)] flex-col overflow-hidden p-0">
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex h-full items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
         )}
-      </div>
 
-      {/* Filters */}
-      <div className="border-b p-4">
-        <NotificationFilters
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-        />
-      </div>
+        {/* Empty State */}
+        {!isLoading && !hasNotifications && <NotificationEmpty />}
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex flex-1 items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!isLoading && !hasNotifications && <NotificationEmpty />}
-
-      {/* Notifications List */}
-      {!isLoading && hasNotifications && (
-        <ScrollArea className="flex-1">
-          <div className="space-y-6 p-4">
-            {/* Today */}
-            {groupedNotifications.today.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase text-muted-foreground">
-                  Today
-                </h3>
-                <div className="space-y-2">
-                  {groupedNotifications.today.map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onMarkAsRead={markAsRead}
-                      onDismiss={dismiss}
-                    />
-                  ))}
-                </div>
+        {/* Notifications List */}
+        {!isLoading && hasNotifications && (
+          <>
+            {/* Mark all read button */}
+            {hasUnreadNotifications && (
+              <div className=" flex justify-end pr-2 text-muted-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => markAllAsRead()}
+                  className="h-8 text-xs font-medium hover:bg-muted align-end justify-end"
+                >
+                  <CheckCheck className="mr-1.5 h-3.5 w-3.5" />
+                  Mark all as read
+                </Button>
               </div>
             )}
 
-            {/* Yesterday */}
-            {groupedNotifications.yesterday.length > 0 && (
-              <>
-                {groupedNotifications.today.length > 0 && <Separator />}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-semibold uppercase text-muted-foreground">
-                    Yesterday
-                  </h3>
-                  <div className="space-y-2">
-                    {groupedNotifications.yesterday.map((notification) => (
+            <ScrollArea className="flex-1">
+              <div className="flex flex-col">
+                {/* Today */}
+                {groupedNotifications.today.length > 0 && (
+                  <div className="flex flex-col">
+                    {groupedNotifications.today.map((notification) => (
                       <NotificationItem
                         key={notification.id}
                         notification={notification}
-                        onMarkAsRead={markAsRead}
-                        onDismiss={dismiss}
+                        onToggleRead={toggleRead}
                       />
                     ))}
                   </div>
-                </div>
-              </>
-            )}
+                )}
 
-            {/* This Week */}
-            {groupedNotifications.thisWeek.length > 0 && (
-              <>
-                {(groupedNotifications.today.length > 0 ||
-                  groupedNotifications.yesterday.length > 0) && <Separator />}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-semibold uppercase text-muted-foreground">
-                    This Week
-                  </h3>
-                  <div className="space-y-2">
-                    {groupedNotifications.thisWeek.map((notification) => (
-                      <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        onMarkAsRead={markAsRead}
-                        onDismiss={dismiss}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+                {/* Yesterday */}
+                {groupedNotifications.yesterday.length > 0 && (
+                  <>
+                    {groupedNotifications.today.length > 0 && (
+                      <Separator className="my-2" />
+                    )}
+                    <div className="flex flex-col">
+                      {groupedNotifications.yesterday.map((notification) => (
+                        <NotificationItem
+                          key={notification.id}
+                          notification={notification}
+                          onToggleRead={toggleRead}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
 
-            {/* Earlier */}
-            {groupedNotifications.earlier.length > 0 && (
-              <>
-                {(groupedNotifications.today.length > 0 ||
-                  groupedNotifications.yesterday.length > 0 ||
-                  groupedNotifications.thisWeek.length > 0) && <Separator />}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-semibold uppercase text-muted-foreground">
-                    Earlier
-                  </h3>
-                  <div className="space-y-2">
-                    {groupedNotifications.earlier.map((notification) => (
-                      <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        onMarkAsRead={markAsRead}
-                        onDismiss={dismiss}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </ScrollArea>
-      )}
-    </div>
+                {/* This Week */}
+                {groupedNotifications.thisWeek.length > 0 && (
+                  <>
+                    {(groupedNotifications.today.length > 0 ||
+                      groupedNotifications.yesterday.length > 0) && (
+                      <Separator className="my-2" />
+                    )}
+                    <div className="flex flex-col">
+                      {groupedNotifications.thisWeek.map((notification) => (
+                        <NotificationItem
+                          key={notification.id}
+                          notification={notification}
+                          onToggleRead={toggleRead}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Earlier */}
+                {groupedNotifications.earlier.length > 0 && (
+                  <>
+                    {(groupedNotifications.today.length > 0 ||
+                      groupedNotifications.yesterday.length > 0 ||
+                      groupedNotifications.thisWeek.length > 0) && (
+                      <Separator className="my-2" />
+                    )}
+                    <div className="flex flex-col">
+                      {groupedNotifications.earlier.map((notification) => (
+                        <NotificationItem
+                          key={notification.id}
+                          notification={notification}
+                          onToggleRead={toggleRead}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </ScrollArea>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }

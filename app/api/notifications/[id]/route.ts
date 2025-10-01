@@ -10,13 +10,14 @@ import { z } from 'zod';
 import { requireServerContext } from '@/lib/auth/server-context';
 import {
   markNotificationAsRead,
+  toggleNotificationRead,
   dismissNotification,
   getNotification,
 } from '@/lib/notifications/notification.service';
 import logger from '@/lib/logger/logger.service';
 
 const updateNotificationSchema = z.object({
-  action: z.enum(['mark_read', 'dismiss']),
+  action: z.enum(['mark_read', 'toggle_read', 'dismiss']),
 });
 
 type RouteParams = {
@@ -30,6 +31,11 @@ export async function PATCH(request: NextRequest, props: RouteParams) {
   try {
     // Authenticate user
     const { user } = await requireServerContext();
+
+    logger.debug('[api/notifications/[id]] Updating notification', {
+      params,
+      user,
+    });
 
     // Parse notification ID
     const notificationId = parseInt(params.id, 10);
@@ -72,6 +78,8 @@ export async function PATCH(request: NextRequest, props: RouteParams) {
     // Perform action
     if (action === 'mark_read') {
       await markNotificationAsRead(notificationId, user.id);
+    } else if (action === 'toggle_read') {
+      await toggleNotificationRead(notificationId, user.id);
     } else if (action === 'dismiss') {
       await dismissNotification(notificationId, user.id);
     }
