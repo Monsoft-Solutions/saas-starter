@@ -7,3 +7,4 @@ export * from './member.table';
 export * from './invitation.table';
 export * from './activity-log.table';
 export * from './email-logs.table';
+export * from './job-execution.table';
