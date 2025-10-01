@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+require('dotenv').config();
+
 /**
  * Centralised environment validation for server-only secrets.
  * Expands over time as additional integrations require typed config.
@@ -37,6 +39,8 @@ const envSchema = z.object({
 
   // Optional email metadata
   RESEND_REPLY_TO: z.string().email('Invalid email address.').optional(),
+
+  // Optional email metadata  RESEND_REPLY_TO: z.string().email('Invalid email address.').optional(),
   APP_SUPPORT_EMAIL: z.string().email('Invalid email address.').optional(),
 
   // Cache Configuration
@@ -48,8 +52,14 @@ const envSchema = z.object({
     .default('3600'),
 
   // Upstash Redis (optional, required in production if using upstash)
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  REDIS_REST_URL: z.string().url().optional(),
+  REDIS_REST_TOKEN: z.string().optional(),
+
+  // QStash (optional in development, required when background jobs enabled)
+  QSTASH_URL: z.string().url().optional(),
+  QSTASH_TOKEN: z.string().optional(),
+  QSTASH_CURRENT_SIGNING_KEY: z.string().optional(),
+  QSTASH_NEXT_SIGNING_KEY: z.string().optional(),
 
   // Optional Social Providers
   GOOGLE_CLIENT_ID: z.string().optional(),
@@ -77,8 +87,12 @@ const envValues = {
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   CACHE_PROVIDER: process.env.CACHE_PROVIDER,
   CACHE_DEFAULT_TTL: process.env.CACHE_DEFAULT_TTL || '3600',
-  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+  REDIS_REST_URL: process.env.REDIS_REST_URL,
+  REDIS_REST_TOKEN: process.env.REDIS_REST_TOKEN,
+  QSTASH_URL: process.env.QSTASH_URL,
+  QSTASH_TOKEN: process.env.QSTASH_TOKEN,
+  QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
+  QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   FACEBOOK_CLIENT_ID: process.env.FACEBOOK_CLIENT_ID,

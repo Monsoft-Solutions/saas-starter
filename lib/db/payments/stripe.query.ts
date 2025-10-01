@@ -19,14 +19,20 @@ export async function getUserSubscriptionStatus(): Promise<UserSubscriptionStatu
     return cacheService.getOrSet(
       CacheKeys.organizationSubscription(organization.id),
       async () => {
+        // Re-fetch organization data inside callback to ensure cache is effective
+        const org = await getActiveOrganization();
+        if (!org) {
+          return null;
+        }
+
         return {
-          organizationId: organization.id,
-          organizationName: organization.name,
-          stripeProductId: organization.stripeProductId ?? null,
-          stripeSubscriptionId: organization.stripeSubscriptionId ?? null,
-          planName: organization.planName ?? null,
-          subscriptionStatus: organization.subscriptionStatus ?? null,
-          stripeCustomerId: organization.stripeCustomerId ?? null,
+          organizationId: org.id,
+          organizationName: org.name,
+          stripeProductId: org.stripeProductId ?? null,
+          stripeSubscriptionId: org.stripeSubscriptionId ?? null,
+          planName: org.planName ?? null,
+          subscriptionStatus: org.subscriptionStatus ?? null,
+          stripeCustomerId: org.stripeCustomerId ?? null,
         };
       },
       { ttl: 300 } // Cache for 5 minutes

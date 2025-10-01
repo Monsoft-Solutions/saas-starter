@@ -27,15 +27,15 @@ export class UpstashCacheProvider implements ICacheProvider {
   private readonly STATS_KEY = '__cache:stats';
 
   constructor() {
-    if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
+    if (!env.REDIS_REST_URL || !env.REDIS_REST_TOKEN) {
       throw new Error(
-        'Upstash Redis configuration missing. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN'
+        'Upstash Redis configuration missing. Set REDIS_REST_URL and REDIS_REST_TOKEN'
       );
     }
 
     this.redis = new Redis({
-      url: env.UPSTASH_REDIS_REST_URL,
-      token: env.UPSTASH_REDIS_REST_TOKEN,
+      url: env.REDIS_REST_URL,
+      token: env.REDIS_REST_TOKEN,
     });
   }
 

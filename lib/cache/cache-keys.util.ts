@@ -147,8 +147,16 @@ export class CacheKeys {
   /**
    * Email cache keys
    */
-  static email(template: string, to: string, extraData?: string): CacheKey {
-    return createCacheKey(`email:${template}:${to}:${extraData || ''}`);
+  static email(
+    template: string,
+    recipient: string,
+    context?: string
+  ): CacheKey {
+    const encode = (value: string) =>
+      encodeURIComponent(value.trim().toLowerCase());
+    const baseKey = `email:${encode(template)}:${encode(recipient)}`;
+    const key = context ? `${baseKey}:${encode(context)}` : baseKey;
+    return createCacheKey(key);
   }
 }
 

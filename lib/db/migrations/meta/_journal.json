@@ -29,6 +29,20 @@
       "when": 1759060598656,
       "tag": "0003_known_daredevil",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1759309148208,
+      "tag": "0004_fine_iron_lad",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1759333959492,
+      "tag": "0005_yummy_gorgon",
+      "breakpoints": true
     }
   ]
 }

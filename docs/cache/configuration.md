@@ -18,10 +18,10 @@ This guide covers all configuration options for the provider-agnostic cache syst
 
 ### Upstash-Specific Variables
 
-| Variable                   | Type     | Required | Description                        | Example                            |
-| -------------------------- | -------- | -------- | ---------------------------------- | ---------------------------------- |
-| `UPSTASH_REDIS_REST_URL`   | `string` | Yes\*    | Upstash Redis REST API URL         | `https://your-instance.upstash.io` |
-| `UPSTASH_REDIS_REST_TOKEN` | `string` | Yes\*    | Upstash Redis authentication token | `AX...`                            |
+| Variable           | Type     | Required | Description                        | Example                            |
+| ------------------ | -------- | -------- | ---------------------------------- | ---------------------------------- |
+| `REDIS_REST_URL`   | `string` | Yes\*    | Upstash Redis REST API URL         | `https://your-instance.upstash.io` |
+| `REDIS_REST_TOKEN` | `string` | Yes\*    | Upstash Redis authentication token | `AX...`                            |
 
 \*Required only when `CACHE_PROVIDER=upstash`
 
@@ -50,8 +50,8 @@ CACHE_PROVIDER=upstash
 CACHE_DEFAULT_TTL=3600
 
 # Upstash Redis Configuration
-UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token-here
+REDIS_REST_URL=https://your-instance.upstash.io
+REDIS_REST_TOKEN=your-token-here
 ```
 
 ### Staging Environment
@@ -64,8 +64,8 @@ CACHE_PROVIDER=upstash
 CACHE_DEFAULT_TTL=1800
 
 # Upstash Redis Configuration (can use same as production or separate instance)
-UPSTASH_REDIS_REST_URL=https://staging-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=staging-token-here
+REDIS_REST_URL=https://staging-instance.upstash.io
+REDIS_REST_TOKEN=staging-token-here
 ```
 
 ## Provider Configuration
@@ -126,8 +126,8 @@ The Upstash provider requires Redis credentials and is used when `CACHE_PROVIDER
 
 4. **Configure Environment**
    ```bash
-   UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-   UPSTASH_REDIS_REST_TOKEN=AX...your-token
+   REDIS_REST_URL=https://your-instance.upstash.io
+   REDIS_REST_TOKEN=AX...your-token
    ```
 
 ## Advanced Configuration
@@ -221,8 +221,8 @@ const envSchema = z.object({
     .default('3600'),
 
   // Upstash Redis (optional, required in production if using upstash)
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  REDIS_REST_URL: z.string().url().optional(),
+  REDIS_REST_TOKEN: z.string().optional(),
 });
 ```
 
@@ -233,9 +233,9 @@ Each provider validates its configuration:
 ```typescript
 // Upstash provider validation
 constructor() {
-  if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
+  if (!env.REDIS_REST_URL || !env.REDIS_REST_TOKEN) {
     throw new Error(
-      'Upstash Redis configuration missing. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN'
+      'Upstash Redis configuration missing. Set REDIS_REST_URL and REDIS_REST_TOKEN'
     );
   }
   // ... rest of constructor
@@ -392,7 +392,7 @@ export function monitorMemoryUsage() {
    ```bash
    # Check if variables are set
    echo $CACHE_PROVIDER
-   echo $UPSTASH_REDIS_REST_URL
+   echo $REDIS_REST_URL
    ```
 
 2. **Invalid TTL Values**
@@ -412,8 +412,8 @@ export function monitorMemoryUsage() {
    import { Redis } from '@upstash/redis';
 
    const redis = new Redis({
-     url: process.env.UPSTASH_REDIS_REST_URL!,
-     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+     url: process.env.REDIS_REST_URL!,
+     token: process.env.REDIS_REST_TOKEN!,
    });
 
    try {
@@ -438,8 +438,8 @@ To switch from in-memory to Upstash:
 
    ```bash
    CACHE_PROVIDER=upstash
-   UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-   UPSTASH_REDIS_REST_TOKEN=your-token
+   REDIS_REST_URL=https://your-instance.upstash.io
+   REDIS_REST_TOKEN=your-token
    ```
 
 3. **Deploy and Test**

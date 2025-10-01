@@ -170,8 +170,10 @@ class CacheService {
     // Generate fresh value
     const value = await factory();
 
-    // Cache the value
-    await this.set(key, value, options);
+    // Cache the value only if not null or undefined
+    if (value !== null && value !== undefined) {
+      await this.set(key, value, options);
+    }
 
     return value;
   }

@@ -15,6 +15,7 @@ export default defineConfig({
       { text: 'Authentication', link: '/auth/' },
       { text: 'Payments', link: '/stripe/' },
       { text: 'Cache System', link: '/cache/' },
+      { text: 'Background Jobs', link: '/async-job-processing' },
       { text: 'Design System', link: '/design-system' },
       { text: 'Logging', link: '/logging' },
     ],
@@ -76,6 +77,55 @@ export default defineConfig({
       {
         text: 'Communication',
         items: [{ text: 'Email System', link: '/emails' }],
+      },
+      {
+        text: 'Background Processing',
+        items: [
+          {
+            text: 'Async Job Processing',
+            link: '/async-job-processing',
+          },
+          {
+            text: 'Setup Guide',
+            link: '/async-job-processing/setup',
+          },
+          {
+            text: 'Core Concepts',
+            link: '/async-job-processing/core-concepts',
+          },
+          {
+            text: 'Usage Guide',
+            link: '/async-job-processing/usage',
+          },
+          {
+            text: 'Creating Jobs',
+            link: '/async-job-processing/creating-jobs',
+          },
+          {
+            text: 'Email Jobs',
+            link: '/async-job-processing/email-jobs',
+          },
+          {
+            text: 'Webhook Jobs',
+            link: '/async-job-processing/webhook-jobs',
+          },
+          {
+            text: 'Monitoring & Debugging',
+            link: '/async-job-processing/monitoring',
+          },
+          {
+            text: 'Testing',
+            link: '/async-job-processing/testing',
+          },
+          {
+            text: 'Deployment',
+            link: '/async-job-processing/deployment',
+          },
+          {
+            text: 'API Reference',
+            link: '/async-job-processing/api-reference',
+          },
+        ],
       },
       {
         text: 'Development',

@@ -14,12 +14,24 @@ vi.mock('@/lib/db/queries', () => ({
 // Load .env.local first (if present), then fallback to default .env without overriding existing vars.
 require('dotenv').config();
 
-if (!process.env.POSTGRES_URL) {
-  throw new Error('POSTGRES_URL environment variable is not set');
-}
+// Database test instance - only initialize if needed for integration tests
+// Unit tests that don't need database should not use this
+let dbTestInstance: ReturnType<typeof drizzle> | null = null;
 
-export const dbTest = drizzle(new PGlite(), { schema });
+export const getDbTest = () => {
+  if (!dbTestInstance) {
+    dbTestInstance = drizzle(new PGlite(), { schema });
+  }
+  return dbTestInstance;
+};
 
+// Export legacy dbTest for backwards compatibility
+export const dbTest = getDbTest();
+
+// Only run migrations if POSTGRES_URL is set (for integration tests)
+// Unit tests don't need the database
 beforeAll(async () => {
-  await migrate(dbTest, { migrationsFolder: './lib/db/migrations' });
+  if (process.env.POSTGRES_URL && dbTestInstance) {
+    await migrate(dbTestInstance, { migrationsFolder: './lib/db/migrations' });
+  }
 });

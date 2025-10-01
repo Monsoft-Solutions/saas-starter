@@ -24,10 +24,10 @@ import { requireServerSession } from '@/lib/auth/server-context';
 import { headers } from 'next/headers';
 import { APP_BASE_PATH } from '@/config/navigation';
 import {
-  sendPasswordChangedEmail,
-  sendEmailChangeConfirmationEmail,
-  sendPasswordResetEmail,
-} from '@/lib/emails/dispatchers';
+  sendPasswordChangedEmailAsync,
+  sendEmailChangeConfirmationEmailAsync,
+  sendPasswordResetEmailAsync,
+} from '@/lib/emails/enqueue';
 import { env } from '@/lib/env';
 import { ActivityType } from '@/lib/types';
 
@@ -197,7 +197,7 @@ export const updatePassword = validatedActionWithUser(
 
     // Send password changed confirmation email
     try {
-      await sendPasswordChangedEmail({
+      await sendPasswordChangedEmailAsync({
         to: user.email,
         recipientName: user.name || user.email.split('@')[0],
         changedAt: new Date().toISOString(),
@@ -258,23 +258,23 @@ export const updateAccount = validatedActionWithUser(
       const confirmationUrl = `${env.BASE_URL}/api/auth/confirm-email-change?token=${confirmationToken}`;
 
       try {
-        // Send to new email (primary confirmation)
-        await sendEmailChangeConfirmationEmail({
-          to: email,
-          recipientName: name || email.split('@')[0],
-          confirmationUrl,
-          newEmail: email,
-          oldEmail,
-        });
-
-        // Send notification to old email
-        await sendEmailChangeConfirmationEmail({
-          to: oldEmail,
-          recipientName: user.name || oldEmail.split('@')[0],
-          confirmationUrl,
-          newEmail: email,
-          oldEmail,
-        });
+        // Send confirmation emails asynchronously to both addresses
+        await Promise.all([
+          sendEmailChangeConfirmationEmailAsync({
+            to: email,
+            recipientName: name || email.split('@')[0],
+            confirmationUrl,
+            newEmail: email,
+            oldEmail,
+          }),
+          sendEmailChangeConfirmationEmailAsync({
+            to: oldEmail,
+            recipientName: user.name || oldEmail.split('@')[0],
+            confirmationUrl,
+            newEmail: email,
+            oldEmail,
+          }),
+        ]);
       } catch (error) {
         console.error(
           'Failed to send email change confirmation emails:',
@@ -336,7 +336,7 @@ export const forgotPassword = validatedAction(
     const resetUrl = `${env.BASE_URL}/reset-password?token=${resetToken}`;
 
     try {
-      await sendPasswordResetEmail({
+      await sendPasswordResetEmailAsync({
         to: email,
         recipientName: foundUser.name || email.split('@')[0],
         resetUrl,

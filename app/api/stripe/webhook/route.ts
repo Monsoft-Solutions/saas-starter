@@ -1,34 +1,13 @@
 import Stripe from 'stripe';
-import { handleSubscriptionChange, stripe } from '@/lib/payments/stripe';
-import {
-  getOrganizationByStripeCustomerId,
-  getOrganizationOwner,
-  logActivity,
-  getUserById,
-} from '@/lib/db/queries';
-import { ActivityType } from '@/lib/types';
-import {
-  sendSubscriptionCreatedEmail,
-  sendPaymentFailedEmail,
-} from '@/lib/emails/dispatchers';
+import { stripe } from '@/lib/payments/stripe';
 import { env } from '@/lib/env';
 import { createApiHandler } from '@/lib/server/api-handler';
 import { error as errorResponse } from '@/lib/http/response';
 import logger from '@/lib/logger/logger.service';
-import { cacheService, CacheKeys } from '@/lib/cache';
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { JOB_TYPES } from '@/lib/types/jobs/enums/job-type.enum';
 
 const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
-
-/**
- * Helper function to invalidate organization and customer caches for subscription events
- */
-async function invalidateSubscriptionCache(
-  organizationId: string,
-  customerId: string
-) {
-  await cacheService.delete(CacheKeys.organizationSubscription(organizationId));
-  await cacheService.delete(CacheKeys.stripeCustomer(customerId));
-}
 
 export const POST = createApiHandler(async ({ request }) => {
   const payload = await request.text();
@@ -59,135 +38,43 @@ export const POST = createApiHandler(async ({ request }) => {
     });
   }
 
+  // Enqueue job for async processing
+  const ipAddress =
+    request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
+
   try {
-    const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip');
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        if (session.customer) {
-          const organization = await getOrganizationByStripeCustomerId(
-            session.customer as string
-          );
-          if (organization) {
-            const ownerId = await getOrganizationOwner(organization.id);
-            if (ownerId) {
-              await logActivity(
-                ownerId,
-                ActivityType.SUBSCRIPTION_CREATED,
-                ipAddress ?? ''
-              );
-              const owner = await getUserById(ownerId);
-              if (owner) {
-                await sendSubscriptionCreatedEmail({
-                  to: owner.email,
-                  recipientName: owner.name,
-                  planName: organization.planName || 'Unknown Plan',
-                  amount: session.amount_total
-                    ? (session.amount_total / 100).toFixed(2)
-                    : '0.00',
-                  dashboardUrl: `${env.BASE_URL}/app/general`,
-                });
-              }
-            }
-          }
-        }
-        break;
+    await jobDispatcher.enqueue(
+      JOB_TYPES.PROCESS_STRIPE_WEBHOOK,
+      {
+        eventType: event.type,
+        eventId: event.id,
+        eventData: event.data.object,
+        ipAddress: ipAddress || undefined,
+      },
+      {
+        idempotencyKey: event.id,
       }
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
-        if (invoice.customer) {
-          const organization = await getOrganizationByStripeCustomerId(
-            invoice.customer as string
-          );
-          if (organization) {
-            const ownerId = await getOrganizationOwner(organization.id);
-            if (ownerId) {
-              await logActivity(
-                ownerId,
-                ActivityType.PAYMENT_FAILED,
-                ipAddress ?? ''
-              );
-              const owner = await getUserById(ownerId);
-              if (owner) {
-                await sendPaymentFailedEmail({
-                  to: owner.email,
-                  recipientName: owner.name,
-                  amountDue: (invoice.amount_due / 100).toFixed(2),
-                  paymentDetailsUrl: `${env.BASE_URL}/app/settings/billing`,
-                });
-              }
-            }
-          }
-        }
-        break;
-      }
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionChange(subscription);
-        const organization = await getOrganizationByStripeCustomerId(
-          subscription.customer as string
-        );
-        if (organization) {
-          // Invalidate organization subscription cache
-          await invalidateSubscriptionCache(
-            organization.id,
-            subscription.customer as string
-          );
+    );
 
-          const ownerId = await getOrganizationOwner(organization.id);
-          if (ownerId) {
-            await logActivity(
-              ownerId,
-              ActivityType.SUBSCRIPTION_UPDATED,
-              ipAddress ?? ''
-            );
-          }
-          // TODO: Send subscription updated email
-        }
-        break;
-      }
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionChange(subscription);
-        const organization = await getOrganizationByStripeCustomerId(
-          subscription.customer as string
-        );
-        if (organization) {
-          // Invalidate organization subscription cache
-          await invalidateSubscriptionCache(
-            organization.id,
-            subscription.customer as string
-          );
+    logger.info('[stripe] Webhook event enqueued for processing', {
+      eventType: event.type,
+      eventId: event.id,
+    });
 
-          const ownerId = await getOrganizationOwner(organization.id);
-          if (ownerId) {
-            await logActivity(
-              ownerId,
-              ActivityType.SUBSCRIPTION_DELETED,
-              ipAddress ?? ''
-            );
-          }
-          // TODO: Send subscription deleted email
-        }
-        break;
-      }
-      default:
-        logger.info(`Unhandled Stripe webhook event type: ${event.type}`);
-    }
+    return { received: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     const stack = error instanceof Error ? error.stack : undefined;
 
-    logger.error('Error handling Stripe webhook event', {
+    logger.error('[stripe] Failed to enqueue webhook job', {
       message,
       stack,
       eventType: event.type,
+      eventId: event.id,
     });
 
-    return errorResponse('Error handling webhook event.', { status: 500 });
+    return errorResponse('Failed to enqueue webhook processing.', {
+      status: 500,
+    });
   }
-
-  return { received: true };
 });

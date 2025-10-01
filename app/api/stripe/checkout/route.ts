@@ -6,6 +6,7 @@ import { stripe } from '@/lib/payments/stripe';
 import { APP_BASE_PATH } from '@/config/navigation';
 import { withApiAuth } from '@/lib/server/api-handler';
 import logger from '@/lib/logger/logger.service';
+import { cacheService, CacheKeys } from '@/lib/cache';
 
 export const GET = withApiAuth(async ({ request }) => {
   const sessionId = request.nextUrl.searchParams.get('session_id');
@@ -93,6 +94,11 @@ export const GET = withApiAuth(async ({ request }) => {
         subscriptionStatus: subscription.status,
       })
       .where(eq(organization.id, membership[0].organizationId));
+
+    // Invalidate cached subscription data
+    await cacheService.delete(
+      CacheKeys.organizationSubscription(membership[0].organizationId)
+    );
 
     return NextResponse.redirect(new URL(APP_BASE_PATH, request.url));
   } catch (error) {
