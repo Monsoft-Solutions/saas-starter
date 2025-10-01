@@ -1,67 +1,30 @@
+/**
+ * Email Dispatchers
+ *
+ * High-level email sending functions that handle transactional emails with
+ * built-in idempotency, template rendering, and error handling. Each dispatcher
+ * function corresponds to a specific email template and includes duplicate
+ * prevention to avoid sending the same email multiple times.
+ *
+ * Features:
+ * - Automatic idempotency checking to prevent duplicate sends
+ * - Template rendering with proper data validation
+ * - Support email fallback handling
+ * - Comprehensive logging for debugging
+ * - Type-safe email parameters
+ */
+
 import 'server-only';
 
 import { env } from '@/lib/env';
 import { sendEmail } from '@/lib/emails/resend.client';
+import { resolveRecipientEmail } from '@/lib/emails/email-recipient.util';
+import {
+  markEmailAsSent,
+  wasEmailSentRecently,
+} from '@/lib/emails/email-idempotency.service';
 import logger from '@/lib/logger/logger.service';
 
-// Simple in-memory cache for idempotency (in production, use Redis or similar)
-const emailCache = new Map<string, number>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-/**
- * Generate a cache key for email idempotency
- */
-const generateCacheKey = (
-  template: string,
-  to: string,
-  extraData?: string
-): string => {
-  return `${template}:${to}:${extraData || ''}`;
-};
-
-/**
- * Check if email was recently sent to prevent duplicates
- */
-const checkEmailCache = (
-  template: string,
-  to: string,
-  extraData?: string
-): boolean => {
-  const key = generateCacheKey(template, to, extraData);
-  const lastSent = emailCache.get(key);
-
-  if (!lastSent) return false;
-
-  // Check if TTL has expired
-  if (Date.now() - lastSent > CACHE_TTL) {
-    emailCache.delete(key);
-    return false;
-  }
-
-  return true;
-};
-
-/**
- * Mark email as sent in cache
- */
-const markEmailSent = (
-  template: string,
-  to: string,
-  extraData?: string
-): void => {
-  const key = generateCacheKey(template, to, extraData);
-  emailCache.set(key, Date.now());
-
-  // Clean up expired entries periodically
-  if (emailCache.size > 1000) {
-    const now = Date.now();
-    for (const [cacheKey, timestamp] of emailCache.entries()) {
-      if (now - timestamp > CACHE_TTL) {
-        emailCache.delete(cacheKey);
-      }
-    }
-  }
-};
 import {
   renderEmailChangeConfirmationEmail,
   renderPasswordChangedEmail,
@@ -83,6 +46,9 @@ import type {
   WelcomeSignupEmailProps,
 } from '@/lib/types';
 
+/**
+ * Template tags for email categorization in Resend dashboard
+ */
 const TEMPLATE_TAGS = {
   welcome: 'welcome-signup',
   passwordReset: 'password-reset',
@@ -95,19 +61,69 @@ const TEMPLATE_TAGS = {
 
 const supportEmailFallback = env.APP_SUPPORT_EMAIL ?? env.RESEND_REPLY_TO;
 
+/**
+ * Builds support email address with fallback to environment defaults
+ */
 const buildSupportEmail = (requested?: string) =>
   requested ?? supportEmailFallback;
 
+/**
+ * Creates Resend tags for email categorization and analytics
+ */
 const buildTags = (template: keyof typeof TEMPLATE_TAGS) => [
   { name: 'template', value: TEMPLATE_TAGS[template] },
 ];
 
+/**
+ * Ensures support email is always present in email props with fallback
+ */
 const ensureSupportEmail = <T extends { supportEmail?: string }>(
   props: T
 ): Omit<T, 'supportEmail'> & { supportEmail: string } => ({
   ...props,
   supportEmail: buildSupportEmail(props.supportEmail) || '',
 });
+
+type EmailTemplateName = keyof typeof TEMPLATE_TAGS;
+
+/**
+ * Checks if an email should be skipped due to recent duplicate sending
+ * to prevent spam and ensure idempotency
+ */
+const shouldSkipEmailDispatch = async (
+  template: EmailTemplateName,
+  recipientEmail: string,
+  context?: string,
+  logContext: Record<string, unknown> = {}
+): Promise<boolean> => {
+  const alreadySent = await wasEmailSentRecently(
+    template,
+    recipientEmail,
+    context
+  );
+
+  if (alreadySent) {
+    logger.info('[email] Skipping duplicate email send', {
+      template,
+      recipient: recipientEmail,
+      context,
+      ...logContext,
+    });
+  }
+
+  return alreadySent;
+};
+
+/**
+ * Marks an email as sent in the idempotency cache to prevent duplicates
+ */
+const markEmailDispatched = async (
+  template: EmailTemplateName,
+  recipientEmail: string,
+  context?: string
+): Promise<void> => {
+  await markEmailAsSent(template, recipientEmail, context);
+};
 
 export type WelcomeEmailParams = {
   to: ResendRecipientList;
@@ -123,14 +139,14 @@ export const sendWelcomeEmail = async ({
   supportEmail,
   ...props
 }: WelcomeEmailParams) => {
-  const recipientEmail = Array.isArray(to) ? to[0] : to;
-  if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('welcome', recipientEmail)) {
-      logger.info('[email] Skipping duplicate welcome email', {
-        recipient: recipientEmail,
-      });
-      return;
-    }
+  const recipientEmail = resolveRecipientEmail(to);
+
+  if (
+    await shouldSkipEmailDispatch('welcome', recipientEmail, undefined, {
+      teamName: props.teamName,
+    })
+  ) {
+    return;
   }
 
   const payload = ensureSupportEmail({ ...props, supportEmail });
@@ -147,9 +163,7 @@ export const sendWelcomeEmail = async ({
     tags: buildTags('welcome'),
   });
 
-  if (typeof recipientEmail === 'string') {
-    markEmailSent('welcome', recipientEmail);
-  }
+  await markEmailDispatched('welcome', recipientEmail);
 };
 
 export type PasswordResetEmailParams = {
@@ -166,14 +180,10 @@ export const sendPasswordResetEmail = async ({
   supportEmail,
   ...props
 }: PasswordResetEmailParams) => {
-  const recipientEmail = Array.isArray(to) ? to[0] : to;
-  if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('passwordReset', recipientEmail)) {
-      logger.info('[email] Skipping duplicate password reset email', {
-        recipient: recipientEmail,
-      });
-      return;
-    }
+  const recipientEmail = resolveRecipientEmail(to);
+
+  if (await shouldSkipEmailDispatch('passwordReset', recipientEmail)) {
+    return;
   }
 
   const payload = ensureSupportEmail({ ...props, supportEmail });
@@ -187,9 +197,7 @@ export const sendPasswordResetEmail = async ({
     tags: buildTags('passwordReset'),
   });
 
-  if (typeof recipientEmail === 'string') {
-    markEmailSent('passwordReset', recipientEmail);
-  }
+  await markEmailDispatched('passwordReset', recipientEmail);
 };
 
 export type PasswordChangedEmailParams = {
@@ -206,14 +214,10 @@ export const sendPasswordChangedEmail = async ({
   supportEmail,
   ...props
 }: PasswordChangedEmailParams) => {
-  const recipientEmail = Array.isArray(to) ? to[0] : to;
-  if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('passwordChanged', recipientEmail)) {
-      logger.info('[email] Skipping duplicate password changed email', {
-        recipient: recipientEmail,
-      });
-      return;
-    }
+  const recipientEmail = resolveRecipientEmail(to);
+
+  if (await shouldSkipEmailDispatch('passwordChanged', recipientEmail)) {
+    return;
   }
 
   const payload = ensureSupportEmail({ ...props, supportEmail });
@@ -227,9 +231,7 @@ export const sendPasswordChangedEmail = async ({
     tags: buildTags('passwordChanged'),
   });
 
-  if (typeof recipientEmail === 'string') {
-    markEmailSent('passwordChanged', recipientEmail);
-  }
+  await markEmailDispatched('passwordChanged', recipientEmail);
 };
 
 export type EmailChangeConfirmationEmailParams = {
@@ -246,14 +248,17 @@ export const sendEmailChangeConfirmationEmail = async ({
   supportEmail,
   ...props
 }: EmailChangeConfirmationEmailParams) => {
-  const recipientEmail = Array.isArray(to) ? to[0] : to;
-  if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('emailChange', recipientEmail, props.newEmail)) {
-      logger.info('[email] Skipping duplicate email change confirmation', {
-        recipient: recipientEmail,
-      });
-      return;
-    }
+  const recipientEmail = resolveRecipientEmail(to);
+
+  if (
+    await shouldSkipEmailDispatch(
+      'emailChange',
+      recipientEmail,
+      props.newEmail,
+      { newEmail: props.newEmail }
+    )
+  ) {
+    return;
   }
 
   const payload = ensureSupportEmail({ ...props, supportEmail });
@@ -267,9 +272,7 @@ export const sendEmailChangeConfirmationEmail = async ({
     tags: buildTags('emailChange'),
   });
 
-  if (typeof recipientEmail === 'string') {
-    markEmailSent('emailChange', recipientEmail, props.newEmail);
-  }
+  await markEmailDispatched('emailChange', recipientEmail, props.newEmail);
 };
 
 export type TeamInvitationEmailParams = {
@@ -286,14 +289,17 @@ export const sendTeamInvitationEmail = async ({
   supportEmail,
   ...props
 }: TeamInvitationEmailParams) => {
-  const recipientEmail = Array.isArray(to) ? to[0] : to;
-  if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('teamInvitation', recipientEmail, props.teamName)) {
-      logger.info('[email] Skipping duplicate team invitation', {
-        recipient: recipientEmail,
-      });
-      return;
-    }
+  const recipientEmail = resolveRecipientEmail(to);
+
+  if (
+    await shouldSkipEmailDispatch(
+      'teamInvitation',
+      recipientEmail,
+      props.teamName,
+      { teamName: props.teamName }
+    )
+  ) {
+    return;
   }
 
   const payload = ensureSupportEmail({ ...props, supportEmail });
@@ -308,9 +314,7 @@ export const sendTeamInvitationEmail = async ({
     tags: buildTags('teamInvitation'),
   });
 
-  if (typeof recipientEmail === 'string') {
-    markEmailSent('teamInvitation', recipientEmail, props.teamName);
-  }
+  await markEmailDispatched('teamInvitation', recipientEmail, props.teamName);
 };
 
 export type SubscriptionCreatedEmailParams = {
@@ -327,16 +331,17 @@ export const sendSubscriptionCreatedEmail = async ({
   supportEmail,
   ...props
 }: SubscriptionCreatedEmailParams) => {
-  const recipientEmail = Array.isArray(to) ? to[0] : to;
-  if (typeof recipientEmail === 'string') {
-    if (
-      checkEmailCache('subscriptionCreated', recipientEmail, props.planName)
-    ) {
-      logger.info('[email] Skipping duplicate subscription created email', {
-        recipient: recipientEmail,
-      });
-      return;
-    }
+  const recipientEmail = resolveRecipientEmail(to);
+
+  if (
+    await shouldSkipEmailDispatch(
+      'subscriptionCreated',
+      recipientEmail,
+      props.planName,
+      { planName: props.planName }
+    )
+  ) {
+    return;
   }
 
   const payload = ensureSupportEmail({ ...props, supportEmail });
@@ -351,9 +356,11 @@ export const sendSubscriptionCreatedEmail = async ({
     tags: buildTags('subscriptionCreated'),
   });
 
-  if (typeof recipientEmail === 'string') {
-    markEmailSent('subscriptionCreated', recipientEmail, props.planName);
-  }
+  await markEmailDispatched(
+    'subscriptionCreated',
+    recipientEmail,
+    props.planName
+  );
 };
 
 export type PaymentFailedEmailParams = {
@@ -370,14 +377,10 @@ export const sendPaymentFailedEmail = async ({
   supportEmail,
   ...props
 }: PaymentFailedEmailParams) => {
-  const recipientEmail = Array.isArray(to) ? to[0] : to;
-  if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('paymentFailed', recipientEmail)) {
-      logger.info('[email] Skipping duplicate payment failed email', {
-        recipient: recipientEmail,
-      });
-      return;
-    }
+  const recipientEmail = resolveRecipientEmail(to);
+
+  if (await shouldSkipEmailDispatch('paymentFailed', recipientEmail)) {
+    return;
   }
 
   const payload = ensureSupportEmail({ ...props, supportEmail });
@@ -392,7 +395,5 @@ export const sendPaymentFailedEmail = async ({
     tags: buildTags('paymentFailed'),
   });
 
-  if (typeof recipientEmail === 'string') {
-    markEmailSent('paymentFailed', recipientEmail);
-  }
+  await markEmailDispatched('paymentFailed', recipientEmail);
 };

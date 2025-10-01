@@ -32,6 +32,16 @@ export class CacheKeys {
   }
 
   /**
+   * Email cache keys
+   */
+  static email(template: string, recipient: string, context?: string): string {
+    const encode = (value: string) =>
+      encodeURIComponent(value.trim().toLowerCase());
+    const baseKey = `email:${encode(template)}:${encode(recipient)}`;
+    return context ? `${baseKey}:${encode(context)}` : baseKey;
+  }
+
+  /**
    * Organization cache keys
    */
   static organization(organizationId: string): string {
