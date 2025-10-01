@@ -1,3 +1,5 @@
+import { CacheKey } from '../types/cache/cache-key.type';
+
 /**
  * Cache Key Utilities
  *
@@ -15,38 +17,38 @@ export class CacheKeys {
   /**
    * User cache keys
    */
-  static user(userId: string): string {
+  static user(userId: string): CacheKey {
     return `user:${userId}`;
   }
 
-  static userOrganizations(userId: string): string {
+  static userOrganizations(userId: string): CacheKey {
     return `user:${userId}:organizations`;
   }
 
-  static userSessions(userId: string): string {
+  static userSessions(userId: string): CacheKey {
     return `user:${userId}:sessions`;
   }
 
-  static userPattern(userId?: string): string {
+  static userPattern(userId?: string): CacheKey {
     return userId ? `user:${userId}:*` : 'user:*';
   }
 
   /**
    * Organization cache keys
    */
-  static organization(organizationId: string): string {
+  static organization(organizationId: string): CacheKey {
     return `organization:${organizationId}`;
   }
 
-  static organizationMembers(organizationId: string): string {
+  static organizationMembers(organizationId: string): CacheKey {
     return `organization:${organizationId}:members`;
   }
 
-  static organizationSubscription(organizationId: string): string {
+  static organizationSubscription(organizationId: string): CacheKey {
     return `organization:${organizationId}:subscription`;
   }
 
-  static organizationPattern(organizationId?: string): string {
+  static organizationPattern(organizationId?: string): CacheKey {
     return organizationId
       ? `organization:${organizationId}:*`
       : 'organization:*';
@@ -55,43 +57,43 @@ export class CacheKeys {
   /**
    * Stripe cache keys
    */
-  static stripeProducts(): string {
+  static stripeProducts(): CacheKey {
     return 'stripe:products';
   }
 
-  static stripeCustomer(customerId: string): string {
+  static stripeCustomer(customerId: string): CacheKey {
     return `stripe:customer:${customerId}`;
   }
 
-  static stripeSubscription(subscriptionId: string): string {
+  static stripeSubscription(subscriptionId: string): CacheKey {
     return `stripe:subscription:${subscriptionId}`;
   }
 
   /**
    * Activity log cache keys
    */
-  static userActivity(userId: string, limit: number = 10): string {
+  static userActivity(userId: string, limit: number = 10): CacheKey {
     return `activity:user:${userId}:limit:${limit}`;
   }
 
   static organizationActivity(
     organizationId: string,
     limit: number = 10
-  ): string {
+  ): CacheKey {
     return `activity:organization:${organizationId}:limit:${limit}`;
   }
 
   /**
    * API rate limiting keys
    */
-  static rateLimit(ip: string, endpoint: string): string {
+  static rateLimit(ip: string, endpoint: string): CacheKey {
     return `ratelimit:${endpoint}:${ip}`;
   }
 
   /**
    * Session cache keys
    */
-  static session(sessionId: string): string {
+  static session(sessionId: string): CacheKey {
     return `session:${sessionId}`;
   }
 }

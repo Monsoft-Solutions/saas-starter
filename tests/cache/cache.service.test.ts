@@ -193,12 +193,10 @@ describe('Cache Service', () => {
 
       await service.set('test-key', 'test-value', {
         ttl: 3600,
-        namespace: 'test',
       });
 
       expect(setSpy).toHaveBeenCalledWith('test-key', 'test-value', {
         ttl: 3600,
-        namespace: 'test',
       });
     });
 
@@ -439,12 +437,10 @@ describe('Cache Service', () => {
 
       await service.getOrSet('test-key', fetcher, {
         ttl: 3600,
-        namespace: 'test',
       });
 
       expect(setSpy).toHaveBeenCalledWith('test-key', 'fetched-value', {
         ttl: 3600,
-        namespace: 'test',
       });
     });
 

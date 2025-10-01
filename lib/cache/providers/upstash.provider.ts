@@ -72,17 +72,14 @@ export class UpstashCacheProvider implements ICacheProvider {
   async set<T>(key: string, value: T, options?: CacheOptions): Promise<void> {
     try {
       const ttl = options?.ttl ?? env.CACHE_DEFAULT_TTL;
-      const namespace = options?.namespace ?? '';
-
-      const fullKey = namespace ? `${namespace}:${key}` : key;
 
       if (ttl) {
-        await this.redis.set(fullKey, value, { ex: ttl });
+        await this.redis.set(key, value, { ex: ttl });
       } else {
-        await this.redis.set(fullKey, value);
+        await this.redis.set(key, value);
       }
 
-      logDebug(`Cache SET: ${fullKey}${ttl ? ` (TTL: ${ttl}s)` : ''}`);
+      logDebug(`Cache SET: ${key}${ttl ? ` (TTL: ${ttl}s)` : ''}`);
     } catch (error) {
       logError(`Cache SET error for key: ${key}`, error);
       throw error;
