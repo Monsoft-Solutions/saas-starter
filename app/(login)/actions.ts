@@ -225,15 +225,15 @@ export const deleteAccount = validatedActionWithUser(
   async (data, _, user) => {
     const { password } = data;
 
-    await logActivity(user.id, ActivityType.DELETE_ACCOUNT);
-
-    // Invalidate user cache before account deletion
-    await invalidateUserCache(user.id);
-
     // Soft delete
     await authClient.deleteUser({
       password,
     });
+
+    await logActivity(user.id, ActivityType.DELETE_ACCOUNT);
+
+    await invalidateUserCache(user.id);
+
     redirect('/sign-in');
   }
 );

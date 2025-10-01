@@ -89,7 +89,11 @@ export class InMemoryCacheProvider implements ICacheProvider {
   }
 
   async invalidatePattern(pattern: string): Promise<number> {
-    const regex = new RegExp(pattern.replace('*', '.*'));
+    // Escape regex special chars, then replace escaped \* with .*
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+    const regexPattern = escaped.replace(/\*/g, '.*');
+    const regex = new RegExp(`^${regexPattern}$`);
+
     let count = 0;
 
     for (const key of this.store.keys()) {
