@@ -12,7 +12,6 @@ vi.mock('@/lib/db/queries', () => ({
 }));
 
 // Load .env.local first (if present), then fallback to default .env without overriding existing vars.
-require('dotenv').config({ path: '.env.local' });
 require('dotenv').config();
 
 if (!process.env.POSTGRES_URL) {

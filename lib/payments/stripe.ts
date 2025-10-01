@@ -342,19 +342,38 @@ function parseProductPopularity(metadata: Record<string, string>): boolean {
 export async function getProductsWithPrices(): Promise<
   StripeProductWithPrices[]
 > {
-  // Fetch all active products
-  const products = await stripe.products.list({
-    active: true,
-    expand: ['data.default_price'],
-  });
+  const { cacheService, CacheKeys } = await import('@/lib/cache');
 
-  // Fetch all active prices for recurring subscriptions
-  const prices = await stripe.prices.list({
-    active: true,
-    type: 'recurring',
-    expand: ['data.product'],
-  });
+  // Try to get from cache first
+  return cacheService.getOrSet(
+    CacheKeys.stripeProducts(),
+    async () => {
+      // Fetch all active products
+      const products = await stripe.products.list({
+        active: true,
+        expand: ['data.default_price'],
+      });
 
+      // Fetch all active prices for recurring subscriptions
+      const prices = await stripe.prices.list({
+        active: true,
+        type: 'recurring',
+        expand: ['data.product'],
+      });
+
+      return buildProductsWithPrices(products, prices);
+    },
+    { ttl: 3600 } // Cache for 1 hour
+  );
+}
+
+/**
+ * Helper function to build products with prices data structure
+ */
+function buildProductsWithPrices(
+  products: Stripe.ApiList<Stripe.Product>,
+  prices: Stripe.ApiList<Stripe.Price>
+): StripeProductWithPrices[] {
   // Group prices by product ID and billing interval
   const pricesByProduct = new Map<
     string,
@@ -423,4 +442,14 @@ export async function getProductsWithPrices(): Promise<
       isPopular,
     };
   });
+}
+
+/**
+ * Invalidate Stripe products cache
+ * Call this when Stripe products/prices are updated via webhook
+ */
+export async function invalidateStripeProductsCache(): Promise<void> {
+  const { cacheService, CacheKeys } = await import('@/lib/cache');
+  await cacheService.delete(CacheKeys.stripeProducts());
+  logger.info('Stripe products cache invalidated');
 }

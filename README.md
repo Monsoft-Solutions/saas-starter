@@ -49,6 +49,15 @@ Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-star
 - **Template Components**: Reusable email components and layouts
 - **Email Logging**: Track and monitor email delivery and engagement
 
+### ⚡ **Provider-Agnostic Cache System**
+
+- **Multi-Provider Support**: In-memory for development, Upstash Redis for production
+- **Type-Safe Operations**: Full TypeScript support with generic types
+- **Cache-Aside Pattern**: Built-in `getOrSet` for efficient data fetching
+- **Pattern Invalidation**: Smart cache invalidation with wildcard patterns
+- **Performance Monitoring**: Built-in statistics and health monitoring
+- **Graceful Degradation**: Cache failures don't break application functionality
+
 ### 🛠 **Developer Experience**
 
 - **TypeScript Excellence**: 100% TypeScript with strict type safety
@@ -65,6 +74,7 @@ Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-star
 - **Authentication**: [BetterAuth](https://www.better-auth.com/) with social providers
 - **Payments**: [Stripe](https://stripe.com/) with subscription management
 - **Email**: [Resend](https://resend.com/) with React Email templates
+- **Caching**: [Upstash Redis](https://upstash.com/) with provider-agnostic cache layer
 - **UI Framework**: [shadcn/ui](https://ui.shadcn.com/) with [Tailwind CSS](https://tailwindcss.com/)
 - **Validation**: [Zod](https://zod.dev/) for runtime type validation
 - **Deployment**: [Vercel](https://vercel.com/) optimized
@@ -123,6 +133,10 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=noreply@yourdomain.com
 RESEND_WEBHOOK_SECRET=your_webhook_secret
+
+# Cache Configuration
+CACHE_PROVIDER=in-memory
+CACHE_DEFAULT_TTL=3600
 
 # Application
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
@@ -194,6 +208,18 @@ Explore your database with Drizzle Studio:
 pnpm db:studio
 ```
 
+### Cache Testing
+
+Test cache functionality and performance:
+
+```bash
+# Run cache-specific tests
+pnpm test tests/cache
+
+# Check cache statistics via API
+curl http://localhost:3000/api/cache/stats
+```
+
 ## 🚀 Production Deployment
 
 ### Vercel Deployment (Recommended)
@@ -233,6 +259,12 @@ pnpm db:studio
    RESEND_FROM_EMAIL=noreply@yourdomain.com
    RESEND_WEBHOOK_SECRET=production_webhook_secret
 
+   # Cache Production
+   CACHE_PROVIDER=upstash
+   CACHE_DEFAULT_TTL=3600
+   UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
+   UPSTASH_REDIS_REST_TOKEN=your_upstash_token
+
    # Optional: Social Authentication
    GOOGLE_CLIENT_ID=production_google_id
    GOOGLE_CLIENT_SECRET=production_google_secret
@@ -270,6 +302,7 @@ The application is compatible with:
 - **[📖 Full Documentation](./docs/README.md)**: Complete system documentation
 - **[🔐 Authentication Guide](./docs/auth/)**: BetterAuth and OAuth setup
 - **[💳 Stripe Integration](./docs/stripe/)**: Payment processing and webhooks
+- **[⚡ Cache System](./docs/cache/)**: Provider-agnostic caching with Upstash Redis
 - **[🌍 Environment Configuration](./docs/environment-configuration.md)**: Multi-environment setup guide
 - **[💎 Design System](./docs/design-system.md)**: Design tokens and components
 - **[📧 Email System](./docs/emails.md)**: Email templates and delivery
@@ -291,6 +324,14 @@ The application is compatible with:
 │   + Design      │    │   Organizations  │    │   + Webhooks    │
 │   System        │    │   + Social Auth  │    │   + Resend      │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Cache Layer   │    │   Activity       │    │   Upstash       │
+│   + Monitoring  │    │   Logging        │    │   Redis         │
+│   + Statistics  │    │   + Analytics    │    │   + Edge        │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
 ## 🏗 Development Standards
@@ -305,6 +346,7 @@ lib/
 │   ├── queries/     # Type-safe database queries
 │   └── migrations/  # Database migration files
 ├── auth/            # Authentication utilities
+├── cache/           # Provider-agnostic cache system
 ├── emails/          # Email templates and logic
 ├── design-system/   # Design tokens and utilities
 └── payments/        # Stripe integration logic
@@ -359,6 +401,7 @@ pnpm db:studio:prod     # Open Drizzle Studio for production
 # Testing & Quality
 pnpm test               # Run unit tests
 pnpm test:emails        # Test email templates
+pnpm test:cache         # Run cache-specific tests
 pnpm lint               # Check code formatting
 pnpm lint:fix           # Fix formatting issues
 pnpm type-check         # TypeScript type checking
@@ -392,7 +435,9 @@ pnpm verify:design-tokens  # Validate design tokens
 - **Multi-tenant Architecture**: Efficient organization-based isolation
 - **Database Optimization**: Indexed queries and connection pooling
 - **API Rate Limiting**: Built-in protection against abuse
-- **Efficient Caching**: Optimized data fetching patterns
+- **Provider-Agnostic Caching**: In-memory for development, Upstash Redis for production
+- **Cache Performance**: Built-in monitoring and statistics tracking
+- **Edge-Compatible**: Serverless Redis for global performance
 
 ## 🤝 Contributing
 
@@ -443,6 +488,7 @@ This project was originally forked from [nextjs/saas-starter](https://github.com
 - **[BetterAuth](https://www.better-auth.com/)**: Modern authentication for TypeScript
 - **[Stripe](https://stripe.com/)**: Online payment processing platform
 - **[Resend](https://resend.com/)**: Email delivery service for developers
+- **[Upstash](https://upstash.com/)**: Serverless Redis for edge-compatible caching
 - **[shadcn/ui](https://ui.shadcn.com/)**: Beautifully designed components
 - **[Drizzle ORM](https://orm.drizzle.team/)**: TypeScript ORM for SQL databases
 

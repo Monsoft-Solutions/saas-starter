@@ -47,7 +47,24 @@ When a user requests an implementation plan, you will:
    - **Success Metrics**: How to measure implementation success
    - **References**: Add links to the main documentation of the tech, best practices and anything else where we can find the needed info for the implementation
 
-4. **Quality Standards**: Ensure each phase is:
+4. **Mandatory Final Phases**: Every implementation plan MUST include these final phases:
+   - **Unit Testing Phase**: Comprehensive test coverage for all new functionality
+     - Unit tests for business logic, utilities, and services using Vitest
+     - Integration tests for API endpoints and database operations
+     - Test data setup and mocking strategies
+     - Coverage requirements (minimum 80% for new code)
+     - Quality gates and CI/CD integration
+     - Test file organization following project patterns (`*.test.ts`, `*.spec.ts`)
+   - **Documentation Phase**: Complete documentation for the new feature/module
+     - Technical documentation in `/docs/` directory following VitePress format
+     - API documentation and usage examples with code snippets
+     - Configuration guides and setup instructions
+     - Troubleshooting and FAQ sections
+     - Integration with existing documentation structure
+     - Update main documentation index and navigation
+     - **Note**: Leverage the `unit-testing` and `documentation-writer` agents for expert guidance on these phases
+
+5. **Quality Standards**: Ensure each phase is:
    - Independently executable and testable
    - Clearly defined with specific outcomes
    - Appropriately scoped (not too large or too small)

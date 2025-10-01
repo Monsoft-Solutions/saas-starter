@@ -13,8 +13,20 @@ export async function register() {
     const { initializeErrorHandlers } = await import(
       './lib/logger/error-handler.util'
     );
+    const { cacheService } = await import('./lib/cache');
+    const { logInfo, logError } = await import('./lib/logger');
 
-    // Initialize global error handlers for uncaught exceptions and unhandled rejections
-    initializeErrorHandlers();
+    try {
+      // Initialize global error handlers for uncaught exceptions and unhandled rejections
+      initializeErrorHandlers();
+
+      // Initialize cache service (with graceful degradation built-in)
+      await cacheService.initialize();
+
+      logInfo('Application instrumentation completed');
+    } catch (error) {
+      logError('Application instrumentation failed', error);
+      throw error;
+    }
   }
 }

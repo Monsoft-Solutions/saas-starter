@@ -39,6 +39,18 @@ const envSchema = z.object({
   RESEND_REPLY_TO: z.string().email('Invalid email address.').optional(),
   APP_SUPPORT_EMAIL: z.string().email('Invalid email address.').optional(),
 
+  // Cache Configuration
+  CACHE_PROVIDER: z.enum(['in-memory', 'upstash']).default('in-memory'),
+  CACHE_DEFAULT_TTL: z
+    .string()
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().positive())
+    .default('3600'),
+
+  // Upstash Redis (optional, required in production if using upstash)
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+
   // Optional Social Providers
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
@@ -63,6 +75,10 @@ const envValues = {
   BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+  CACHE_PROVIDER: process.env.CACHE_PROVIDER,
+  CACHE_DEFAULT_TTL: process.env.CACHE_DEFAULT_TTL || '3600',
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   FACEBOOK_CLIENT_ID: process.env.FACEBOOK_CLIENT_ID,

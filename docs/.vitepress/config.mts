@@ -14,6 +14,7 @@ export default defineConfig({
       { text: 'Configuration', link: '/environment-configuration' },
       { text: 'Authentication', link: '/auth/' },
       { text: 'Payments', link: '/stripe/' },
+      { text: 'Cache System', link: '/cache/' },
       { text: 'Design System', link: '/design-system' },
       { text: 'Logging', link: '/logging' },
     ],
@@ -81,6 +82,15 @@ export default defineConfig({
         items: [
           { text: 'Unit Testing', link: '/unit-testing' },
           { text: 'Logging System', link: '/logging' },
+        ],
+      },
+      {
+        text: 'Cache System',
+        items: [
+          { text: 'Overview', link: '/cache/' },
+          { text: 'Configuration', link: '/cache/configuration' },
+          { text: 'Upstash Setup', link: '/cache/upstash-setup' },
+          { text: 'Quick Reference', link: '/cache/quick-reference' },
         ],
       },
     ],

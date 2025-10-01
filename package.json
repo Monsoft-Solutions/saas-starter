@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "dotenv -e .env.local -- next dev --turbopack",
+    "dev": "dotenv -e .env -- next dev --turbopack",
     "dev:staging": "dotenv -e .env.staging -- next dev --turbopack",
     "dev:prod": "dotenv -e .env.production -- next dev --turbopack",
     "build": "next build",
@@ -33,7 +33,8 @@
     "preview:emails": "tsx scripts/preview-emails.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "stripe": "stripe listen --forward-to localhost:3000/api/stripe/webhook"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
@@ -54,6 +55,7 @@
     "@types/node": "^22.18.6",
     "@types/react": "19.1.4",
     "@types/react-dom": "19.1.5",
+    "@upstash/redis": "^1.35.4",
     "autoprefixer": "^10.4.21",
     "better-auth": "^1.3.18",
     "class-variance-authority": "^0.7.1",

@@ -3,65 +3,9 @@ import 'server-only';
 import { env } from '@/lib/env';
 import { sendEmail } from '@/lib/emails/resend.client';
 import logger from '@/lib/logger/logger.service';
+import { cacheService } from '@/lib/cache/cache.service';
+import { CacheKeys } from '@/lib/cache/cache-keys.util';
 
-// Simple in-memory cache for idempotency (in production, use Redis or similar)
-const emailCache = new Map<string, number>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-/**
- * Generate a cache key for email idempotency
- */
-const generateCacheKey = (
-  template: string,
-  to: string,
-  extraData?: string
-): string => {
-  return `${template}:${to}:${extraData || ''}`;
-};
-
-/**
- * Check if email was recently sent to prevent duplicates
- */
-const checkEmailCache = (
-  template: string,
-  to: string,
-  extraData?: string
-): boolean => {
-  const key = generateCacheKey(template, to, extraData);
-  const lastSent = emailCache.get(key);
-
-  if (!lastSent) return false;
-
-  // Check if TTL has expired
-  if (Date.now() - lastSent > CACHE_TTL) {
-    emailCache.delete(key);
-    return false;
-  }
-
-  return true;
-};
-
-/**
- * Mark email as sent in cache
- */
-const markEmailSent = (
-  template: string,
-  to: string,
-  extraData?: string
-): void => {
-  const key = generateCacheKey(template, to, extraData);
-  emailCache.set(key, Date.now());
-
-  // Clean up expired entries periodically
-  if (emailCache.size > 1000) {
-    const now = Date.now();
-    for (const [cacheKey, timestamp] of emailCache.entries()) {
-      if (now - timestamp > CACHE_TTL) {
-        emailCache.delete(cacheKey);
-      }
-    }
-  }
-};
 import {
   renderEmailChangeConfirmationEmail,
   renderPasswordChangedEmail,
@@ -72,6 +16,7 @@ import {
   renderWelcomeSignupEmail,
   DEFAULT_BRAND_NAME,
 } from '@/lib/emails/templates';
+
 import type {
   EmailChangeConfirmationEmailProps,
   PasswordChangedEmailProps,
@@ -82,6 +27,33 @@ import type {
   TeamInvitationEmailProps,
   WelcomeSignupEmailProps,
 } from '@/lib/types';
+
+const CACHE_TTL = 5 * 60; // 5 minutes in seconds
+
+/**
+ * Check if email was recently sent to prevent duplicates
+ */
+const checkEmailCache = async (
+  template: string,
+  to: string,
+  extraData?: string
+): Promise<boolean> => {
+  const key = CacheKeys.email(template, to, extraData);
+  return await cacheService.has(key);
+};
+
+/**
+ * Mark email as sent in cache
+ */
+const markEmailSent = async (
+  template: string,
+  to: string,
+  extraData?: string,
+  ttl?: number
+): Promise<void> => {
+  const key = CacheKeys.email(template, to, extraData);
+  await cacheService.set(key, Date.now(), { ttl: ttl ?? CACHE_TTL });
+};
 
 const TEMPLATE_TAGS = {
   welcome: 'welcome-signup',
@@ -125,7 +97,7 @@ export const sendWelcomeEmail = async ({
 }: WelcomeEmailParams) => {
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('welcome', recipientEmail)) {
+    if (await checkEmailCache('welcome', recipientEmail)) {
       logger.info('[email] Skipping duplicate welcome email', {
         recipient: recipientEmail,
       });
@@ -148,7 +120,7 @@ export const sendWelcomeEmail = async ({
   });
 
   if (typeof recipientEmail === 'string') {
-    markEmailSent('welcome', recipientEmail);
+    await markEmailSent('welcome', recipientEmail);
   }
 };
 
@@ -168,7 +140,7 @@ export const sendPasswordResetEmail = async ({
 }: PasswordResetEmailParams) => {
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('passwordReset', recipientEmail)) {
+    if (await checkEmailCache('passwordReset', recipientEmail)) {
       logger.info('[email] Skipping duplicate password reset email', {
         recipient: recipientEmail,
       });
@@ -188,7 +160,7 @@ export const sendPasswordResetEmail = async ({
   });
 
   if (typeof recipientEmail === 'string') {
-    markEmailSent('passwordReset', recipientEmail);
+    await markEmailSent('passwordReset', recipientEmail, undefined, 60); // 2 minutes
   }
 };
 
@@ -208,7 +180,7 @@ export const sendPasswordChangedEmail = async ({
 }: PasswordChangedEmailParams) => {
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('passwordChanged', recipientEmail)) {
+    if (await checkEmailCache('passwordChanged', recipientEmail)) {
       logger.info('[email] Skipping duplicate password changed email', {
         recipient: recipientEmail,
       });
@@ -228,7 +200,7 @@ export const sendPasswordChangedEmail = async ({
   });
 
   if (typeof recipientEmail === 'string') {
-    markEmailSent('passwordChanged', recipientEmail);
+    await markEmailSent('passwordChanged', recipientEmail);
   }
 };
 
@@ -248,7 +220,7 @@ export const sendEmailChangeConfirmationEmail = async ({
 }: EmailChangeConfirmationEmailParams) => {
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('emailChange', recipientEmail, props.newEmail)) {
+    if (await checkEmailCache('emailChange', recipientEmail, props.newEmail)) {
       logger.info('[email] Skipping duplicate email change confirmation', {
         recipient: recipientEmail,
       });
@@ -268,7 +240,7 @@ export const sendEmailChangeConfirmationEmail = async ({
   });
 
   if (typeof recipientEmail === 'string') {
-    markEmailSent('emailChange', recipientEmail, props.newEmail);
+    await markEmailSent('emailChange', recipientEmail, props.newEmail);
   }
 };
 
@@ -288,7 +260,9 @@ export const sendTeamInvitationEmail = async ({
 }: TeamInvitationEmailParams) => {
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('teamInvitation', recipientEmail, props.teamName)) {
+    if (
+      await checkEmailCache('teamInvitation', recipientEmail, props.teamName)
+    ) {
       logger.info('[email] Skipping duplicate team invitation', {
         recipient: recipientEmail,
       });
@@ -309,7 +283,7 @@ export const sendTeamInvitationEmail = async ({
   });
 
   if (typeof recipientEmail === 'string') {
-    markEmailSent('teamInvitation', recipientEmail, props.teamName);
+    await markEmailSent('teamInvitation', recipientEmail, props.teamName);
   }
 };
 
@@ -330,7 +304,11 @@ export const sendSubscriptionCreatedEmail = async ({
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
     if (
-      checkEmailCache('subscriptionCreated', recipientEmail, props.planName)
+      await checkEmailCache(
+        'subscriptionCreated',
+        recipientEmail,
+        props.planName
+      )
     ) {
       logger.info('[email] Skipping duplicate subscription created email', {
         recipient: recipientEmail,
@@ -352,7 +330,7 @@ export const sendSubscriptionCreatedEmail = async ({
   });
 
   if (typeof recipientEmail === 'string') {
-    markEmailSent('subscriptionCreated', recipientEmail, props.planName);
+    await markEmailSent('subscriptionCreated', recipientEmail, props.planName);
   }
 };
 
@@ -372,7 +350,7 @@ export const sendPaymentFailedEmail = async ({
 }: PaymentFailedEmailParams) => {
   const recipientEmail = Array.isArray(to) ? to[0] : to;
   if (typeof recipientEmail === 'string') {
-    if (checkEmailCache('paymentFailed', recipientEmail)) {
+    if (await checkEmailCache('paymentFailed', recipientEmail)) {
       logger.info('[email] Skipping duplicate payment failed email', {
         recipient: recipientEmail,
       });
@@ -393,6 +371,6 @@ export const sendPaymentFailedEmail = async ({
   });
 
   if (typeof recipientEmail === 'string') {
-    markEmailSent('paymentFailed', recipientEmail);
+    await markEmailSent('paymentFailed', recipientEmail);
   }
 };
