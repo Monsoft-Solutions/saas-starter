@@ -1,4 +1,4 @@
-import type { JobType } from './job-type.enum';
+import type { JobType } from './enums/job-type.enum';
 
 /**
  * Declarative configuration for a job type. Keeps queue behaviour, destination

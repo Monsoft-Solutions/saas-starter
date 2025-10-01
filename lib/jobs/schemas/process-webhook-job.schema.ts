@@ -15,7 +15,7 @@
 
 import { z } from 'zod';
 import { BaseJobSchema } from './base-job.schema';
-import { JOB_TYPES } from '../types';
+import { JOB_TYPES } from '../../types/jobs';
 
 /**
  * Valid payloads accepted by the webhook worker. Defines the structure for

@@ -1,6 +1,6 @@
-import { JOB_TYPES } from './job-type.enum';
-import type { JobConfig } from './job-config.type';
-import type { JobType } from './job-type.enum';
+import { JOB_TYPES } from '../types/jobs/enums/job-type.enum';
+import type { JobConfig } from '../types/jobs/job-config.type';
+import type { JobType } from '../types/jobs/enums/job-type.enum';
 
 /**
  * Source of truth mapping job types to their delivery configuration. Enables

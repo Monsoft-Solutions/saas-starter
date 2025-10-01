@@ -3,12 +3,12 @@ import 'server-only';
 import { randomUUID } from 'crypto';
 
 import { qstash } from './qstash.client';
-import { getJobConfig } from './types';
-import type { JobType } from './types';
 import type { BaseJob, BaseJobMetadata } from './schemas/base-job.schema';
 import { env } from '@/lib/env';
 import { createJobExecution } from '@/lib/db/queries';
 import logger from '@/lib/logger/logger.service';
+import { JobType } from '../types/jobs';
+import { getJobConfig } from './job-registry';
 
 /**
  * Optional overrides that callers can provide when enqueueing jobs.
