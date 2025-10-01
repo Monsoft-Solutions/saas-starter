@@ -1,14 +1,24 @@
 # QStash Async Processing System Implementation Plan
 
 **Created:** September 30, 2025
-**Status:** Draft
+**Status:** Completed
 **Priority:** High
 **Estimated Effort:** 5-7 days
 **Complexity:** Medium
 
 ## Executive Summary
 
-This implementation plan outlines the development of a comprehensive async job processing system using Upstash QStash for the SaaS starter application. The system will provide reliable background job processing for email sending, webhook processing, data exports, report generation, and other async operations. The architecture is optimized for Next.js 15 serverless deployment with an extensible job worker pattern that allows easy addition of new job types.
+This implementation plan outlines the development of a comprehensive async job processing system using Upstash QStash for the SaaS starter application. The system provides reliable background job processing for email sending, webhook processing, data exports, report generation, and other async operations. The architecture is optimized for Next.js 15 serverless deployment with an extensible job worker pattern that allows easy addition of new job types.
+
+## Implementation Notes
+
+The actual implementation may differ from the original plan in terms of file locations and specific implementation details. The core architecture and patterns described below remain valid. Refer to the actual codebase for current file structure:
+
+- Job types and schemas: `/lib/types/jobs/`
+- Job services: `/lib/jobs/`
+- Job worker endpoints: `/app/api/jobs/`
+- Database schemas: `/lib/db/schemas/`
+- Tests: `/tests/jobs/`
 
 ## Current State Analysis
 
@@ -89,38 +99,20 @@ QStash is purpose-built for serverless environments and addresses key limitation
 ### QStash Architecture Patterns
 
 **1. Message Publishing (Enqueue)**
-
-```typescript
-await qstash.publishJSON({
-  url: 'https://yourdomain.com/api/jobs/send-email',
-  body: { to: 'user@example.com', template: 'welcome' },
-  retries: 3,
-  delay: 10, // seconds
-});
-```
+- Use QStash client to publish JSON messages to worker endpoints
+- Configure retry policies, delays, and callbacks
+- Set appropriate headers for content type and custom metadata
 
 **2. Worker Endpoint (Process)**
-
-```typescript
-export async function POST(request: Request) {
-  await verifySignature(request); // Security
-  const payload = await request.json();
-
-  // Process job
-  await sendEmail(payload);
-
-  return Response.json({ success: true });
-}
-```
+- Verify QStash signature for security
+- Parse and validate job payload
+- Execute business logic
+- Return appropriate HTTP status (200 for success, 5xx for retry)
 
 **3. Scheduling (CRON)**
-
-```typescript
-await qstash.schedules.create({
-  destination: 'https://yourdomain.com/api/jobs/cleanup',
-  cron: '0 2 * * *', // Daily at 2 AM UTC
-});
-```
+- Create scheduled jobs using CRON expressions
+- Configure destination URL and payload
+- Set timezone-aware schedules as needed
 
 ## Architecture Design
 
@@ -174,821 +166,279 @@ await qstash.schedules.create({
 
 Extensible job type system using a registry pattern:
 
-```typescript
-// lib/jobs/types/job-registry.ts
-export const JOB_TYPES = {
-  SEND_EMAIL: 'send-email',
-  PROCESS_WEBHOOK: 'process-webhook',
-  EXPORT_DATA: 'export-data',
-  GENERATE_REPORT: 'generate-report',
-  CLEANUP_OLD_DATA: 'cleanup-old-data',
-} as const;
+**Job Type Enumeration:**
+- Define all job types as const object
+- Export type-safe JobType union type
+- Centralize job type definitions for maintainability
 
-export type JobType = (typeof JOB_TYPES)[keyof typeof JOB_TYPES];
+**Job Configuration:**
+- Create JobConfig interface with type, endpoint, retries, timeout, description
+- Build registry mapping each job type to its configuration
+- Provide getter function for type-safe config access
 
-export interface JobConfig {
-  type: JobType;
-  endpoint: string;
-  retries: number;
-  timeout: number;
-}
-
-export const JOB_REGISTRY: Record<JobType, JobConfig> = {
-  [JOB_TYPES.SEND_EMAIL]: {
-    type: JOB_TYPES.SEND_EMAIL,
-    endpoint: '/api/jobs/email',
-    retries: 3,
-    timeout: 30,
-  },
-  // ... other job types
-};
-```
+**Registry Structure:**
+- Email jobs: 3 retries, 30s timeout
+- Webhook jobs: 5 retries, 60s timeout
+- Export jobs: 2 retries, 300s timeout
+- Report jobs: 2 retries, 180s timeout
+- Cleanup jobs: 1 retry, 600s timeout
 
 ### Job Payload Schema System
 
 Type-safe job payloads using Zod:
 
-```typescript
-// lib/jobs/schemas/send-email-job.schema.ts
-export const SendEmailJobSchema = z.object({
-  jobId: z.string().uuid(),
-  type: z.literal(JOB_TYPES.SEND_EMAIL),
-  payload: z.object({
-    to: z.string().email(),
-    template: z.string(),
-    data: z.record(z.any()),
-  }),
-  metadata: z.object({
-    userId: z.number().optional(),
-    organizationId: z.number().optional(),
-    createdAt: z.string().datetime(),
-  }),
-});
+**Base Job Schema:**
+- Define BaseJobMetadata with userId, organizationId, createdAt, idempotencyKey
+- Create BaseJob schema with jobId (UUID), type, metadata
+- Enable type inference for all schemas
 
-export type SendEmailJob = z.infer<typeof SendEmailJobSchema>;
-```
+**Job-Specific Schemas:**
+- Extend BaseJob for each job type
+- Use literal type for job type discrimination
+- Define payload structure with proper validation
+- Include template enums where applicable
+- Validate email addresses, URLs, and other formats
 
 ## Implementation Plan
 
 ### Phase 1: Core Infrastructure (Days 1-2)
 
 **1.1 Install Dependencies**
-
-```bash
-pnpm add @upstash/qstash
-```
+- Add @upstash/qstash package
 
 **1.2 Environment Configuration**
-
-File: `.env.example` (add)
-
-```bash
-# QStash Configuration
-QSTASH_URL=https://qstash.upstash.io
-QSTASH_TOKEN=your_qstash_token
-QSTASH_CURRENT_SIGNING_KEY=your_current_signing_key
-QSTASH_NEXT_SIGNING_KEY=your_next_signing_key
-```
-
-File: `lib/env.ts` (add validation)
-
-```typescript
-QSTASH_URL: z.string().url().optional(),
-QSTASH_TOKEN: z.string().optional(),
-QSTASH_CURRENT_SIGNING_KEY: z.string().optional(),
-QSTASH_NEXT_SIGNING_KEY: z.string().optional(),
-```
+- Add QStash environment variables to .env.example
+- Add validation for QSTASH_URL, QSTASH_TOKEN, QSTASH_CURRENT_SIGNING_KEY, QSTASH_NEXT_SIGNING_KEY in lib/env.ts
 
 **1.3 Create QStash Client**
-
-File: `lib/jobs/qstash.client.ts`
-
-```typescript
-import 'server-only';
-import { Client } from '@upstash/qstash';
-import { env } from '@/lib/env';
-
-export const qstash = new Client({
-  token: env.QSTASH_TOKEN!,
-});
-
-export const getQStashReceiver = () => {
-  return new Receiver({
-    currentSigningKey: env.QSTASH_CURRENT_SIGNING_KEY!,
-    nextSigningKey: env.QSTASH_NEXT_SIGNING_KEY!,
-  });
-};
-```
+- Create server-only QStash client instance
+- Initialize Client with token from environment
+- Export receiver factory function for signature verification
 
 **1.4 Create Job Types Registry**
-
-File: `lib/jobs/types/job-type.enum.ts`
-
-```typescript
-export const JOB_TYPES = {
-  SEND_EMAIL: 'send-email',
-  PROCESS_WEBHOOK: 'process-webhook',
-  EXPORT_DATA: 'export-data',
-  GENERATE_REPORT: 'generate-report',
-  CLEANUP_OLD_DATA: 'cleanup-old-data',
-} as const;
-
-export type JobType = (typeof JOB_TYPES)[keyof typeof JOB_TYPES];
-```
-
-File: `lib/jobs/types/job-config.type.ts`
-
-```typescript
-import type { JobType } from './job-type.enum';
-
-export type JobConfig = {
-  type: JobType;
-  endpoint: string;
-  retries: number;
-  timeout: number;
-  description: string;
-};
-```
-
-File: `lib/jobs/types/job-registry.ts`
-
-```typescript
-import { JOB_TYPES } from './job-type.enum';
-import type { JobConfig } from './job-config.type';
-import type { JobType } from './job-type.enum';
-
-export const JOB_REGISTRY: Record<JobType, JobConfig> = {
-  [JOB_TYPES.SEND_EMAIL]: {
-    type: JOB_TYPES.SEND_EMAIL,
-    endpoint: '/api/jobs/email',
-    retries: 3,
-    timeout: 30,
-    description: 'Send transactional emails via Resend',
-  },
-  [JOB_TYPES.PROCESS_WEBHOOK]: {
-    type: JOB_TYPES.PROCESS_WEBHOOK,
-    endpoint: '/api/jobs/webhook',
-    retries: 5,
-    timeout: 60,
-    description: 'Process incoming webhooks from third-party services',
-  },
-  [JOB_TYPES.EXPORT_DATA]: {
-    type: JOB_TYPES.EXPORT_DATA,
-    endpoint: '/api/jobs/export',
-    retries: 2,
-    timeout: 300,
-    description: 'Generate and export data files (CSV, Excel)',
-  },
-  [JOB_TYPES.GENERATE_REPORT]: {
-    type: JOB_TYPES.GENERATE_REPORT,
-    endpoint: '/api/jobs/report',
-    retries: 2,
-    timeout: 180,
-    description: 'Generate analytics and business reports',
-  },
-  [JOB_TYPES.CLEANUP_OLD_DATA]: {
-    type: JOB_TYPES.CLEANUP_OLD_DATA,
-    endpoint: '/api/jobs/cleanup',
-    retries: 1,
-    timeout: 600,
-    description: 'Clean up old data and temporary files',
-  },
-};
-
-export const getJobConfig = (type: JobType): JobConfig => {
-  const config = JOB_REGISTRY[type];
-  if (!config) {
-    throw new Error(`Unknown job type: ${type}`);
-  }
-  return config;
-};
-```
-
-File: `lib/jobs/types/index.ts`
-
-```typescript
-export * from './job-type.enum';
-export * from './job-config.type';
-export * from './job-registry';
-```
+- Define job type enumeration with all supported job types
+- Create JobConfig type interface
+- Build job registry mapping types to configuration
+- Implement getJobConfig helper function
+- Export all types and registry from index
 
 **1.5 Create Base Job Schema**
-
-File: `lib/jobs/schemas/base-job.schema.ts`
-
-```typescript
-import { z } from 'zod';
-
-export const BaseJobMetadataSchema = z.object({
-  userId: z.number().optional(),
-  organizationId: z.number().optional(),
-  createdAt: z.string().datetime(),
-  idempotencyKey: z.string().optional(),
-});
-
-export const BaseJobSchema = z.object({
-  jobId: z.string().uuid(),
-  type: z.string(),
-  metadata: BaseJobMetadataSchema,
-});
-
-export type BaseJobMetadata = z.infer<typeof BaseJobMetadataSchema>;
-export type BaseJob = z.infer<typeof BaseJobSchema>;
-```
+- Define BaseJobMetadata schema with optional user/org context
+- Create BaseJob schema with jobId, type, and metadata
+- Export inferred TypeScript types
 
 **1.6 Create Job Execution Tracking**
-
-File: `lib/db/schemas/job-execution.table.ts`
-
-```typescript
-import {
-  pgTable,
-  serial,
-  varchar,
-  text,
-  timestamp,
-  jsonb,
-  integer,
-} from 'drizzle-orm/pg-core';
-
-export const jobExecutions = pgTable('job_executions', {
-  id: serial('id').primaryKey(),
-  jobId: varchar('job_id', { length: 255 }).notNull().unique(),
-  jobType: varchar('job_type', { length: 100 }).notNull(),
-  status: varchar('status', { length: 50 }).notNull(), // pending, processing, completed, failed
-  payload: jsonb('payload').notNull(),
-  result: jsonb('result'),
-  error: text('error'),
-  retryCount: integer('retry_count').default(0).notNull(),
-  userId: integer('user_id'),
-  organizationId: integer('organization_id'),
-  startedAt: timestamp('started_at'),
-  completedAt: timestamp('completed_at'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-export type JobExecution = typeof jobExecutions.$inferSelect;
-export type NewJobExecution = typeof jobExecutions.$inferInsert;
-```
-
-File: `lib/db/schemas/index.ts` (add export)
-
-```typescript
-export * from './job-execution.table';
-```
+- Create job_executions table schema with Drizzle
+- Include fields: id, jobId, jobType, status, payload, result, error, retryCount
+- Add userId, organizationId for context
+- Include timestamps: startedAt, completedAt, createdAt, updatedAt
+- Export table type definitions
 
 **1.7 Create Job Execution Queries**
-
-File: `lib/db/queries/job-execution.query.ts`
-
-```typescript
-import 'server-only';
-import { db } from '@/lib/db/drizzle';
-import { jobExecutions } from '@/lib/db/schemas';
-import { eq } from 'drizzle-orm';
-import type { NewJobExecution } from '@/lib/db/schemas';
-
-export const createJobExecution = async (data: NewJobExecution) => {
-  const [execution] = await db.insert(jobExecutions).values(data).returning();
-  return execution;
-};
-
-export const updateJobExecution = async (
-  jobId: string,
-  data: Partial<NewJobExecution>
-) => {
-  const [execution] = await db
-    .update(jobExecutions)
-    .set({ ...data, updatedAt: new Date() })
-    .where(eq(jobExecutions.jobId, jobId))
-    .returning();
-  return execution;
-};
-
-export const getJobExecutionByJobId = async (jobId: string) => {
-  return db.query.jobExecutions.findFirst({
-    where: eq(jobExecutions.jobId, jobId),
-  });
-};
-
-export const getJobExecutionsByType = async (
-  jobType: string,
-  limit: number = 50
-) => {
-  return db.query.jobExecutions.findMany({
-    where: eq(jobExecutions.jobType, jobType),
-    orderBy: (executions, { desc }) => [desc(executions.createdAt)],
-    limit,
-  });
-};
-
-export const getFailedJobExecutions = async (limit: number = 50) => {
-  return db.query.jobExecutions.findMany({
-    where: eq(jobExecutions.status, 'failed'),
-    orderBy: (executions, { desc }) => [desc(executions.createdAt)],
-    limit,
-  });
-};
-```
-
-File: `lib/db/queries/index.ts` (add export)
-
-```typescript
-export * from './job-execution.query';
-```
+- Implement createJobExecution query
+- Implement updateJobExecution query with automatic updatedAt
+- Implement getJobExecutionByJobId query
+- Implement getJobExecutionsByType with limit and ordering
+- Implement getFailedJobExecutions query
+- Export all query functions
 
 ### Phase 2: Job Dispatcher Service (Days 2-3)
 
 **2.1 Create Job Dispatcher**
 
-File: `lib/jobs/job-dispatcher.service.ts`
-
-```typescript
-import 'server-only';
-import { qstash } from './qstash.client';
-import { getJobConfig } from './types';
-import { env } from '@/lib/env';
-import logger from '@/lib/logger/logger.service';
-import { createJobExecution } from '@/lib/db/queries';
-import type { JobType } from './types';
-import type { BaseJob, BaseJobMetadata } from './schemas/base-job.schema';
-import { randomUUID } from 'crypto';
-
-export interface EnqueueJobOptions {
-  delay?: number; // seconds
-  retries?: number;
-  callback?: string;
-  failureCallback?: string;
-  headers?: Record<string, string>;
-}
-
-export class JobDispatcher {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = env.BASE_URL;
-  }
-
-  async enqueue<T extends Record<string, unknown>>(
-    type: JobType,
-    payload: T,
-    metadata: Omit<BaseJobMetadata, 'createdAt'>,
-    options?: EnqueueJobOptions
-  ): Promise<string> {
-    const config = getJobConfig(type);
-    const jobId = randomUUID();
-
-    const job: BaseJob & { payload: T } = {
-      jobId,
-      type,
-      payload,
-      metadata: {
-        ...metadata,
-        createdAt: new Date().toISOString(),
-      },
-    };
-
-    // Create job execution record
-    await createJobExecution({
-      jobId,
-      jobType: type,
-      status: 'pending',
-      payload: job,
-      userId: metadata.userId,
-      organizationId: metadata.organizationId,
-    });
-
-    try {
-      const url = `${this.baseUrl}${config.endpoint}`;
-
-      logger.info(`[jobs] Enqueueing job: ${type}`, {
-        jobId,
-        type,
-        url,
-      });
-
-      await qstash.publishJSON({
-        url,
-        body: job,
-        retries: options?.retries ?? config.retries,
-        delay: options?.delay,
-        callback: options?.callback,
-        failureCallback: options?.failureCallback,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options?.headers,
-        },
-      });
-
-      logger.info(`[jobs] Job enqueued successfully: ${type}`, {
-        jobId,
-      });
-
-      return jobId;
-    } catch (error) {
-      logger.error(`[jobs] Failed to enqueue job: ${type}`, {
-        jobId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-
-      throw error;
-    }
-  }
-
-  async schedule(
-    type: JobType,
-    cron: string,
-    payload: Record<string, unknown>,
-    metadata: Omit<BaseJobMetadata, 'createdAt'>
-  ): Promise<string> {
-    const config = getJobConfig(type);
-    const url = `${this.baseUrl}${config.endpoint}`;
-
-    const job: BaseJob & { payload: Record<string, unknown> } = {
-      jobId: randomUUID(),
-      type,
-      payload,
-      metadata: {
-        ...metadata,
-        createdAt: new Date().toISOString(),
-      },
-    };
-
-    logger.info(`[jobs] Scheduling job: ${type}`, {
-      type,
-      cron,
-      url,
-    });
-
-    const schedule = await qstash.schedules.create({
-      destination: url,
-      cron,
-      body: JSON.stringify(job),
-    });
-
-    logger.info(`[jobs] Job scheduled successfully: ${type}`, {
-      scheduleId: schedule.scheduleId,
-    });
-
-    return schedule.scheduleId;
-  }
-}
-
-export const jobDispatcher = new JobDispatcher();
-```
+Create JobDispatcher service class:
+- Initialize with BASE_URL from environment
+- Implement enqueue method:
+  - Accept job type, payload, metadata, and optional configurations
+  - Generate unique jobId using UUID
+  - Create job execution record with 'pending' status
+  - Get job configuration from registry
+  - Publish message to QStash with retry policy
+  - Log enqueue events (info and errors)
+  - Return jobId for tracking
+- Implement schedule method:
+  - Accept job type, CRON expression, payload, metadata
+  - Create scheduled job in QStash
+  - Log scheduling events
+  - Return scheduleId
+- Export singleton instance
 
 **2.2 Create Job Worker Base Handler**
 
-File: `lib/jobs/job-worker.handler.ts`
-
-```typescript
-import 'server-only';
-import { getQStashReceiver } from './qstash.client';
-import logger from '@/lib/logger/logger.service';
-import { updateJobExecution, getJobExecutionByJobId } from '@/lib/db/queries';
-import type { BaseJob } from './schemas/base-job.schema';
-import { NextRequest } from 'next/server';
-
-export interface JobWorkerHandler<T = unknown> {
-  (payload: T, job: BaseJob): Promise<void>;
-}
-
-export const createJobWorker = <T = unknown>(handler: JobWorkerHandler<T>) => {
-  return async (request: NextRequest) => {
-    // Verify QStash signature
-    const receiver = getQStashReceiver();
-    const body = await request.text();
-
-    try {
-      await receiver.verify({
-        signature: request.headers.get('Upstash-Signature') || '',
-        body,
-      });
-    } catch (error) {
-      logger.error('[jobs] Invalid QStash signature', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-
-      return Response.json({ error: 'Invalid signature' }, { status: 401 });
-    }
-
-    // Parse job
-    const job = JSON.parse(body) as BaseJob & { payload: T };
-
-    logger.info(`[jobs] Processing job: ${job.type}`, {
-      jobId: job.jobId,
-      type: job.type,
-    });
-
-    // Update job status to processing
-    const execution = await getJobExecutionByJobId(job.jobId);
-    if (execution) {
-      await updateJobExecution(job.jobId, {
-        status: 'processing',
-        startedAt: new Date(),
-        retryCount: (execution.retryCount || 0) + 1,
-      });
-    }
-
-    try {
-      // Execute handler
-      await handler(job.payload, job);
-
-      // Update job status to completed
-      await updateJobExecution(job.jobId, {
-        status: 'completed',
-        completedAt: new Date(),
-      });
-
-      logger.info(`[jobs] Job completed successfully: ${job.type}`, {
-        jobId: job.jobId,
-      });
-
-      return Response.json({ success: true });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      const errorStack = error instanceof Error ? error.stack : undefined;
-
-      logger.error(`[jobs] Job failed: ${job.type}`, {
-        jobId: job.jobId,
-        error: errorMessage,
-        stack: errorStack,
-      });
-
-      // Update job status to failed
-      await updateJobExecution(job.jobId, {
-        status: 'failed',
-        error: errorMessage,
-        completedAt: new Date(),
-      });
-
-      // Return 5xx to trigger QStash retry
-      return Response.json({ error: errorMessage }, { status: 500 });
-    }
-  };
-};
-```
+Create generic job worker handler factory:
+- Define JobWorkerHandler interface for type safety
+- Implement createJobWorker factory function:
+  - Verify QStash signature for security
+  - Parse and validate job payload
+  - Update job status to 'processing'
+  - Increment retry count
+  - Execute provided handler function
+  - Update job status to 'completed' on success
+  - Update job status to 'failed' on error
+  - Return 5xx status to trigger QStash retry on failure
+  - Return 200 status on success
+  - Log all lifecycle events
 
 ### Phase 3: Email Job Worker (Day 3)
 
 **3.1 Create Email Job Schema**
 
-File: `lib/jobs/schemas/send-email-job.schema.ts`
-
-```typescript
-import { z } from 'zod';
-import { BaseJobSchema } from './base-job.schema';
-import { JOB_TYPES } from '../types';
-
-export const SendEmailJobPayloadSchema = z.object({
-  template: z.enum([
-    'welcome',
-    'passwordReset',
-    'passwordChanged',
-    'emailChange',
-    'teamInvitation',
-    'subscriptionCreated',
-    'paymentFailed',
-  ]),
-  to: z.string().email(),
-  data: z.record(z.any()),
-});
-
-export const SendEmailJobSchema = BaseJobSchema.extend({
-  type: z.literal(JOB_TYPES.SEND_EMAIL),
-  payload: SendEmailJobPayloadSchema,
-});
-
-export type SendEmailJobPayload = z.infer<typeof SendEmailJobPayloadSchema>;
-export type SendEmailJob = z.infer<typeof SendEmailJobSchema>;
-```
+Define email job payload schema:
+- Extend BaseJobSchema
+- Use literal type for SEND_EMAIL job type
+- Define payload with email template enum (welcome, passwordReset, passwordChanged, emailChange, teamInvitation, subscriptionCreated, paymentFailed)
+- Validate recipient email address
+- Include data object for template variables
+- Export inferred types
 
 **3.2 Create Email Job Worker Route**
 
-File: `app/api/jobs/email/route.ts`
-
-```typescript
-import { createJobWorker } from '@/lib/jobs/job-worker.handler';
-import {
-  sendWelcomeEmail,
-  sendPasswordResetEmail,
-  sendPasswordChangedEmail,
-  sendEmailChangeConfirmationEmail,
-  sendTeamInvitationEmail,
-  sendSubscriptionCreatedEmail,
-  sendPaymentFailedEmail,
-} from '@/lib/emails/dispatchers';
-import logger from '@/lib/logger/logger.service';
-import type { SendEmailJobPayload } from '@/lib/jobs/schemas/send-email-job.schema';
-import type { BaseJob } from '@/lib/jobs/schemas/base-job.schema';
-
-const emailJobHandler = async (payload: SendEmailJobPayload, job: BaseJob) => {
-  const { template, to, data } = payload;
-
-  logger.info('[jobs] Processing email job', {
-    jobId: job.jobId,
-    template,
-    to,
-  });
-
-  switch (template) {
-    case 'welcome':
-      await sendWelcomeEmail({ to, ...data });
-      break;
-    case 'passwordReset':
-      await sendPasswordResetEmail({ to, ...data });
-      break;
-    case 'passwordChanged':
-      await sendPasswordChangedEmail({ to, ...data });
-      break;
-    case 'emailChange':
-      await sendEmailChangeConfirmationEmail({ to, ...data });
-      break;
-    case 'teamInvitation':
-      await sendTeamInvitationEmail({ to, ...data });
-      break;
-    case 'subscriptionCreated':
-      await sendSubscriptionCreatedEmail({ to, ...data });
-      break;
-    case 'paymentFailed':
-      await sendPaymentFailedEmail({ to, ...data });
-      break;
-    default:
-      throw new Error(`Unknown email template: ${template}`);
-  }
-};
-
-export const POST = createJobWorker<SendEmailJobPayload>(emailJobHandler);
-```
+Create API route for email job processing:
+- Import email dispatcher functions
+- Implement emailJobHandler function:
+  - Extract template, to, and data from payload
+  - Log processing event
+  - Switch on template type
+  - Call appropriate email dispatcher
+  - Handle unknown templates with error
+- Export POST handler using createJobWorker factory
 
 **3.3 Create Email Job Service**
 
-File: `lib/jobs/services/email-job.service.ts`
-
-```typescript
-import 'server-only';
-import { jobDispatcher } from '../job-dispatcher.service';
-import { JOB_TYPES } from '../types';
-import type { SendEmailJobPayload } from '../schemas/send-email-job.schema';
-
-export const enqueueEmailJob = async (
-  payload: SendEmailJobPayload,
-  metadata: {
-    userId?: number;
-    organizationId?: number;
-  }
-) => {
-  return jobDispatcher.enqueue(JOB_TYPES.SEND_EMAIL, payload, metadata, {
-    retries: 3,
-    delay: 0,
-  });
-};
-```
-
-File: `lib/jobs/services/index.ts`
-
-```typescript
-export * from './email-job.service';
-```
+Create email job service:
+- Implement enqueueEmailJob function
+- Accept payload and metadata (userId, organizationId)
+- Call jobDispatcher.enqueue with SEND_EMAIL type
+- Configure with 3 retries and 0 delay
+- Return jobId for tracking
+- Export service function
 
 **3.4 Migrate Email Dispatchers to Use Jobs**
 
-File: `lib/emails/dispatchers.ts` (update to enqueue jobs instead of direct sending)
-
-This will be a gradual migration. For now, we'll keep both direct sending and async job options:
-
-```typescript
-// Add at the top
-import { enqueueEmailJob } from '@/lib/jobs/services';
-
-// Add async variant for each dispatcher
-export const sendWelcomeEmailAsync = async ({
-  to,
-  supportEmail,
-  ...props
-}: WelcomeEmailParams) => {
-  const recipientEmail = Array.isArray(to) ? to[0] : to;
-
-  await enqueueEmailJob(
-    {
-      template: 'welcome',
-      to:
-        typeof recipientEmail === 'string'
-          ? recipientEmail
-          : recipientEmail.email,
-      data: { supportEmail, ...props },
-    },
-    {}
-  );
-};
-
-// Repeat for other email types...
-```
+Gradual migration strategy:
+- Keep existing synchronous email dispatchers
+- Create async variants with "Async" suffix
+- Import enqueueEmailJob service
+- Implement async variants that enqueue jobs
+- Allow incremental adoption across the codebase
 
 ### Phase 4: Additional Job Workers (Days 4-5)
 
 **4.1 Webhook Processing Job**
 
-File: `lib/jobs/schemas/process-webhook-job.schema.ts`
+Create webhook job schema:
+- Extend BaseJobSchema
+- Define source enum (stripe, resend, custom)
+- Include event name and data payload
+- Add optional signature field
+- Export inferred types
 
-```typescript
-import { z } from 'zod';
-import { BaseJobSchema } from './base-job.schema';
-import { JOB_TYPES } from '../types';
+Create webhook job worker route:
+- Implement webhookJobHandler
+- Switch on webhook source
+- Route to appropriate handler based on source
+- Handle Stripe webhooks (subscription changes, invoices)
+- Handle Resend webhooks (email delivery status)
+- Handle custom webhooks
+- Log processing events
+- Export POST handler using createJobWorker
 
-export const ProcessWebhookJobPayloadSchema = z.object({
-  source: z.enum(['stripe', 'resend', 'custom']),
-  event: z.string(),
-  data: z.record(z.any()),
-  signature: z.string().optional(),
-});
+**4.2 Stripe Webhook Job**
 
-export const ProcessWebhookJobSchema = BaseJobSchema.extend({
-  type: z.literal(JOB_TYPES.PROCESS_WEBHOOK),
-  payload: ProcessWebhookJobPayloadSchema,
-});
+Create Stripe webhook job schema:
+- Extend BaseJobSchema for Stripe-specific events
+- Define payload with event type and Stripe event object
+- Validate against known Stripe event types
+- Export inferred types
 
-export type ProcessWebhookJobPayload = z.infer<
-  typeof ProcessWebhookJobPayloadSchema
->;
-export type ProcessWebhookJob = z.infer<typeof ProcessWebhookJobSchema>;
-```
+Create Stripe webhook worker route:
+- Implement handler for async Stripe webhook processing
+- Process complex operations that shouldn't block webhook endpoint
+- Handle subscription updates, invoice finalization, etc.
+- Update database records based on Stripe events
+- Log all Stripe event processing
 
-File: `app/api/jobs/webhook/route.ts`
+**4.3 Report Generation Job**
 
-```typescript
-import { createJobWorker } from '@/lib/jobs/job-worker.handler';
-import logger from '@/lib/logger/logger.service';
-import type { ProcessWebhookJobPayload } from '@/lib/jobs/schemas/process-webhook-job.schema';
-import type { BaseJob } from '@/lib/jobs/schemas/base-job.schema';
+Create report generation job schema:
+- Define report types enum
+- Include parameters for report generation
+- Add date range, filters, and output format
+- Export inferred types
 
-const webhookJobHandler = async (
-  payload: ProcessWebhookJobPayload,
-  job: BaseJob
-) => {
-  const { source, event, data } = payload;
-
-  logger.info('[jobs] Processing webhook job', {
-    jobId: job.jobId,
-    source,
-    event,
-  });
-
-  switch (source) {
-    case 'stripe':
-      // Handle Stripe webhooks that need async processing
-      // (e.g., complex subscription changes, invoice processing)
-      break;
-    case 'resend':
-      // Handle Resend webhooks (email delivery status)
-      break;
-    case 'custom':
-      // Handle custom webhooks
-      break;
-    default:
-      throw new Error(`Unknown webhook source: ${source}`);
-  }
-};
-
-export const POST =
-  createJobWorker<ProcessWebhookJobPayload>(webhookJobHandler);
-```
+Create report job worker route:
+- Implement report generation handler
+- Generate analytics reports
+- Export data in requested format
+- Store report results
+- Notify user on completion
 
 ### Phase 5: Scheduled Jobs Setup (Day 5)
 
 **5.1 Create Scheduled Jobs Manager**
+- Define scheduled job configurations
+- Implement setup script for creating CRON schedules
+- Configure cleanup jobs, report generation, etc.
+- Add timezone support for scheduling
 
-**5.2 Create Setup when the app start**
+**5.2 Create Setup Script**
+- Build initialization script for scheduled jobs
+- Check existing schedules to avoid duplicates
+- Create or update scheduled jobs in QStash
+- Log all scheduling operations
+- Add to package.json scripts
 
-## Phase 6: Testing & Documentation (Days 6-7)
+### Phase 6: Testing & Documentation (Days 6-7)
 
-- Create unit tests for the new functionalities we implemented
+**6.1 Create Unit Tests**
+
+Test coverage for job system:
+- Job dispatcher enqueue and schedule methods
+- Job schema validation with Zod
+- Job registry configuration and getters
+- Job execution tracking queries
+- Job worker handler lifecycle
+- Error handling and retry logic
+- Signature verification
+
+**6.2 Create Integration Tests**
+
+End-to-end testing:
+- Email job flow from enqueue to completion
+- Webhook job processing
+- Stripe webhook async handling
+- Job retry behavior on failure
+- Job failure tracking and DLQ
+- Scheduled job execution
 
 **6.3 Create Documentation**
 
-- Follow the documentation guidelines to craft the documentation of the async operations
+Documentation deliverables:
+- Overview of async job architecture
+- Guide for adding new job types
+- Job enqueue patterns and best practices
+- Monitoring and debugging jobs
+- QStash dashboard usage
+- Environment variable configuration
+- Migration guide for existing sync operations
 
-### Phase 7: Migration Database (Day 7)
+### Phase 7: Database Migration & Deployment (Day 7)
 
-**7.1 Generate Migration**
+**7.1 Generate Database Migration**
+- Run Drizzle migration generation
+- Review generated migration SQL
+- Verify job_executions table structure
 
-```bash
-pnpm db:generate
-```
-
-**7.2 Run Migration**
-
-```bash
-pnpm db:migrate
-```
+**7.2 Run Database Migration**
+- Execute migration on local database
+- Test migration rollback if needed
+- Verify table creation and indexes
 
 **7.3 Setup Scheduled Jobs**
-
-```bash
-pnpm jobs:setup
-```
+- Run scheduled jobs setup script
+- Verify CRON schedules in QStash dashboard
+- Test scheduled job execution
+- Monitor first execution results
 
 ## Testing Strategy
 
@@ -1091,30 +541,30 @@ Monitor:
 
 ### Request Signature Verification
 
-All job worker endpoints MUST verify QStash signatures:
-
-```typescript
-const receiver = getQStashReceiver();
-await receiver.verify({
-  signature: request.headers.get('Upstash-Signature') || '',
-  body,
-});
-```
+Security requirements for job worker endpoints:
+- Verify QStash signature on every request
+- Use Receiver with current and next signing keys
+- Reject requests with invalid signatures (401 status)
+- Extract signature from Upstash-Signature header
+- Validate against request body
 
 ### Payload Validation
 
-All job payloads MUST be validated using Zod schemas:
-
-```typescript
-const validatedPayload = SendEmailJobSchema.parse(job);
-```
+Data validation requirements:
+- Parse all job payloads with Zod schemas
+- Validate at the boundary (worker endpoint)
+- Return appropriate errors for invalid payloads
+- Log validation failures
+- Never process unvalidated data
 
 ### Environment Variables
 
-- Store QStash credentials in environment variables
+Secret management guidelines:
+- Store QStash credentials in environment variables only
 - Never commit secrets to version control
 - Rotate signing keys periodically
 - Use different QStash projects for staging/production
+- Validate environment variables at startup
 
 ## Cost Optimization
 
@@ -1146,60 +596,73 @@ const validatedPayload = SendEmailJobSchema.parse(job);
 
 ### Migrating Existing Sync Operations to Async
 
-**Before (Synchronous):**
+**Pattern for Migration:**
 
-```typescript
-export async function createUser(data: NewUser) {
-  const user = await db.insert(users).values(data).returning();
+Synchronous approach (blocks HTTP request):
+- Database operation followed by immediate email send
+- User waits for email service response
+- Failures in email service affect user experience
 
-  // Blocks HTTP request
-  await sendWelcomeEmail({ to: user.email, ... });
+Asynchronous approach (non-blocking):
+- Database operation followed by job enqueue
+- Job enqueue is fast (<50ms)
+- Email processing happens in background
+- User gets immediate response
+- Automatic retries on failure
 
-  return user;
-}
-```
-
-**After (Asynchronous):**
-
-```typescript
-export async function createUser(data: NewUser) {
-  const user = await db.insert(users).values(data).returning();
-
-  // Non-blocking (fire and forget)
-  await enqueueEmailJob({
-    template: 'welcome',
-    to: user.email,
-    data: { ... }
-  }, { userId: user.id });
-
-  return user;
-}
-```
+**Key Changes:**
+- Replace direct email dispatcher calls with enqueueEmailJob
+- Pass template name and data to job payload
+- Include user context in metadata
+- Remove await on email sending (job enqueue is fast enough to await)
 
 ### Gradual Migration Strategy
 
-1. **Phase 1:** Create async variants (keep sync versions)
-   - `sendWelcomeEmail()` - existing sync
-   - `sendWelcomeEmailAsync()` - new async variant
+**Phase 1: Create Async Variants**
+- Keep existing synchronous functions
+- Create new async variants with "Async" suffix
+- Test async variants in parallel with sync versions
+- Monitor job execution and success rates
 
-2. **Phase 2:** Update non-critical paths to use async
-   - Background notifications
-   - Audit emails
-   - Analytics updates
+**Phase 2: Migrate Non-Critical Paths**
+- Update background notifications to async
+- Migrate audit emails to job queue
+- Convert analytics updates to async
+- Monitor performance and reliability
 
-3. **Phase 3:** Update critical paths after validation
-   - User onboarding emails
-   - Payment notifications
-   - Security alerts
+**Phase 3: Migrate Critical Paths**
+- Update user onboarding emails after validation
+- Migrate payment notifications with extra monitoring
+- Convert security alerts to async with alerting
+- Maintain fallback mechanisms during transition
 
-4. **Phase 4:** Remove sync variants
-   - Deprecated sync functions
-   - Update all call sites
-   - Remove old code
+**Phase 4: Remove Sync Variants**
+- Mark sync functions as deprecated
+- Update all remaining call sites
+- Remove deprecated code
+- Update documentation
 
 ## Conclusion
 
 This implementation provides a production-ready async job processing system optimized for serverless deployment. The extensible architecture allows easy addition of new job types, and the QStash integration ensures reliable delivery with automatic retries.
+
+**Key Benefits Achieved:**
+- Non-blocking job processing for improved user experience
+- Automatic retry logic with exponential backoff
+- Job execution tracking and monitoring
+- Type-safe job definitions with Zod validation
+- Extensible architecture for adding new job types
+- Production-ready logging and error handling
+- Scalable serverless-native design
+
+**Implementation Status:**
+The core infrastructure has been successfully implemented with:
+- ✅ Job dispatcher and worker system
+- ✅ Email job processing
+- ✅ Stripe webhook async processing
+- ✅ Report generation jobs
+- ✅ Comprehensive unit and integration tests
+- ✅ Database schema for job execution tracking
 
 ## Appendix
 
@@ -1211,18 +674,29 @@ This implementation provides a production-ready async job processing system opti
 
 ### Related Documentation
 
-- [Email System Documentation](./emails.md)
-- [Stripe Webhooks](./stripe/webhooks-configuration.md)
-- [Logging System](./logging.md)
+- Email System Documentation
+- Stripe Webhooks Configuration
+- Logging System
+- Environment Configuration
 
 ---
 
-**Next Steps After Implementation:**
+**Post-Implementation Checklist:**
 
-1. Run database migrations
-2. Set up QStash account and credentials
-3. Configure environment variables
-4. Run scheduled jobs setup
-5. Test with sample jobs
-6. Monitor QStash dashboard
-7. Gradually migrate existing operations
+- [x] Install @upstash/qstash dependency
+- [x] Configure environment variables
+- [x] Create QStash client and receiver
+- [x] Implement job registry and types
+- [x] Create job dispatcher service
+- [x] Implement job worker handler
+- [x] Create job execution tracking
+- [x] Implement email job worker
+- [x] Implement Stripe webhook job worker
+- [x] Implement report generation job worker
+- [x] Create comprehensive tests
+- [ ] Generate and run database migrations
+- [ ] Set up QStash account and obtain credentials
+- [ ] Configure scheduled jobs
+- [ ] Deploy to production
+- [ ] Monitor job execution in QStash dashboard
+- [ ] Gradually migrate existing sync operations
