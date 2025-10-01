@@ -20,7 +20,7 @@ export async function register() {
       // Initialize global error handlers for uncaught exceptions and unhandled rejections
       initializeErrorHandlers();
 
-      // Initialize cache service
+      // Initialize cache service (with graceful degradation built-in)
       await cacheService.initialize();
 
       logInfo('Application instrumentation completed');

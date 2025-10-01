@@ -10,6 +10,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db/drizzle';
 import { organization as organizationTable } from '@/lib/db/schemas';
 import logger from '@/lib/logger/logger.service';
+import { CacheKey } from '@/lib/types/cache/cache-key.type';
 
 /**
  * Captures the request headers object returned by Next.js.
@@ -108,18 +109,8 @@ export class OrganizationNotFoundError extends Error {
   }
 }
 
-const sessionCache = new WeakMap<
-  RequestHeaders,
-  Promise<ServerSession | null>
->();
-const organizationCache = new WeakMap<
-  RequestHeaders,
-  Promise<OrganizationDetails | null>
->();
-const contextCache = new WeakMap<
-  RequestHeaders,
-  Promise<ServerContext | null>
->();
+// Short-lived cache TTL for request-scoped data (30 seconds)
+const REQUEST_CACHE_TTL = 30;
 
 /**
  * Creates a mutable copy of the read-only headers instance provided by Next.js.
@@ -153,25 +144,16 @@ function unwrapResponse<T>(result: T): ExtractResponse<T> {
 }
 
 /**
- * Memoizes asynchronous lookups per `RequestHeaders` instance to avoid duplicate work.
+ * Memoizes asynchronous lookups using cache service to avoid duplicate work.
  */
-function memoize<T>(
-  cache: WeakMap<RequestHeaders, Promise<T>>,
-  requestHeaders: RequestHeaders,
-  factory: () => Promise<T>
+async function memoize<T>(
+  cacheKey: CacheKey,
+  factory: () => Promise<T>,
+  ttl: number = REQUEST_CACHE_TTL
 ): Promise<T> {
-  const cached = cache.get(requestHeaders);
-  if (cached) {
-    return cached;
-  }
+  const { cacheService } = await import('@/lib/cache');
 
-  const promise = factory().catch((error) => {
-    cache.delete(requestHeaders);
-    throw error;
-  });
-
-  cache.set(requestHeaders, promise);
-  return promise;
+  return cacheService.getOrSet(cacheKey, factory, { ttl });
 }
 
 /**
@@ -180,7 +162,10 @@ function memoize<T>(
 async function loadSession(
   requestHeaders: RequestHeaders
 ): Promise<ServerSession | null> {
-  return memoize(sessionCache, requestHeaders, async () => {
+  const { CacheKeys } = await import('@/lib/cache');
+  const cacheKey = CacheKeys.serverSession(requestHeaders);
+
+  return memoize(cacheKey, async () => {
     const rawSession = await auth.api.getSession({
       headers: toHeadersInit(requestHeaders),
     });
@@ -201,7 +186,11 @@ async function loadOrganization(
   requestHeaders: RequestHeaders,
   session: ServerSession
 ): Promise<OrganizationDetails | null> {
-  return memoize(organizationCache, requestHeaders, async () => {
+  const { CacheKeys } = await import('@/lib/cache');
+  const userId = normalizeUser(session).id;
+  const cacheKey = CacheKeys.serverOrganization(requestHeaders, userId);
+
+  return memoize(cacheKey, async () => {
     try {
       const baseRequest = { headers: toHeadersInit(requestHeaders) };
 
@@ -341,7 +330,10 @@ function normalizeUser(session: ServerSession): ServerUser {
 async function loadContext(
   requestHeaders: RequestHeaders
 ): Promise<ServerContext | null> {
-  return memoize(contextCache, requestHeaders, async () => {
+  const { CacheKeys } = await import('@/lib/cache');
+  const cacheKey = CacheKeys.serverContext(requestHeaders);
+
+  return memoize(cacheKey, async () => {
     const session = await loadSession(requestHeaders);
     if (!session) {
       return null;
@@ -434,4 +426,24 @@ export async function requireOrganizationContext(): Promise<OrganizationContext>
     ...context,
     organization: context.organization,
   };
+}
+
+/**
+ * Checks if the current user is an admin (owner) of their organization.
+ * TODO: THis logic should be improved to check for the super admin role.
+ */
+export async function requireAdminContext(): Promise<OrganizationContext> {
+  const context = await requireOrganizationContext();
+
+  // Check if user is owner of the organization
+  const { getOrganizationOwner } = await import(
+    '@/lib/db/queries/organization.query'
+  );
+  const ownerId = await getOrganizationOwner(context.organization.id);
+
+  if (ownerId !== context.user.id) {
+    throw new UnauthorizedError('Admin access required');
+  }
+
+  return context;
 }

@@ -4,6 +4,7 @@ import { CacheFactory } from './cache.factory';
 import type { CacheOptions, CacheStats } from '@/lib/types/cache';
 import { logError, logInfo } from '@/lib/logger';
 import { env } from '@/lib/env';
+import { CacheKey } from '../types/cache/cache-key.type';
 
 /**
  * Cache Service
@@ -52,14 +53,37 @@ class CacheService {
       logInfo('Cache service initialized successfully');
     } catch (error) {
       logError('Failed to initialize cache service', error);
-      throw error;
+
+      // In production, fall back to in-memory provider
+      if (env.NODE_ENV === 'production') {
+        logInfo('Falling back to in-memory cache provider');
+        // Force creation of in-memory provider as fallback
+        const { InMemoryCacheProvider } = await import(
+          './providers/in-memory.provider'
+        );
+        this.provider = new InMemoryCacheProvider();
+        try {
+          await this.provider.initialize();
+          this.initialized = true;
+          logInfo('In-memory cache provider initialized as fallback');
+        } catch (fallbackError) {
+          logError(
+            'Failed to initialize fallback cache provider',
+            fallbackError
+          );
+          throw fallbackError;
+        }
+      } else {
+        // In dev/staging, fail fast to surface issues
+        throw error;
+      }
     }
   }
 
   /**
    * Get value from cache
    */
-  async get<T>(key: string): Promise<T | null> {
+  async get<T>(key: CacheKey): Promise<T | null> {
     try {
       return await this.provider.get<T>(key);
     } catch (error) {
@@ -71,7 +95,7 @@ class CacheService {
   /**
    * Set value in cache
    */
-  async set<T>(key: string, value: T, options?: CacheOptions): Promise<void> {
+  async set<T>(key: CacheKey, value: T, options?: CacheOptions): Promise<void> {
     try {
       const defaultTtl = env.CACHE_DEFAULT_TTL;
       const finalOptions = {
@@ -89,7 +113,7 @@ class CacheService {
   /**
    * Delete value from cache
    */
-  async delete(key: string): Promise<void> {
+  async delete(key: CacheKey): Promise<void> {
     try {
       await this.provider.delete(key);
     } catch (error) {
@@ -111,7 +135,7 @@ class CacheService {
   /**
    * Check if key exists in cache
    */
-  async has(key: string): Promise<boolean> {
+  async has(key: CacheKey): Promise<boolean> {
     try {
       return await this.provider.has(key);
     } catch (error) {
@@ -128,7 +152,7 @@ class CacheService {
    * @param options Cache options
    */
   async getOrSet<T>(
-    key: string,
+    key: CacheKey,
     factory: () => Promise<T>,
     options?: CacheOptions
   ): Promise<T> {

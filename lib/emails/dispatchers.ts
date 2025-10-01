@@ -35,6 +35,7 @@ import {
   renderWelcomeSignupEmail,
   DEFAULT_BRAND_NAME,
 } from '@/lib/emails/templates';
+
 import type {
   EmailChangeConfirmationEmailProps,
   PasswordChangedEmailProps,

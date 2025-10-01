@@ -72,17 +72,14 @@ export class UpstashCacheProvider implements ICacheProvider {
   async set<T>(key: string, value: T, options?: CacheOptions): Promise<void> {
     try {
       const ttl = options?.ttl ?? env.CACHE_DEFAULT_TTL;
-      const namespace = options?.namespace ?? '';
-
-      const fullKey = namespace ? `${namespace}:${key}` : key;
 
       if (ttl) {
-        await this.redis.set(fullKey, value, { ex: ttl });
+        await this.redis.set(key, value, { ex: ttl });
       } else {
-        await this.redis.set(fullKey, value);
+        await this.redis.set(key, value);
       }
 
-      logDebug(`Cache SET: ${fullKey}${ttl ? ` (TTL: ${ttl}s)` : ''}`);
+      logDebug(`Cache SET: ${key}${ttl ? ` (TTL: ${ttl}s)` : ''}`);
     } catch (error) {
       logError(`Cache SET error for key: ${key}`, error);
       throw error;
@@ -121,18 +118,38 @@ export class UpstashCacheProvider implements ICacheProvider {
 
   async invalidatePattern(pattern: string): Promise<number> {
     try {
-      const keys = await this.redis.keys(pattern);
+      let cursor: string = '0';
+      let deletedCount = 0;
 
-      if (keys.length === 0) {
-        return 0;
+      do {
+        const [nextCursor, keys]: [string, string[]] = await this.redis.scan(
+          cursor,
+          {
+            match: pattern,
+            count: 100,
+          }
+        );
+
+        if (keys.length > 0) {
+          // Delete keys in batches to avoid argument limit issues
+          const batchSize = 100;
+          for (let i = 0; i < keys.length; i += batchSize) {
+            const batch = keys.slice(i, i + batchSize);
+            await this.redis.del(...batch);
+          }
+          deletedCount += keys.length;
+        }
+
+        cursor = nextCursor;
+      } while (cursor !== '0');
+
+      if (deletedCount > 0) {
+        logDebug(
+          `Cache INVALIDATE PATTERN: ${pattern} (${deletedCount} keys removed)`
+        );
       }
 
-      await this.redis.del(...keys);
-      logDebug(
-        `Cache INVALIDATE PATTERN: ${pattern} (${keys.length} keys removed)`
-      );
-
-      return keys.length;
+      return deletedCount;
     } catch (error) {
       logError(`Cache INVALIDATE PATTERN error for pattern: ${pattern}`, error);
       return 0;

@@ -60,9 +60,6 @@ export class InMemoryCacheProvider implements ICacheProvider {
 
   async set<T>(key: string, value: T, options?: CacheOptions): Promise<void> {
     const ttl = options?.ttl ?? null;
-    const namespace = options?.namespace ?? '';
-
-    const fullKey = namespace ? `${namespace}:${key}` : key;
 
     const entry: CacheEntry<T> = {
       value,
@@ -70,8 +67,8 @@ export class InMemoryCacheProvider implements ICacheProvider {
       createdAt: Date.now(),
     };
 
-    this.store.set(fullKey, entry as CacheEntry<unknown>);
-    logDebug(`Cache SET: ${fullKey}${ttl ? ` (TTL: ${ttl}s)` : ''}`);
+    this.store.set(key, entry as CacheEntry<unknown>);
+    logDebug(`Cache SET: ${key}${ttl ? ` (TTL: ${ttl}s)` : ''}`);
   }
 
   async delete(key: string): Promise<void> {
@@ -92,7 +89,11 @@ export class InMemoryCacheProvider implements ICacheProvider {
   }
 
   async invalidatePattern(pattern: string): Promise<number> {
-    const regex = new RegExp(pattern.replace('*', '.*'));
+    // Escape regex special chars, then replace escaped \* with .*
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+    const regexPattern = escaped.replace(/\*/g, '.*');
+    const regex = new RegExp(`^${regexPattern}$`);
+
     let count = 0;
 
     for (const key of this.store.keys()) {
