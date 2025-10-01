@@ -29,7 +29,7 @@
     "type-check": "tsc --noEmit",
     "verify:design-tokens": "npx tsx lib/design-system/scripts/verify-tokens.ts",
     "test": "vitest run",
-    "test:emails": "vitest run tests/emails/templates.test.ts",
+    "test:coverage": "vitest run --coverage",
     "preview:emails": "tsx scripts/preview-emails.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -91,6 +91,7 @@
   "devDependencies": {
     "@better-auth/cli": "^1.3.18",
     "@electric-sql/pglite": "^0.3.10",
+    "@vitest/coverage-v8": "2.1.9",
     "dotenv-cli": "^10.0.0",
     "eslint": "^9.36.0",
     "eslint-plugin-unused-imports": "^4.2.0",
