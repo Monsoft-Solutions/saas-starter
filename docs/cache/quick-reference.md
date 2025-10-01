@@ -188,21 +188,18 @@ async function getCachedData(key: string) {
 ### Cache Stampede Prevention
 
 ```typescript
+// Note: This is pseudocode demonstrating the concept.
+// The cache service doesn't currently provide atomic set-if-not-exists operations.
+// For production use, consider implementing this pattern with a distributed lock
+// service like Redis or use a library like 'p-lock' for coordination.
+
 async function getOrSetWithLock(key: string, factory: () => Promise<any>) {
   const lockKey = `lock:${key}`;
-  const hasLock = await cacheService.set(lockKey, true, { ttl: 10 });
+  // This would require a setIfNotExists() method that doesn't exist in current cache interface
+  // const hasLock = await cacheService.setIfNotExists(lockKey, true, { ttl: 10 });
 
-  if (!hasLock) {
-    // Wait and retry
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    return await cacheService.get(key);
-  }
-
-  try {
-    return await cacheService.getOrSet(key, factory);
-  } finally {
-    await cacheService.delete(lockKey);
-  }
+  // For now, this pattern isn't directly supported by the cache service
+  // Consider using Redis SET NX or implementing distributed locks separately
 }
 ```
 

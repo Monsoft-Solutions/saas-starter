@@ -48,7 +48,7 @@ const user = await cacheService.getOrSet(
 
 The cache system follows a provider-agnostic architecture with three main layers:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │              Application Layer                          │
 │  (Server Actions, API Routes, Services)                 │

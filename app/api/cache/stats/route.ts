@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cacheService } from '@/lib/cache';
-import { requireServerContext } from '@/lib/auth/server-context';
+import { requireAdminContext } from '@/lib/auth/server-context';
+import { logError } from '@/lib/logger';
 
 /**
  * GET /api/cache/stats
@@ -9,13 +10,8 @@ import { requireServerContext } from '@/lib/auth/server-context';
  */
 export async function GET() {
   try {
-    // Require authenticated user
-    const { user: _user } = await requireServerContext();
-
-    // TODO: Add admin role check
-    // if (!isAdmin(user)) {
-    //   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    // }
+    // Require admin user (owner of organization)
+    await requireAdminContext();
 
     const stats = await cacheService.getStats();
 
@@ -24,6 +20,7 @@ export async function GET() {
       data: stats,
     });
   } catch (error) {
+    logError('Failed to fetch cache stats', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch cache stats' },
       { status: 500 }
@@ -38,13 +35,8 @@ export async function GET() {
  */
 export async function DELETE() {
   try {
-    // Require authenticated user
-    const { user: _user } = await requireServerContext();
-
-    // TODO: Add admin role check
-    // if (!isAdmin(user)) {
-    //   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    // }
+    // Require admin user (owner of organization)
+    await requireAdminContext();
 
     await cacheService.clear();
 
@@ -53,6 +45,7 @@ export async function DELETE() {
       message: 'Cache cleared successfully',
     });
   } catch (error) {
+    logError('Failed to clear cache', error);
     return NextResponse.json(
       { success: false, error: 'Failed to clear cache' },
       { status: 500 }

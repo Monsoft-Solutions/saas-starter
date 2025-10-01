@@ -53,7 +53,30 @@ class CacheService {
       logInfo('Cache service initialized successfully');
     } catch (error) {
       logError('Failed to initialize cache service', error);
-      throw error;
+
+      // In production, fall back to in-memory provider
+      if (env.NODE_ENV === 'production') {
+        logInfo('Falling back to in-memory cache provider');
+        // Force creation of in-memory provider as fallback
+        const { InMemoryCacheProvider } = await import(
+          './providers/in-memory.provider'
+        );
+        this.provider = new InMemoryCacheProvider();
+        try {
+          await this.provider.initialize();
+          this.initialized = true;
+          logInfo('In-memory cache provider initialized as fallback');
+        } catch (fallbackError) {
+          logError(
+            'Failed to initialize fallback cache provider',
+            fallbackError
+          );
+          throw fallbackError;
+        }
+      } else {
+        // In dev/staging, fail fast to surface issues
+        throw error;
+      }
     }
   }
 

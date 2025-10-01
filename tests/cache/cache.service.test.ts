@@ -196,9 +196,13 @@ describe('Cache Service', () => {
         ttl: 3600,
       });
 
-      expect(setSpy).toHaveBeenCalledWith('test-key', 'test-value', {
-        ttl: 3600,
-      });
+      expect(setSpy).toHaveBeenCalledWith(
+        CacheKeys.testKey('test-key'),
+        'test-value',
+        {
+          ttl: 3600,
+        }
+      );
     });
 
     it('should handle set errors gracefully', async () => {
@@ -452,9 +456,13 @@ describe('Cache Service', () => {
         ttl: 3600,
       });
 
-      expect(setSpy).toHaveBeenCalledWith('test-key', 'fetched-value', {
-        ttl: 3600,
-      });
+      expect(setSpy).toHaveBeenCalledWith(
+        CacheKeys.testKey('test-key'),
+        'fetched-value',
+        {
+          ttl: 3600,
+        }
+      );
     });
 
     it('should handle fetcher errors gracefully', async () => {

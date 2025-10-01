@@ -15,8 +15,20 @@ import { env } from '@/lib/env';
 import { createApiHandler } from '@/lib/server/api-handler';
 import { error as errorResponse } from '@/lib/http/response';
 import logger from '@/lib/logger/logger.service';
+import { cacheService, CacheKeys } from '@/lib/cache';
 
 const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
+
+/**
+ * Helper function to invalidate organization and customer caches for subscription events
+ */
+async function invalidateSubscriptionCache(
+  organizationId: string,
+  customerId: string
+) {
+  await cacheService.delete(CacheKeys.organizationSubscription(organizationId));
+  await cacheService.delete(CacheKeys.stripeCustomer(customerId));
+}
 
 export const POST = createApiHandler(async ({ request }) => {
   const payload = await request.text();
@@ -119,12 +131,9 @@ export const POST = createApiHandler(async ({ request }) => {
         );
         if (organization) {
           // Invalidate organization subscription cache
-          const { cacheService, CacheKeys } = await import('@/lib/cache');
-          await cacheService.delete(
-            CacheKeys.organizationSubscription(organization.id)
-          );
-          await cacheService.delete(
-            CacheKeys.stripeCustomer(subscription.customer as string)
+          await invalidateSubscriptionCache(
+            organization.id,
+            subscription.customer as string
           );
 
           const ownerId = await getOrganizationOwner(organization.id);
@@ -147,12 +156,9 @@ export const POST = createApiHandler(async ({ request }) => {
         );
         if (organization) {
           // Invalidate organization subscription cache
-          const { cacheService, CacheKeys } = await import('@/lib/cache');
-          await cacheService.delete(
-            CacheKeys.organizationSubscription(organization.id)
-          );
-          await cacheService.delete(
-            CacheKeys.stripeCustomer(subscription.customer as string)
+          await invalidateSubscriptionCache(
+            organization.id,
+            subscription.customer as string
           );
 
           const ownerId = await getOrganizationOwner(organization.id);

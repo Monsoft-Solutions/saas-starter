@@ -12,7 +12,7 @@ import { User, user as userTable } from '@/lib/db/schemas';
 // BetterAuth handles password hashing and session management internally
 import { redirect } from 'next/navigation';
 import { createCheckoutSession } from '@/lib/payments/stripe';
-import { getUser } from '@/lib/db/queries';
+import { getUser, invalidateUserCache } from '@/lib/db/queries';
 import { logActivity } from '@/lib/db/queries';
 import {
   validatedAction,
@@ -192,6 +192,9 @@ export const updatePassword = validatedActionWithUser(
 
     await logActivity(user.id, ActivityType.UPDATE_PASSWORD);
 
+    // Invalidate user cache after password update
+    await invalidateUserCache(user.id);
+
     // Send password changed confirmation email
     try {
       await sendPasswordChangedEmail({
@@ -223,6 +226,9 @@ export const deleteAccount = validatedActionWithUser(
     const { password } = data;
 
     await logActivity(user.id, ActivityType.DELETE_ACCOUNT);
+
+    // Invalidate user cache before account deletion
+    await invalidateUserCache(user.id);
 
     // Soft delete
     await authClient.deleteUser({
@@ -289,6 +295,7 @@ export const updateAccount = validatedActionWithUser(
         name,
       }),
       logActivity(user.id, ActivityType.UPDATE_ACCOUNT),
+      invalidateUserCache(user.id), // Invalidate user cache after account update
     ]);
 
     return { name, success: 'Account updated successfully.' };
