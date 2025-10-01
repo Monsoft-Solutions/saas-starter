@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { ICacheProvider } from '@/lib/cache/providers/cache.interface';
 import type { CacheStats } from '@/lib/types/cache';
+import { CacheKeys } from '@/lib/cache/cache-keys.util';
 
 // Mock server-only module for testing
 vi.mock('server-only', () => ({}));
@@ -134,8 +135,8 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('test-key', 'test-value');
-      const value = await service.get('test-key');
+      await service.set(CacheKeys.testKey('test-key'), 'test-value');
+      const value = await service.get(CacheKeys.testKey('test-key'));
 
       expect(value).toBe('test-value');
     });
@@ -144,7 +145,7 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      const value = await service.get('non-existent');
+      const value = await service.get(CacheKeys.testKey('non-existent'));
 
       expect(value).toBeNull();
     });
@@ -157,7 +158,7 @@ describe('Cache Service', () => {
         new Error('Get failed')
       );
 
-      const value = await service.get('test-key');
+      const value = await service.get(CacheKeys.testKey('test-key'));
 
       expect(value).toBeNull();
     });
@@ -168,8 +169,8 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('test-key', 'test-value');
-      const value = await service.get<string>('test-key');
+      await service.set(CacheKeys.testKey('test-key'), 'test-value');
+      const value = await service.get<string>(CacheKeys.testKey('test-key'));
 
       expect(value).toBe('test-value');
     });
@@ -179,8 +180,8 @@ describe('Cache Service', () => {
       await service.initialize();
 
       const testObject = { id: 1, name: 'test' };
-      await service.set('object-key', testObject);
-      const value = await service.get('object-key');
+      await service.set(CacheKeys.testKey('object-key'), testObject);
+      const value = await service.get(CacheKeys.testKey('object-key'));
 
       expect(value).toEqual(testObject);
     });
@@ -191,7 +192,7 @@ describe('Cache Service', () => {
 
       const setSpy = vi.spyOn(mockProvider, 'set');
 
-      await service.set('test-key', 'test-value', {
+      await service.set(CacheKeys.testKey('test-key'), 'test-value', {
         ttl: 3600,
       });
 
@@ -210,7 +211,7 @@ describe('Cache Service', () => {
 
       // Should not throw - errors are logged but swallowed
       await expect(
-        service.set('test-key', 'test-value')
+        service.set(CacheKeys.testKey('test-key'), 'test-value')
       ).resolves.not.toThrow();
     });
   });
@@ -220,9 +221,9 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('test-key', 'test-value');
-      await service.delete('test-key');
-      const value = await service.get('test-key');
+      await service.set(CacheKeys.testKey('test-key'), 'test-value');
+      await service.delete(CacheKeys.testKey('test-key'));
+      const value = await service.get(CacheKeys.testKey('test-key'));
 
       expect(value).toBeNull();
     });
@@ -231,7 +232,9 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await expect(service.delete('non-existent')).resolves.not.toThrow();
+      await expect(
+        service.delete(CacheKeys.testKey('non-existent'))
+      ).resolves.not.toThrow();
     });
 
     it('should handle delete errors gracefully', async () => {
@@ -243,7 +246,9 @@ describe('Cache Service', () => {
       );
 
       // Should not throw - errors are logged but swallowed
-      await expect(service.delete('test-key')).resolves.not.toThrow();
+      await expect(
+        service.delete(CacheKeys.testKey('test-key'))
+      ).resolves.not.toThrow();
     });
   });
 
@@ -252,12 +257,12 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('key1', 'value1');
-      await service.set('key2', 'value2');
+      await service.set(CacheKeys.testKey('key1'), 'value1');
+      await service.set(CacheKeys.testKey('key2'), 'value2');
       await service.clear();
 
-      const value1 = await service.get('key1');
-      const value2 = await service.get('key2');
+      const value1 = await service.get(CacheKeys.testKey('key1'));
+      const value2 = await service.get(CacheKeys.testKey('key2'));
 
       expect(value1).toBeNull();
       expect(value2).toBeNull();
@@ -281,8 +286,8 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('test-key', 'test-value');
-      const exists = await service.has('test-key');
+      await service.set(CacheKeys.testKey('test-key'), 'test-value');
+      const exists = await service.has(CacheKeys.testKey('test-key'));
 
       expect(exists).toBe(true);
     });
@@ -291,7 +296,7 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      const exists = await service.has('non-existent');
+      const exists = await service.has(CacheKeys.testKey('non-existent'));
 
       expect(exists).toBe(false);
     });
@@ -304,7 +309,7 @@ describe('Cache Service', () => {
         new Error('Has failed')
       );
 
-      const exists = await service.has('test-key');
+      const exists = await service.has(CacheKeys.testKey('test-key'));
 
       expect(exists).toBe(false);
     });
@@ -315,25 +320,27 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('user:1', 'user1');
-      await service.set('user:2', 'user2');
-      await service.set('product:1', 'product1');
+      await service.set(CacheKeys.testKey('user:1'), 'user1');
+      await service.set(CacheKeys.testKey('user:2'), 'user2');
+      await service.set(CacheKeys.testKey('product:1'), 'product1');
 
-      const count = await service.invalidatePattern('user:*');
+      const count = await service.invalidatePattern('test:user:*');
 
       expect(count).toBe(2);
-      expect(await service.get('user:1')).toBeNull();
-      expect(await service.get('user:2')).toBeNull();
-      expect(await service.get('product:1')).toBe('product1');
+      expect(await service.get(CacheKeys.testKey('user:1'))).toBeNull();
+      expect(await service.get(CacheKeys.testKey('user:2'))).toBeNull();
+      expect(await service.get(CacheKeys.testKey('product:1'))).toBe(
+        'product1'
+      );
     });
 
     it('should return 0 when no keys match pattern', async () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('user:1', 'user1');
+      await service.set(CacheKeys.testKey('user:1'), 'user1');
 
-      const count = await service.invalidatePattern('product:*');
+      const count = await service.invalidatePattern('test:product:*');
 
       expect(count).toBe(0);
     });
@@ -357,9 +364,9 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('key1', 'value1');
-      await service.get('key1'); // Hit
-      await service.get('key2'); // Miss
+      await service.set(CacheKeys.testKey('key1'), 'value1');
+      await service.get(CacheKeys.testKey('key1')); // Hit
+      await service.get(CacheKeys.testKey('key2')); // Miss
 
       const stats = await service.getStats();
 
@@ -405,10 +412,13 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('test-key', 'cached-value');
+      await service.set(CacheKeys.testKey('test-key'), 'cached-value');
 
       const fetcher = vi.fn().mockResolvedValue('fetched-value');
-      const value = await service.getOrSet('test-key', fetcher);
+      const value = await service.getOrSet(
+        CacheKeys.testKey('test-key'),
+        fetcher
+      );
 
       expect(value).toBe('cached-value');
       expect(fetcher).not.toHaveBeenCalled();
@@ -419,12 +429,15 @@ describe('Cache Service', () => {
       await service.initialize();
 
       const fetcher = vi.fn().mockResolvedValue('fetched-value');
-      const value = await service.getOrSet('test-key', fetcher);
+      const value = await service.getOrSet(
+        CacheKeys.testKey('test-key'),
+        fetcher
+      );
 
       expect(value).toBe('fetched-value');
       expect(fetcher).toHaveBeenCalled();
 
-      const cachedValue = await service.get('test-key');
+      const cachedValue = await service.get(CacheKeys.testKey('test-key'));
       expect(cachedValue).toBe('fetched-value');
     });
 
@@ -435,7 +448,7 @@ describe('Cache Service', () => {
       const setSpy = vi.spyOn(mockProvider, 'set');
       const fetcher = vi.fn().mockResolvedValue('fetched-value');
 
-      await service.getOrSet('test-key', fetcher, {
+      await service.getOrSet(CacheKeys.testKey('test-key'), fetcher, {
         ttl: 3600,
       });
 
@@ -450,11 +463,11 @@ describe('Cache Service', () => {
 
       const fetcher = vi.fn().mockRejectedValue(new Error('Fetch failed'));
 
-      await expect(service.getOrSet('test-key', fetcher)).rejects.toThrow(
-        'Fetch failed'
-      );
+      await expect(
+        service.getOrSet(CacheKeys.testKey('test-key'), fetcher)
+      ).rejects.toThrow('Fetch failed');
 
-      const cachedValue = await service.get('test-key');
+      const cachedValue = await service.get(CacheKeys.testKey('test-key'));
       expect(cachedValue).toBeNull();
     });
 
@@ -463,11 +476,14 @@ describe('Cache Service', () => {
       await service.initialize();
 
       const fetcher = vi.fn().mockResolvedValue(null);
-      const value = await service.getOrSet('test-key', fetcher);
+      const value = await service.getOrSet(
+        CacheKeys.testKey('test-key'),
+        fetcher
+      );
 
       expect(value).toBeNull();
 
-      const cachedValue = await service.get('test-key');
+      const cachedValue = await service.get(CacheKeys.testKey('test-key'));
       expect(cachedValue).toBeNull();
     });
   });
@@ -501,14 +517,14 @@ describe('Cache Service', () => {
       const service = new CacheService();
       await service.initialize();
 
-      await service.set('key1', 'value1');
-      await service.set('key2', 'value2');
-      await service.set('key3', 'value3');
+      await service.set(CacheKeys.testKey('key1'), 'value1');
+      await service.set(CacheKeys.testKey('key2'), 'value2');
+      await service.set(CacheKeys.testKey('key3'), 'value3');
 
       const results = await Promise.all([
-        service.get('key1'),
-        service.get('key2'),
-        service.get('key3'),
+        service.get(CacheKeys.testKey('key1')),
+        service.get(CacheKeys.testKey('key2')),
+        service.get(CacheKeys.testKey('key3')),
       ]);
 
       expect(results).toEqual(['value1', 'value2', 'value3']);
@@ -519,14 +535,14 @@ describe('Cache Service', () => {
       await service.initialize();
 
       await Promise.all([
-        service.set('key1', 'value1'),
-        service.set('key2', 'value2'),
-        service.set('key3', 'value3'),
+        service.set(CacheKeys.testKey('key1'), 'value1'),
+        service.set(CacheKeys.testKey('key2'), 'value2'),
+        service.set(CacheKeys.testKey('key3'), 'value3'),
       ]);
 
-      expect(await service.get('key1')).toBe('value1');
-      expect(await service.get('key2')).toBe('value2');
-      expect(await service.get('key3')).toBe('value3');
+      expect(await service.get(CacheKeys.testKey('key1'))).toBe('value1');
+      expect(await service.get(CacheKeys.testKey('key2'))).toBe('value2');
+      expect(await service.get(CacheKeys.testKey('key3'))).toBe('value3');
     });
 
     it('should handle concurrent getOrSet operations', async () => {
@@ -541,9 +557,9 @@ describe('Cache Service', () => {
 
       // Multiple concurrent calls - each should call the fetcher
       const results = await Promise.all([
-        service.getOrSet('test-key', fetcher),
-        service.getOrSet('test-key', fetcher),
-        service.getOrSet('test-key', fetcher),
+        service.getOrSet(CacheKeys.testKey('test-key'), fetcher),
+        service.getOrSet(CacheKeys.testKey('test-key'), fetcher),
+        service.getOrSet(CacheKeys.testKey('test-key'), fetcher),
       ]);
 
       // Note: Without locking, all might call the fetcher

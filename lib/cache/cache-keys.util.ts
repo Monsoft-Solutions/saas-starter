@@ -1,3 +1,4 @@
+import { RequestHeaders } from '../auth/server-context';
 import { CacheKey } from '../types/cache/cache-key.type';
 
 /**
@@ -18,82 +19,100 @@ export class CacheKeys {
    * User cache keys
    */
   static user(userId: string): CacheKey {
-    return `user:${userId}`;
+    return createCacheKey(`user:${userId}`);
   }
 
   static userOrganizations(userId: string): CacheKey {
-    return `user:${userId}:organizations`;
+    return createCacheKey(`user:${userId}:organizations`);
   }
 
   static userSessions(userId: string): CacheKey {
-    return `user:${userId}:sessions`;
+    return createCacheKey(`user:${userId}:sessions`);
   }
 
   static userPattern(userId?: string): CacheKey {
-    return userId ? `user:${userId}:*` : 'user:*';
+    return userId
+      ? createCacheKey(`user:${userId}:*`)
+      : createCacheKey('user:*');
   }
 
   /**
    * Organization cache keys
    */
   static organization(organizationId: string): CacheKey {
-    return `organization:${organizationId}`;
+    return createCacheKey(`organization:${organizationId}`);
   }
 
   static organizationMembers(organizationId: string): CacheKey {
-    return `organization:${organizationId}:members`;
+    return createCacheKey(`organization:${organizationId}:members`);
   }
 
   static organizationSubscription(organizationId: string): CacheKey {
-    return `organization:${organizationId}:subscription`;
+    return createCacheKey(`organization:${organizationId}:subscription`);
   }
 
   static organizationPattern(organizationId?: string): CacheKey {
     return organizationId
-      ? `organization:${organizationId}:*`
-      : 'organization:*';
+      ? createCacheKey(`organization:${organizationId}:*`)
+      : createCacheKey('organization:*');
   }
 
   /**
    * Stripe cache keys
    */
   static stripeProducts(): CacheKey {
-    return 'stripe:products';
+    return createCacheKey('stripe:products');
   }
 
   static stripeCustomer(customerId: string): CacheKey {
-    return `stripe:customer:${customerId}`;
+    return createCacheKey(`stripe:customer:${customerId}`);
   }
 
   static stripeSubscription(subscriptionId: string): CacheKey {
-    return `stripe:subscription:${subscriptionId}`;
+    return createCacheKey(`stripe:subscription:${subscriptionId}`);
   }
 
   /**
    * Activity log cache keys
    */
   static userActivity(userId: string, limit: number = 10): CacheKey {
-    return `activity:user:${userId}:limit:${limit}`;
+    return createCacheKey(`activity:user:${userId}:limit:${limit}`);
   }
 
   static organizationActivity(
     organizationId: string,
     limit: number = 10
   ): CacheKey {
-    return `activity:organization:${organizationId}:limit:${limit}`;
+    return createCacheKey(
+      `activity:organization:${organizationId}:limit:${limit}`
+    );
   }
 
   /**
    * API rate limiting keys
    */
   static rateLimit(ip: string, endpoint: string): CacheKey {
-    return `ratelimit:${endpoint}:${ip}`;
+    return createCacheKey(`ratelimit:${endpoint}:${ip}`);
   }
 
   /**
    * Session cache keys
    */
   static session(sessionId: string): CacheKey {
-    return `session:${sessionId}`;
+    return createCacheKey(`session:${sessionId}`);
   }
+
+  static serverContext(requestHeaders: RequestHeaders): CacheKey {
+    return createCacheKey(
+      `server:context:${requestHeaders.get('x-request-id')}`
+    );
+  }
+
+  static testKey(key: string): CacheKey {
+    return createCacheKey(`test:${key}`);
+  }
+}
+
+function createCacheKey(key: string): CacheKey {
+  return key as CacheKey;
 }

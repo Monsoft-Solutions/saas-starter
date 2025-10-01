@@ -4,7 +4,7 @@ import { env } from '@/lib/env';
 import { sendEmail } from '@/lib/emails/resend.client';
 import logger from '@/lib/logger/logger.service';
 
-// Simple in-memory cache for idempotency (in production, use Redis or similar)
+// TODO: Use cache service
 const emailCache = new Map<string, number>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
