@@ -85,6 +85,46 @@ export default defineConfig({
             text: 'Async Job Processing',
             link: '/async-job-processing',
           },
+          {
+            text: 'Setup Guide',
+            link: '/async-job-processing/setup',
+          },
+          {
+            text: 'Core Concepts',
+            link: '/async-job-processing/core-concepts',
+          },
+          {
+            text: 'Usage Guide',
+            link: '/async-job-processing/usage',
+          },
+          {
+            text: 'Creating Jobs',
+            link: '/async-job-processing/creating-jobs',
+          },
+          {
+            text: 'Email Jobs',
+            link: '/async-job-processing/email-jobs',
+          },
+          {
+            text: 'Webhook Jobs',
+            link: '/async-job-processing/webhook-jobs',
+          },
+          {
+            text: 'Monitoring & Debugging',
+            link: '/async-job-processing/monitoring',
+          },
+          {
+            text: 'Testing',
+            link: '/async-job-processing/testing',
+          },
+          {
+            text: 'Deployment',
+            link: '/async-job-processing/deployment',
+          },
+          {
+            text: 'API Reference',
+            link: '/async-job-processing/api-reference',
+          },
         ],
       },
       {
