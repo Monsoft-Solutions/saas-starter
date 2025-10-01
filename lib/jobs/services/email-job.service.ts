@@ -16,8 +16,8 @@ import 'server-only';
 
 import { jobDispatcher } from '../job-dispatcher.service';
 import { JOB_TYPES } from '../../types/jobs';
-import type { SendEmailJobPayload } from '../schemas/send-email-job.schema';
-import type { BaseJobMetadata } from '../schemas/base-job.schema';
+import type { SendEmailJobPayload } from '../../types/jobs/schemas/send-email-job.schema';
+import type { BaseJobMetadata } from '../../types/jobs/schemas/base-job.schema';
 
 /**
  * Metadata interface for email job attribution tracking

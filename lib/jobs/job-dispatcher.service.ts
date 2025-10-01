@@ -3,7 +3,10 @@ import 'server-only';
 import { randomUUID } from 'crypto';
 
 import { qstash } from './qstash.client';
-import type { BaseJob, BaseJobMetadata } from './schemas/base-job.schema';
+import type {
+  BaseJob,
+  BaseJobMetadata,
+} from '../types/jobs/schemas/base-job.schema';
 import { env } from '@/lib/env';
 import { createJobExecution } from '@/lib/db/queries';
 import logger from '@/lib/logger/logger.service';

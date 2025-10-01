@@ -17,8 +17,8 @@
 
 import { createJobWorker } from '@/lib/jobs/job-worker.handler';
 import logger from '@/lib/logger/logger.service';
-import type { GenerateReportJobPayload } from '@/lib/jobs/schemas/generate-report-job.schema';
-import type { BaseJob } from '@/lib/jobs/schemas/base-job.schema';
+import type { GenerateReportJobPayload } from '@/lib/types/jobs/schemas/generate-report-job.schema';
+import type { BaseJob } from '@/lib/types/jobs/schemas/base-job.schema';
 
 /**
  * Report generation job handler that creates analytics and business reports.

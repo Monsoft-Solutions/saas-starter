@@ -3,7 +3,7 @@ import 'server-only';
 import { NextRequest } from 'next/server';
 
 import { getQStashReceiver } from './qstash.client';
-import type { BaseJob } from './schemas/base-job.schema';
+import type { BaseJob } from '../types/jobs/schemas/base-job.schema';
 import { getJobExecutionByJobId, updateJobExecution } from '@/lib/db/queries';
 import logger from '@/lib/logger/logger.service';
 

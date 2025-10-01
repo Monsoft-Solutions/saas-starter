@@ -15,7 +15,7 @@
 import { z } from 'zod';
 
 import { BaseJobSchema } from './base-job.schema';
-import { JOB_TYPES } from '../../types/jobs';
+import { JOB_TYPES } from '..';
 
 /**
  * Supported email templates that can be processed by the email worker

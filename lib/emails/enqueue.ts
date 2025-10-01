@@ -24,7 +24,7 @@ import {
   enqueueEmailJob,
   type EnqueueEmailJobMetadata,
 } from '@/lib/jobs/services';
-import type { EmailTemplate } from '@/lib/jobs/schemas/send-email-job.schema';
+import type { EmailTemplate } from '@/lib/types/jobs/schemas/send-email-job.schema';
 import type { ResendRecipientList } from '@/lib/types';
 import type {
   EmailChangeConfirmationEmailParams,

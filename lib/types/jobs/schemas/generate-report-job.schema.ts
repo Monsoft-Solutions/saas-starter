@@ -15,7 +15,7 @@
 
 import { z } from 'zod';
 import { BaseJobSchema } from './base-job.schema';
-import { JOB_TYPES } from '../../types/jobs';
+import { JOB_TYPES } from '..';
 
 /**
  * Valid payloads accepted by the report worker. Defines the structure for

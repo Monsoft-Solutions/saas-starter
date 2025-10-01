@@ -11,8 +11,8 @@
  */
 
 import { createJobWorker } from '@/lib/jobs/job-worker.handler';
-import type { BaseJob } from '@/lib/jobs/schemas/base-job.schema';
-import type { SendEmailJobPayload } from '@/lib/jobs/schemas/send-email-job.schema';
+import type { BaseJob } from '@/lib/types/jobs/schemas/base-job.schema';
+import type { SendEmailJobPayload } from '@/lib/types/jobs/schemas/send-email-job.schema';
 import {
   sendEmailChangeConfirmationEmail,
   sendPasswordChangedEmail,

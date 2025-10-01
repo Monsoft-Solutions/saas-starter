@@ -16,8 +16,8 @@
 
 import { createJobWorker } from '@/lib/jobs/job-worker.handler';
 import logger from '@/lib/logger/logger.service';
-import type { ProcessWebhookJobPayload } from '@/lib/jobs/schemas/process-webhook-job.schema';
-import type { BaseJob } from '@/lib/jobs/schemas/base-job.schema';
+import type { ProcessWebhookJobPayload } from '@/lib/types/jobs/schemas/process-webhook-job.schema';
+import type { BaseJob } from '@/lib/types/jobs/schemas/base-job.schema';
 
 /**
  * Webhook job handler that processes webhook events from third-party services.
