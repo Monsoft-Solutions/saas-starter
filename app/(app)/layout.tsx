@@ -1,5 +1,6 @@
 import { authClient } from '@/lib/auth/auth-client';
 import { SWRProvider } from '@/components/providers/swr-provider';
+import { NotificationProvider } from '@/components/notifications/notification-provider.component';
 
 // TODO: improve this
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export default async function AppLayout({
         },
       }}
     >
-      {children}
+      <NotificationProvider>{children}</NotificationProvider>
     </SWRProvider>
   );
 }
