@@ -103,13 +103,52 @@ export class CacheKeys {
   }
 
   static serverContext(requestHeaders: RequestHeaders): CacheKey {
-    return createCacheKey(
-      `server:context:${requestHeaders.get('x-request-id')}`
-    );
+    const requestId = requestHeaders.get('x-request-id');
+    const cookie = requestHeaders.get('cookie');
+    // Use a combination of request-id and cookie hash for uniqueness
+    const identifier = requestId || this.hashString(cookie || '');
+    return createCacheKey(`server:context:${identifier}`);
+  }
+
+  static serverSession(requestHeaders: RequestHeaders): CacheKey {
+    const requestId = requestHeaders.get('x-request-id');
+    const cookie = requestHeaders.get('cookie');
+    const identifier = requestId || this.hashString(cookie || '');
+    return createCacheKey(`server:session:${identifier}`);
+  }
+
+  static serverOrganization(
+    requestHeaders: RequestHeaders,
+    userId: string
+  ): CacheKey {
+    const requestId = requestHeaders.get('x-request-id');
+    const cookie = requestHeaders.get('cookie');
+    const identifier = requestId || this.hashString(cookie || '');
+    return createCacheKey(`server:organization:${identifier}:${userId}`);
+  }
+
+  /**
+   * Simple hash function for generating cache keys from strings
+   */
+  private static hashString(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(36);
   }
 
   static testKey(key: string): CacheKey {
     return createCacheKey(`test:${key}`);
+  }
+
+  /**
+   * Email cache keys
+   */
+  static email(template: string, to: string, extraData?: string): CacheKey {
+    return createCacheKey(`email:${template}:${to}:${extraData || ''}`);
   }
 }
 
