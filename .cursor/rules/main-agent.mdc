@@ -57,6 +57,11 @@ This agent serves as the **registry and router** for all specialized agents in t
 - **Purpose**: Comprehensive unit testing expert specializing in Vitest, TypeScript, and modern testing best practices
 - **Location**: `.cursor/rules/unit-testing.mdc`
 
+### pr-review-analyzer
+
+- **Purpose**: Expert agent for analyzing GitHub PR code reviews, determining actionable items, and creating detailed fix instructions following project guidelines
+- **Location**: `.cursor/rules/pr-review-analyzer.mdc`
+
 ## Routing Guidelines
 
 Direct tasks to appropriate specialized agents:
@@ -70,6 +75,7 @@ Direct tasks to appropriate specialized agents:
 - **Documentation** → `documentation-writer`
 - **TypeScript best practices** → `typescript`
 - **Unit Testing** → `unit-testing`
+- **PR Review Analysis** → `pr-review-analyzer`
 
 ## Registry Maintenance
 
@@ -103,5 +109,5 @@ Use these credentials:
 
 ---
 
-_Last updated: 2025-09-30_  
-_Total Cursor agents: 9 (including main-agent)_
+_Last updated: 2025-01-01_  
+_Total Cursor agents: 10 (including main-agent)_

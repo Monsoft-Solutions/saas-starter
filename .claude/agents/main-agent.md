@@ -99,6 +99,14 @@ Central coordinator for all AI agents in the SaaS Starter project. This agent se
 
 **Location**: `.claude/agents/unit-testing.md`
 
+### pr-review-analyzer
+
+**Purpose**: Expert agent for analyzing GitHub PR code reviews, determining actionable items, and creating detailed fix instructions following project guidelines
+
+**Summary**: Analyzes PR comments and code changes, categorizes issues by priority, and creates structured documentation with specific fix instructions.
+
+**Location**: `.claude/agents/pr-review-analyzer.md`
+
 ## Routing Logic
 
 When a task is received, route it to the appropriate specialized agent:
@@ -112,6 +120,7 @@ When a task is received, route it to the appropriate specialized agent:
 7. **Documentation** → `documentation-writer`
 8. **TypeScript best practices** → `typescript`
 9. **Unit Testing** → `unit-testing`
+10. **PR Review Analysis** → `pr-review-analyzer`
 
 ## Usage Pattern
 
@@ -144,5 +153,5 @@ To access the app on protected routes (_/app/_) you should use the chrome-dev MC
 
 ---
 
-_Last updated: 2025-09-30_  
-_Total Claude agents: 9 (including main-agent)_
+_Last updated: 2025-01-01_  
+_Total Claude agents: 10 (including main-agent)_

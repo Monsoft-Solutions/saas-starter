@@ -65,6 +65,12 @@ This document serves as the central registry for all AI agents available in this
 - **Summary**: Specializes in writing comprehensive unit tests using Vitest, with expertise in mocking, test organization, and achieving high code coverage.
 - **Location**: `/agents/unit-testing.md`
 
+### pr-review-analyzer
+
+- **Purpose**: Expert agent for analyzing GitHub PR code reviews, determining actionable items, and creating detailed fix instructions following project guidelines
+- **Summary**: Analyzes PR comments and code changes, categorizes issues by priority, and creates structured documentation with specific fix instructions.
+- **Location**: `/agents/pr-review-analyzer.md`
+
 ## Agent Deployment
 
 Agents in this project are deployed across three locations:
@@ -105,5 +111,5 @@ To access the app on protected routes (_/app/_) you should use the chrome-dev MC
 
 ---
 
-_Last updated: 2025-09-30_  
-_Total agents: 9 (including main-agent)_
+_Last updated: 2025-01-01_  
+_Total agents: 10 (including main-agent)_
