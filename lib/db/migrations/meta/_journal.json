@@ -43,6 +43,13 @@
       "when": 1759333959492,
       "tag": "0005_yummy_gorgon",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1759337287954,
+      "tag": "0006_flowery_exiles",
+      "breakpoints": true
     }
   ]
 }
