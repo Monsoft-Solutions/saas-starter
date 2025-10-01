@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { ActivityType } from '@/lib/types';
-import { sendWelcomeEmail } from '@/lib/emails/dispatchers';
+import { sendWelcomeEmailAsync } from '@/lib/emails/enqueue';
 import { generateOrganizationSlug } from '@/lib/utils';
 import { logActivity } from '@/lib/db/queries';
 import logger from '@/lib/logger/logger.service';
@@ -9,8 +9,8 @@ export const databaseHooks = {
   user: {
     create: {
       after: async (user: any) => {
-        // Send welcome email
-        await sendWelcomeEmail({
+        // Send welcome email asynchronously
+        await sendWelcomeEmailAsync({
           to: user.email,
           recipientName: user.name,
           dashboardUrl: '/app/general',

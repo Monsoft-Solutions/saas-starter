@@ -5,6 +5,7 @@
 export const JOB_TYPES = {
   SEND_EMAIL: 'send-email',
   PROCESS_WEBHOOK: 'process-webhook',
+  PROCESS_STRIPE_WEBHOOK: 'process-stripe-webhook',
   EXPORT_DATA: 'export-data',
   GENERATE_REPORT: 'generate-report',
   CLEANUP_OLD_DATA: 'cleanup-old-data',

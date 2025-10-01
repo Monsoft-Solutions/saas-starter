@@ -22,6 +22,13 @@ export const JOB_REGISTRY: Record<JobType, JobConfig> = {
     timeout: 60,
     description: 'Process incoming webhooks from third-party services',
   },
+  [JOB_TYPES.PROCESS_STRIPE_WEBHOOK]: {
+    type: JOB_TYPES.PROCESS_STRIPE_WEBHOOK,
+    endpoint: '/api/jobs/stripe-webhook',
+    retries: 5,
+    timeout: 120,
+    description: 'Process Stripe webhook events with retries',
+  },
   [JOB_TYPES.EXPORT_DATA]: {
     type: JOB_TYPES.EXPORT_DATA,
     endpoint: '/api/jobs/export',

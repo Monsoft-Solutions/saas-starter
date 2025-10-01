@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "dotenv -e .env.local -- next dev --turbopack",
+    "dev": "dotenv -e .env -- next dev --turbopack",
     "dev:staging": "dotenv -e .env.staging -- next dev --turbopack",
     "dev:prod": "dotenv -e .env.production -- next dev --turbopack",
     "build": "next build",
@@ -34,7 +34,8 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "stripe": "stripe listen --forward-to localhost:3000/api/stripe/webhook"
+    "stripe": "stripe listen --forward-to localhost:3000/api/stripe/webhook",
+    "qstash:listen": "npx qstash dev"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
