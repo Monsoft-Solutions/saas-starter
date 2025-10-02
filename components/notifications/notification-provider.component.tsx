@@ -1,23 +1,24 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import type { Notification } from '@/lib/types/notifications';
 import { useNotifications } from './use-notifications.hook';
 
 /**
- * Notification context shape
+ * Notification context shape - derived from hook return type
  */
-type NotificationContextType = {
-  notifications: Notification[];
-  unreadCount: number;
-  isLoading: boolean;
-  error: Error | undefined;
-  toggleRead: (notificationId: number) => Promise<void>;
-  markAllAsRead: () => Promise<void>;
-  dismiss: (notificationId: number) => Promise<void>;
-  refetch: () => void;
-};
+type NotificationContextType = Pick<
+  ReturnType<typeof useNotifications>,
+  | 'notifications'
+  | 'unreadCount'
+  | 'isLoading'
+  | 'error'
+  | 'toggleRead'
+  | 'markAllAsRead'
+  | 'dismiss'
+  | 'refetch'
+>;
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined
@@ -27,11 +28,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
  * NotificationProvider component
  * Wraps the app with notification state management and SWR polling
  */
-export function NotificationProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function NotificationProvider({ children }: { children: ReactNode }) {
   const notificationHook = useNotifications();
   const previousUnreadCount = useRef<number>(0);
 

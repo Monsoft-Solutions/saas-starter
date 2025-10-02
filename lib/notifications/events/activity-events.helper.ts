@@ -38,7 +38,7 @@ export async function createCommentMentionNotification(
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     },
     {
-      idempotencyKey: `comment-mention-${userId}-${Date.now()}`,
+      idempotencyKey: `comment-mention-${userId}-${commentUrl}`,
     }
   );
 }
@@ -80,7 +80,7 @@ export async function createTaskAssignedNotification(
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     },
     {
-      idempotencyKey: `task-assigned-${userId}-${Date.now()}`,
+      idempotencyKey: `task-assigned-${userId}-${taskUrl}`,
     }
   );
 }

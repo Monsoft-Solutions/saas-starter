@@ -89,6 +89,7 @@ export async function createNotification(
     title: event.title,
     message: event.message,
     metadata: event.metadata ?? null,
+    expiresAt: event.expiresAt ?? null,
   };
 
   const notification = await createNotificationRepo(notificationData);
@@ -96,7 +97,7 @@ export async function createNotification(
   // Invalidate cache
   await invalidateUserNotificationCache(event.userId);
 
-  logger.info('[notifications] Created notification', {
+  logger.debug('[notifications] Created notification', {
     notificationId: notification.id,
     userId: event.userId,
     type: event.type,
@@ -128,6 +129,7 @@ export async function createNotificationsForUsers(
     title: event.title,
     message: event.message,
     metadata: event.metadata ?? null,
+    expiresAt: event.expiresAt ?? null,
   }));
 
   const notifications = await createNotificationsBulk(notificationsData);
@@ -137,7 +139,7 @@ export async function createNotificationsForUsers(
     userIds.map((userId) => invalidateUserNotificationCache(userId))
   );
 
-  logger.info('[notifications] Created bulk notifications', {
+  logger.debug('[notifications] Created bulk notifications', {
     count: notifications.length,
     type: event.type,
   });
@@ -193,7 +195,7 @@ export async function markNotificationAsRead(
 ): Promise<void> {
   await markAsRead(notificationId, userId);
 
-  logger.info('[notifications] Marked notification as read', {
+  logger.debug('[notifications] Marked notification as read', {
     notificationId,
     userId,
   });
@@ -217,7 +219,7 @@ export async function toggleNotificationRead(
 
   await toggleRead(notificationId, userId, notification.isRead);
 
-  logger.info('[notifications] Toggled notification read status', {
+  logger.debug('[notifications] Toggled notification read status', {
     notificationId,
     userId,
     newStatus: !notification.isRead,
@@ -236,7 +238,7 @@ export async function markNotificationsAsRead(
 ): Promise<void> {
   await markMultipleAsRead(notificationIds, userId);
 
-  logger.info('[notifications] Marked notifications as read', {
+  logger.debug('[notifications] Marked notifications as read', {
     count: notificationIds.length,
     userId,
   });
@@ -252,7 +254,7 @@ export async function markAllNotificationsAsRead(
 ): Promise<void> {
   await markAllAsRead(userId);
 
-  logger.info('[notifications] Marked all notifications as read', { userId });
+  logger.debug('[notifications] Marked all notifications as read', { userId });
 }
 
 /**
@@ -267,7 +269,7 @@ export async function dismissNotification(
 ): Promise<void> {
   await dismissNotificationQuery(notificationId, userId);
 
-  logger.info('[notifications] Dismissed notification', {
+  logger.debug('[notifications] Dismissed notification', {
     notificationId,
     userId,
   });

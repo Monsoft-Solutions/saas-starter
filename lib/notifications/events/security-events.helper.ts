@@ -35,7 +35,7 @@ export async function createPasswordChangedNotification(
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     },
     {
-      idempotencyKey: `password-changed-${userId}-${Date.now()}`,
+      idempotencyKey: `password-changed-${userId}-${ipAddress ?? 'unknown'}`,
     }
   );
 }
@@ -79,7 +79,7 @@ export async function createLoginNewDeviceNotification(
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     },
     {
-      idempotencyKey: `login-new-device-${userId}-${Date.now()}`,
+      idempotencyKey: `login-new-device-${userId}-${deviceInfo}-${ipAddress}`,
     }
   );
 }
@@ -114,7 +114,7 @@ export async function createTwoFactorEnabledNotification(
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     },
     {
-      idempotencyKey: `two-factor-enabled-${userId}-${Date.now()}`,
+      idempotencyKey: `two-factor-enabled-${userId}`,
     }
   );
 }

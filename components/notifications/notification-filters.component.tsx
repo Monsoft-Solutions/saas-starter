@@ -1,5 +1,6 @@
 'use client';
 
+import type { ComponentType } from 'react';
 import {
   Bell,
   CreditCard,
@@ -37,7 +38,7 @@ type NotificationFiltersProps = {
  */
 const categoryConfig: Record<
   NotificationCategory | 'all',
-  { label: string; icon: React.ComponentType<{ className?: string }> }
+  { label: string; icon: ComponentType<{ className?: string }> }
 > = {
   all: { label: 'All notifications', icon: Bell },
   system: { label: 'System', icon: Bell },

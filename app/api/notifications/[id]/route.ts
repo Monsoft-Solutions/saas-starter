@@ -32,11 +32,6 @@ export async function PATCH(request: NextRequest, props: RouteParams) {
     // Authenticate user
     const { user } = await requireServerContext();
 
-    logger.debug('[api/notifications/[id]] Updating notification', {
-      params,
-      user,
-    });
-
     // Parse notification ID
     const notificationId = parseInt(params.id, 10);
     if (isNaN(notificationId)) {

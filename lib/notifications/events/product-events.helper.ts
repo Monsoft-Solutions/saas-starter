@@ -78,7 +78,7 @@ export async function createProductAnnouncementNotification(
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     },
     {
-      idempotencyKey: `product-announcement-${userId}-${Date.now()}`,
+      idempotencyKey: `product-announcement-${userId}-${announcementTitle}`,
     }
   );
 }

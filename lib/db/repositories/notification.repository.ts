@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq } from 'drizzle-orm';
 import { db } from '../drizzle';
 import { notifications } from '../schemas';
 import type { NewNotification } from '../schemas';
@@ -75,38 +75,62 @@ export async function getNotificationStats(userId: string): Promise<{
   byCategory: Record<NotificationCategory, number>;
   byPriority: Record<string, number>;
 }> {
-  const allNotifications = await db
-    .select()
-    .from(notifications)
-    .where(
-      and(
-        eq(notifications.userId, userId),
-        eq(notifications.isDismissed, false)
-      )
-    );
+  const baseFilter = and(
+    eq(notifications.userId, userId),
+    eq(notifications.isDismissed, false)
+  );
 
-  const total = allNotifications.length;
-  const unread = allNotifications.filter((n) => !n.isRead).length;
+  const [[{ total }], [{ unread }], categoryRows, priorityRows] =
+    await Promise.all([
+      // Total count
+      db.select({ total: count() }).from(notifications).where(baseFilter),
 
-  const byCategory = allNotifications.reduce(
-    (acc, n) => {
-      acc[n.category] = (acc[n.category] || 0) + 1;
+      // Unread count
+      db
+        .select({ unread: count() })
+        .from(notifications)
+        .where(and(baseFilter, eq(notifications.isRead, false))),
+
+      // By category
+      db
+        .select({
+          category: notifications.category,
+          count: count(),
+        })
+        .from(notifications)
+        .where(baseFilter)
+        .groupBy(notifications.category),
+
+      // By priority
+      db
+        .select({
+          priority: notifications.priority,
+          count: count(),
+        })
+        .from(notifications)
+        .where(baseFilter)
+        .groupBy(notifications.priority),
+    ]);
+
+  const byCategory = categoryRows.reduce(
+    (acc, row) => {
+      acc[row.category] = Number(row.count);
       return acc;
     },
     {} as Record<NotificationCategory, number>
   );
 
-  const byPriority = allNotifications.reduce(
-    (acc, n) => {
-      acc[n.priority] = (acc[n.priority] || 0) + 1;
+  const byPriority = priorityRows.reduce(
+    (acc, row) => {
+      acc[row.priority] = Number(row.count);
       return acc;
     },
     {} as Record<string, number>
   );
 
   return {
-    total,
-    unread,
+    total: Number(total),
+    unread: Number(unread),
     byCategory,
     byPriority,
   };

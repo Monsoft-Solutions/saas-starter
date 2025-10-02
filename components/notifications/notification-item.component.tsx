@@ -60,7 +60,7 @@ function getPriorityIcon(priority: NotificationPriority) {
     case 'critical':
       return <AlertCircle className="h-4 w-4 text-destructive" />;
     case 'important':
-      return <AlertTriangle className="h-4 w-4 text-orange-500" />;
+      return <AlertTriangle className="h-4 w-4 text-warning" />;
     case 'info':
     default:
       return null;
@@ -156,7 +156,7 @@ export function NotificationItem({
             aria-label={notification.isRead ? 'Mark as unread' : 'Mark as read'}
           >
             {notification.isRead ? (
-              <CircleCheck className="h-4 w-4 text-green-600" />
+              <CircleCheck className="h-4 w-4 text-success" />
             ) : (
               <Circle className="h-4 w-4" />
             )}
@@ -178,7 +178,7 @@ export function NotificationItem({
         </span>
 
         {notification.metadata?.actionUrl && (
-          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+          <span className="text-xs font-semibold text-primary">
             {notification.metadata.actionLabel || 'View'} →
           </span>
         )}

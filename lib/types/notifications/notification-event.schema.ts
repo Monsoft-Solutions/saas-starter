@@ -32,6 +32,9 @@ export const notificationEventSchema = z.object({
     .max(1000, 'Message is too long'),
   /** Optional metadata for additional context */
   metadata: z.record(z.unknown()).optional(),
+
+  /** Optional expiration date */
+  expiresAt: z.date().optional(),
 });
 
 /**

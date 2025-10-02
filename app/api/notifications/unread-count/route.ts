@@ -20,6 +20,12 @@ export async function GET() {
 
     return NextResponse.json({ unreadCount });
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.name === 'UnauthorizedError') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Handle other errors
     logger.error('[api/notifications/unread-count] Failed to fetch count', {
       error,
     });

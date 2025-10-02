@@ -223,8 +223,11 @@ export async function deleteExpiredNotifications(): Promise<number> {
       )
     );
 
-  // Count deleted rows - note: Drizzle returns array for delete
-  return Array.isArray(result) ? result.length : 0;
+  // Access rowCount property from the result object
+  if ('rowCount' in result && typeof result.rowCount === 'number') {
+    return result.rowCount;
+  }
+  return 0;
 }
 
 /**

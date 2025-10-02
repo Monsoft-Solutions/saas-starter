@@ -19,6 +19,12 @@ export async function POST() {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    // Handle authentication errors with 401
+    if (error instanceof Error && error.name === 'UnauthorizedError') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Handle other errors with 500
     logger.error(
       '[api/notifications/mark-all-read] Failed to mark all as read',
       { error }
