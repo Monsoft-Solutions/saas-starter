@@ -167,6 +167,10 @@ function buildRegistry(): RouteGuardRegistry {
       id: 'public:stripe-webhook',
       pattern: createExactPattern('/api/stripe/webhook'),
     },
+    {
+      id: 'public:accept-invitation',
+      pattern: createPrefixPattern('/accept-invitation'),
+    },
   ];
 
   const bypass: RouteGuardPattern[] = [

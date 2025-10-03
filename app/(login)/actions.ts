@@ -45,6 +45,7 @@ import { CacheKeys, cacheService } from '@/lib/cache';
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
   password: z.string().min(8).max(100),
+  invitationId: z.string().optional(),
 });
 
 /**
@@ -53,7 +54,7 @@ const signInSchema = z.object({
 export const signIn = validatedAction(
   signInSchema,
   async (requestData, formData) => {
-    const { email, password } = requestData;
+    const { email, password, invitationId } = requestData;
 
     const result = await auth.api.signInEmail({
       body: {
@@ -87,6 +88,11 @@ export const signIn = validatedAction(
           email,
         },
       });
+    }
+
+    // If there's an invitation ID, redirect to accept invitation page
+    if (invitationId) {
+      redirect(`/accept-invitation/${invitationId}`);
     }
 
     redirect(APP_BASE_PATH);
