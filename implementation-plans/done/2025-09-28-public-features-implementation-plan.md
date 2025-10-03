@@ -2,6 +2,10 @@
 
 ## Executive Summary
 
+> **Note**: This plan was created before the design system migration to Tailwind CSS v4 native approach.
+> References to `/lib/design-system` should be read as Tailwind utility classes.
+> See `/docs/design-system.md` for current approach.
+
 Create a dedicated marketing "Features" area that showcases each pillar of the SaaS starter, backed by existing documentation. Deliver a `/features` landing page that spotlights all feature categories, add individual feature detail pages powered by a reusable component, and wire navigation so prospects can drill into the areas most relevant to them while staying aligned with the design system and content strategy.
 
 ## Technical Analysis

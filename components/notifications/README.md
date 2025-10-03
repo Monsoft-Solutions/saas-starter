@@ -193,12 +193,12 @@ In page header or navbar:
 
 ## Styling
 
-All components use the design system from `/lib/design-system/`:
+All components use Tailwind CSS v4 utilities and design tokens from `app/globals.css`:
 
-- Colors: Design system tokens
-- Spacing: `notionSpacing` constants
-- Radius: `notionRadius` constants
-- Typography: Design system typography scale
+- Colors: Tailwind utility classes (e.g., `bg-primary`, `text-muted-foreground`)
+- Spacing: Tailwind spacing utilities (e.g., `p-6`, `gap-4`)
+- Radius: Tailwind radius utilities (e.g., `rounded-lg`, `rounded-full`)
+- Typography: Tailwind typography utilities (e.g., `text-lg`, `font-semibold`)
 
 Components are fully responsive and support dark mode.
 

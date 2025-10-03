@@ -304,7 +304,7 @@ The application is compatible with:
 - **[💳 Stripe Integration](./docs/stripe/)**: Payment processing and webhooks
 - **[⚡ Cache System](./docs/cache/)**: Provider-agnostic caching with Upstash Redis
 - **[🌍 Environment Configuration](./docs/environment-configuration.md)**: Multi-environment setup guide
-- **[💎 Design System](./docs/design-system.md)**: Design tokens and components
+- **[💎 Design System](./docs/design-system.md)**: Tailwind CSS v4 design tokens and utilities
 - **[📧 Email System](./docs/emails.md)**: Email templates and delivery
 - **[🧪 Testing Guide](./docs/unit-testing.md)**: Testing framework and patterns
 
@@ -348,7 +348,7 @@ lib/
 ├── auth/            # Authentication utilities
 ├── cache/           # Provider-agnostic cache system
 ├── emails/          # Email templates and logic
-├── design-system/   # Design tokens and utilities
+├── utils/           # Utility functions (including cn)
 └── payments/        # Stripe integration logic
 ```
 
@@ -410,7 +410,7 @@ pnpm type-check         # TypeScript type checking
 pnpm preview:emails     # Preview email templates
 
 # Design System
-pnpm verify:design-tokens  # Validate design tokens
+# Design tokens now managed via Tailwind CSS v4 in app/globals.css
 ```
 
 ## 🏢 Enterprise Features

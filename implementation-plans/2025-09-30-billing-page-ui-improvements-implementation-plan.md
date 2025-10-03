@@ -1,9 +1,13 @@
 # Billing Page UI Improvements - Implementation Plan
 
-**Date**: September 30, 2025  
-**Feature**: Enhanced Billing & Subscription Management UI  
-**Estimated Effort**: 3-4 days  
+**Date**: September 30, 2025
+**Feature**: Enhanced Billing & Subscription Management UI
+**Estimated Effort**: 3-4 days
 **Complexity**: Medium
+
+> **Note**: This plan was created before the design system migration to Tailwind CSS v4 native approach.
+> References to `/lib/design-system` should be read as Tailwind utility classes.
+> See `/docs/design-system.md` for current approach.
 
 ## Executive Summary
 

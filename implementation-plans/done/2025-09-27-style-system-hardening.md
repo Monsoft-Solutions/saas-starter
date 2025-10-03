@@ -1,8 +1,12 @@
 # Style System Hardening Plan
 
-**Created:** 2025-09-27  
-**Project:** Next.js SaaS Starter  
+**Created:** 2025-09-27
+**Project:** Next.js SaaS Starter
 **Focus:** Consolidate theme tokens, fix tailwind v4 usage, and standardize component styling
+
+> **Note**: This plan was created before the design system migration to Tailwind CSS v4 native approach.
+> References to `/lib/design-system` should be read as Tailwind utility classes.
+> See `/docs/design-system.md` for current approach.
 
 ---
 
