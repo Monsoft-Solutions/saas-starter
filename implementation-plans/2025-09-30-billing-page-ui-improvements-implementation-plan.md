@@ -29,7 +29,7 @@ This implementation plan outlines comprehensive UI/UX improvements for the billi
 - Stripe API for payments and subscriptions
 - PostgreSQL with Drizzle ORM
 - shadcn/ui components with Tailwind CSS
-- Design system tokens in `/lib/design-system/`
+- Design system tokens in `app/globals.css` using `@theme` directive
 
 **Current Files:**
 
@@ -241,8 +241,8 @@ Stripe API + Database Updates
 **Design System Usage:**
 
 ```typescript
-import { colors, spacing, radius, typography } from '@/lib/design-system';
-import { cn, themeUtils } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
+// Use Tailwind utilities directly (e.g., bg-primary, text-muted-foreground, rounded-lg)
 ```
 
 **References:**

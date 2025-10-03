@@ -61,7 +61,7 @@ Because the cache is in-process only, production deployments that scale horizont
 
 ### Template system
 
-`lib/emails/templates/` contains React components styled with the shared design tokens (`@/lib/design-system`). Each template exports an async render helper that returns both HTML and plaintext via `renderEmail`. The catalogue currently includes:
+`lib/emails/templates/` contains React components styled with Tailwind CSS utilities and design tokens from `app/globals.css`. Each template exports an async render helper that returns both HTML and plaintext via `renderEmail`. The catalogue currently includes:
 
 - `welcome-signup`
 - `password-reset`

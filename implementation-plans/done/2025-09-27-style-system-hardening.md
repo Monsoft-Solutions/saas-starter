@@ -9,11 +9,11 @@
 ## 1. Current Pain Points
 
 1. **Broken theme utilities** – `lib/design-system/utils/theme.ts` assumes HSL tokens (`hsl(var(--color))`), but we store raw hex values in `app/globals.css`, so every consumer gets invalid color strings.
-2. **Duplicate styling utilities** – `cn` exists in both `lib/utils.ts` and `lib/design-system/utils/theme.ts`, causing drift and arbitrary import paths (`@/lib/utils` vs `@/lib/design-system`).
+2. **Design system consolidation** – Previously had duplicate utilities between `lib/utils.ts` and `lib/design-system`, now consolidated to use `@/lib/utils` as the single source of truth.
 3. **Dark mode discrepancies** – large sections of the UI (landing, auth, error pages) hard-code Tailwind gray palette classes. They ignore our CSS variables, so the dark theme renders unreadable content.
 4. **Global reset regressions** – the universal `@apply border-border outline-ring/50` in `app/globals.css` sets outlines on every element and references an `outline-ring/50` utility that Tailwind 4 does not generate. The border fallback relies on `--color-gray-200`, which we never define.
 5. **Component gaps** – key shadcn/ui components (buttons, layout primitives) still point to the wrong Radix packages or mix in bespoke class stacks that ignore the token set.
-6. **Unrealized design tokens** – `lib/design-system/tokens/*` defines spacing, radius, and typography scales, but nothing consumes them. Tailwind 4's `@theme` stays disconnected from the TS tokens, so adding/changing tokens requires updating code in multiple places.
+6. **Design token integration** – Design tokens are now fully integrated into Tailwind 4's `@theme` directive in `app/globals.css`, eliminating the need for separate TypeScript token files.
 
 ---
 

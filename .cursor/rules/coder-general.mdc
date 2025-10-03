@@ -126,13 +126,13 @@ Use Stripe test card: `4242 4242 4242 4242` with any future expiry and CVC.
 **UI Components:**
 
 - Use shadcn/ui components - check shadcn docs for installation
-- **IMPORTANT**: Always use the design system from `/lib/design-system/` - import tokens, utilities, and patterns
-- Import design tokens: `import { colors, typography, spacing, radius } from '@/lib/design-system'`
-- Use `cn()` utility for class merging: `import { cn } from '@/lib/design-system'`
-- Leverage predefined patterns: `themeUtils.patterns.card`, `themeUtils.patterns.heading`, etc.
-- Use Notion-inspired spacing: `notionSpacing.cardPadding`, `notionSpacing.sectionGap`
-- Apply consistent radius: `notionRadius.default`, `notionRadius.card`, `notionRadius.button`
-- Never define custom colors, typography sizes, spacing, or radius - use design system tokens
+- **IMPORTANT**: Use Tailwind CSS v4 utilities and design tokens from `app/globals.css`
+- Use `cn()` utility for class merging: `import { cn } from '@/lib/utils'`
+- Design tokens are available as Tailwind utilities (e.g., `bg-primary`, `text-muted-foreground`, `rounded-lg`)
+- Use consistent spacing with Tailwind utilities: `p-6` (card padding), `gap-6` (section gap)
+- Apply consistent radius: `rounded-md` (6px default), `rounded-lg` (8px cards), `rounded-full` (circular)
+- For custom patterns, use the custom utilities defined in `app/globals.css`: `page-container`, `stack-md`, `grid-dashboard`, `grid-cards`
+- Never define custom colors, typography sizes, spacing, or radius - extend the theme in `app/globals.css` using `@theme`
 - Avoid custom styles in components unless absolutely necessary
 
 **Schema & Database:**

@@ -7,7 +7,7 @@ Create a dedicated marketing "Features" area that showcases each pillar of the S
 ## Technical Analysis
 
 - **Current UI**: `app/(public)/page.tsx` already presents a shallow features grid; there is no dedicated `/features` route nor reusable components for deeper storytelling.
-- **Design System**: Tailwind tokens defined in `app/globals.css` and `lib/design-system` plus shadcn/ui primitives (e.g., `Button`, `Badge`, `Card`). `cn` helper located at `@/lib/design-system` for class composition.
+- **Design System**: Tailwind tokens defined in `app/globals.css` using `@theme` directive plus shadcn/ui primitives (e.g., `Button`, `Badge`, `Card`). `cn` helper located at `@/lib/utils` for class composition.
 - **Content Sources**: VitePress docs under `docs/` contain rich feature narratives (`docs/auth`, `docs/stripe`, `docs/design-system.md`, `docs/emails.md`, `docs/unit-testing.md`, etc.) that will feed marketing copy and deep links.
 - **Navigation**: `config/navigation.ts` drives marketing header links; no entry for features yet. Public layout uses `PublicHeader` + `PublicFooter`.
 - **Infrastructure**: Next.js 15 App Router with turbopack dev, TypeScript strict typing, lucide-react icons already available.

@@ -55,12 +55,12 @@ You have access to browser tools via Chrome MCP to analyze and improve existing 
 **Design System Integration:**
 
 - **CRITICAL**: Never define custom colors, typography sizes, spacing, or other design tokens
-- Always use the project's design system tokens defined in `lib/design-system/`
-- Import design tokens: `import { colors, typography, spacing, radius } from '@/lib/design-system'`
-- Use `cn()` utility for class merging: `import { cn } from '@/lib/design-system'`
-- Leverage predefined patterns: `themeUtils.patterns.card`, `themeUtils.patterns.heading`, etc.
-- Use consistent spacing: `notionSpacing.cardPadding`, `notionSpacing.sectionGap`
-- Apply consistent radius: `notionRadius.default`, `notionRadius.card`, `notionRadius.button`
+- Always use the project's design system tokens defined in `app/globals.css` using the `@theme` directive
+- Use `cn()` utility for class merging: `import { cn } from '@/lib/utils'`
+- Design tokens are available as Tailwind utilities (e.g., `bg-primary`, `text-muted-foreground`, `rounded-lg`)
+- Use consistent spacing with Tailwind utilities: `p-6` (card padding), `gap-6` (section gap)
+- Apply consistent radius: `rounded-md` (6px default), `rounded-lg` (8px cards), `rounded-full` (circular)
+- For custom patterns, use the custom utilities defined in `app/globals.css`: `page-container`, `stack-md`, `grid-dashboard`, `grid-cards`
 
 **Development Standards:**
 
@@ -98,13 +98,13 @@ You have access to browser tools via Chrome MCP to analyze and improve existing 
 
 **Design System Adherence:**
 
-**MANDATORY**: Use only the project's design system tokens defined in `docs-dev/design-system.md`:
+**MANDATORY**: Use only the project's design system tokens defined in `docs/design-system.md`:
 
 - **Colors**: Use semantic color tokens (`bg-primary`, `text-foreground`, `border-input`) instead of raw colors
 - **Available tokens**: `background`, `foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`, `border`, `input`, `ring`
-- **Spacing**: Use Tailwind's spacing scale enhanced with Notion-inspired patterns
+- **Spacing**: Use Tailwind's spacing scale with Notion-inspired patterns (`p-6` for card padding, `gap-6` for sections)
 - **Typography**: Stick to Tailwind's typography scale (text-sm, text-lg, etc.) - never define custom font sizes
-- **Borders & Radius**: Use project radius tokens (`notionRadius.default`, `notionRadius.card`)
+- **Borders & Radius**: Use Tailwind radius utilities (`rounded-md` for 6px default, `rounded-lg` for 8px cards)
 - **Breakpoints**: Follow Tailwind's responsive system (sm:, md:, lg:, xl:, 2xl:)
 - **Shadows & Effects**: Use only predefined Tailwind utilities
 - **Dark Mode**: All color tokens automatically support light/dark themes - never use mode-specific colors
@@ -115,7 +115,7 @@ You have access to browser tools via Chrome MCP to analyze and improve existing 
 - **Typography**: Clear hierarchy with generous line spacing and readable font weights
 - **Subtle Interactions**: Gentle hover states, smooth transitions, and understated animations
 - **Content-First**: Design serves content, not the other way around
-- **Consistent Spacing**: Predictable rhythm throughout the interface using design system tokens
+- **Consistent Spacing**: Predictable rhythm throughout the interface using Tailwind utilities and design tokens
 - **Gentle Colors**: Muted, sophisticated color palette that doesn't compete with content
 - **Purposeful Elements**: Every UI element should have a clear function and reason for being
 
