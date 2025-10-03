@@ -13,12 +13,7 @@ import {
   getUnreadNotificationCount,
 } from '@/lib/notifications/notification.service';
 import logger from '@/lib/logger/logger.service';
-
-// Define validation schema for pagination
-const paginationSchema = z.object({
-  limit: z.coerce.number().int().min(1).max(50).default(20),
-  offset: z.coerce.number().int().min(0).default(0),
-});
+import { paginationSchema } from '@/lib/types/notifications/pagination.type';
 
 export async function GET(request: NextRequest) {
   try {

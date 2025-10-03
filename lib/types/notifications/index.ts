@@ -20,6 +20,7 @@ export {
 // Core types
 export type { NotificationMetadata } from './notification-metadata.type';
 export type { Notification } from './notification.type';
+export type { NotificationsResponse } from './notifications-response.type';
 
 // Zod schemas
 export {

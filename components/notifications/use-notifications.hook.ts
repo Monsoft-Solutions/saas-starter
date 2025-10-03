@@ -1,22 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import type { Notification } from '@/lib/types/notifications';
-
-/**
- * API response shape from GET /api/notifications
- * TODO: Thsi sshoul be moved to a shared types file and r-used in the rest of the app
- * Also, check if we can use the existing Notification type from the lib/types/notifications folder
- */
-type NotificationsResponse = {
-  notifications: Notification[];
-  unreadCount: number;
-  pagination: {
-    limit: number;
-    offset: number;
-    hasMore: boolean;
-  };
-};
+import type { NotificationsResponse } from '@/lib/types/notifications';
 
 /**
  * Fetcher function for SWR

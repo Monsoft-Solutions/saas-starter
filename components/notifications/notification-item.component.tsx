@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import {
   AlertCircle,
@@ -91,6 +92,7 @@ export function NotificationItem({
   notification,
   onToggleRead,
 }: NotificationItemProps) {
+  const router = useRouter();
   const priorityIcon = getPriorityIcon(notification.priority);
 
   const handleClick = () => {
@@ -100,7 +102,7 @@ export function NotificationItem({
 
     // Navigate to action URL if present
     if (notification.metadata?.actionUrl) {
-      window.location.href = notification.metadata.actionUrl;
+      router.push(notification.metadata.actionUrl);
     }
   };
 

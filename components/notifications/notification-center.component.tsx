@@ -197,68 +197,43 @@ export function NotificationCenter() {
 
             <ScrollArea className="flex-1">
               <div className="flex flex-col gap-2 p-2">
-                {/* Today */}
-                {groupedNotifications.today.length > 0 && (
-                  <div className="flex flex-col">
-                    <SectionHeader title="Today" />
-                    <div className="flex flex-col gap-2 p-2">
-                      {groupedNotifications.today.map((notification) => (
-                        <NotificationItem
-                          key={notification.id}
-                          notification={notification}
-                          onToggleRead={toggleRead}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Yesterday */}
-                {groupedNotifications.yesterday.length > 0 && (
-                  <div className="flex flex-col">
-                    <SectionHeader title="Yesterday" />
-                    <div className="flex flex-col gap-2 p-2">
-                      {groupedNotifications.yesterday.map((notification) => (
-                        <NotificationItem
-                          key={notification.id}
-                          notification={notification}
-                          onToggleRead={toggleRead}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* This Week */}
-                {groupedNotifications.thisWeek.length > 0 && (
-                  <div className="flex flex-col">
-                    <SectionHeader title="Earlier this week" />
-                    <div className="flex flex-col gap-2 p-2">
-                      {groupedNotifications.thisWeek.map((notification) => (
-                        <NotificationItem
-                          key={notification.id}
-                          notification={notification}
-                          onToggleRead={toggleRead}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Earlier */}
-                {groupedNotifications.earlier.length > 0 && (
-                  <div className="flex flex-col">
-                    <SectionHeader title="Earlier" />
-                    <div className="flex flex-col gap-2 p-2">
-                      {groupedNotifications.earlier.map((notification) => (
-                        <NotificationItem
-                          key={notification.id}
-                          notification={notification}
-                          onToggleRead={toggleRead}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                {[
+                  {
+                    key: 'today',
+                    title: 'Today',
+                    notifications: groupedNotifications.today,
+                  },
+                  {
+                    key: 'yesterday',
+                    title: 'Yesterday',
+                    notifications: groupedNotifications.yesterday,
+                  },
+                  {
+                    key: 'thisWeek',
+                    title: 'Earlier this week',
+                    notifications: groupedNotifications.thisWeek,
+                  },
+                  {
+                    key: 'earlier',
+                    title: 'Earlier',
+                    notifications: groupedNotifications.earlier,
+                  },
+                ].map(
+                  ({ key, title, notifications: sectionNotifications }) =>
+                    sectionNotifications.length > 0 && (
+                      <div key={key} className="flex flex-col">
+                        <SectionHeader title={title} />
+                        <div className="flex flex-col gap-2 p-2">
+                          {sectionNotifications.map((notification) => (
+                            <NotificationItem
+                              key={notification.id}
+                              notification={notification}
+                              onToggleRead={toggleRead}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )
                 )}
               </div>
             </ScrollArea>

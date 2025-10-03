@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useNotifications } from './use-notifications.hook';
 
@@ -29,8 +30,10 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
  * Wraps the app with notification state management and SWR polling
  */
 export function NotificationProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const notificationHook = useNotifications();
   const previousUnreadCount = useRef<number>(0);
+  const hasInitialized = useRef(false);
 
   // Show toast for new notifications
   useEffect(() => {
@@ -39,8 +42,15 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const currentUnreadCount = notificationHook.unreadCount;
     const previousCount = previousUnreadCount.current;
 
-    // Check if there are new unread notifications
-    if (currentUnreadCount > previousCount && previousCount > 0) {
+    // Skip the very first run to establish baseline
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      previousUnreadCount.current = currentUnreadCount;
+      return;
+    }
+
+    // Show toast for ALL increases, including 0 → n
+    if (currentUnreadCount > previousCount) {
       const newCount = currentUnreadCount - previousCount;
       const latestNotification = notificationHook.notifications.find(
         (n) => !n.isRead
@@ -53,8 +63,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             ? {
                 label: latestNotification.metadata.actionLabel || 'View',
                 onClick: () => {
-                  window.location.href =
-                    latestNotification.metadata!.actionUrl!;
+                  router.push(latestNotification.metadata!.actionUrl!);
                 },
               }
             : undefined,
@@ -71,6 +80,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     notificationHook.unreadCount,
     notificationHook.notifications,
     notificationHook.isLoading,
+    router,
   ]);
 
   return (

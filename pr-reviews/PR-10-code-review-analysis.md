@@ -738,11 +738,11 @@ export async function deleteExpiredNotifications(): Promise<number> {
 
 ## 🟡 MEDIUM PRIORITY ISSUES
 
-### Issue 22: Using `window.location.href` Instead of Next.js Router
+### Issue 22: Using `window.location.href` Instead of Next.js Router ✅ DONE
 
-**File**: `components/notifications/notification-item.component.tsx`  
-**Lines**: 102-104  
-**Severity**: MEDIUM  
+**File**: `components/notifications/notification-item.component.tsx`
+**Lines**: 102-104
+**Severity**: MEDIUM
 **Category**: Best Practices
 
 #### Problem
@@ -792,11 +792,11 @@ export function NotificationItem({
 
 ---
 
-### Issue 23: DRY Violation in Notification Center
+### Issue 23: DRY Violation in Notification Center ✅ DONE
 
-**File**: `components/notifications/notification-center.component.tsx`  
-**Lines**: 200-263  
-**Severity**: MEDIUM  
+**File**: `components/notifications/notification-center.component.tsx`
+**Lines**: 200-263
+**Severity**: MEDIUM
 **Category**: Code Quality
 
 #### Problem
@@ -855,11 +855,11 @@ const sections = [
 
 ---
 
-### Issue 24: Toast Logic Bug (Cleared Inbox)
+### Issue 24: Toast Logic Bug (Cleared Inbox) ✅ DONE
 
-**File**: `components/notifications/notification-provider.component.tsx`  
-**Lines**: 35-77  
-**Severity**: MEDIUM  
+**File**: `components/notifications/notification-provider.component.tsx`
+**Lines**: 35-77
+**Severity**: MEDIUM
 **Category**: UX Bug
 
 #### Problem
@@ -934,11 +934,11 @@ useEffect(() => {
 
 ---
 
-### Issue 25: Type Should Be in Shared Location
+### Issue 25: Type Should Be in Shared Location ✅ DONE
 
-**File**: `components/notifications/use-notifications.hook.ts`  
-**Lines**: 11-19  
-**Severity**: MEDIUM  
+**File**: `components/notifications/use-notifications.hook.ts`
+**Lines**: 11-19
+**Severity**: MEDIUM
 **Category**: Code Organization
 
 #### Problem
@@ -1007,42 +1007,6 @@ import type { NotificationsResponse } from '@/lib/types/notifications';
 ---
 
 ## 🟢 LOW PRIORITY ISSUES
-
-### Issue 29: Consider Rate Limiting
-
-**File**: `app/api/notifications/mark-all-read/route.ts`  
-**Lines**: 12-32  
-**Severity**: LOW  
-**Category**: Performance / Security
-
-#### Recommendation
-
-Add rate limiting to prevent abuse of the mark-all operation, which could be expensive.
-
-#### Solution (Optional)
-
-```tsx
-// Option 1: Simple debounce check
-const lastMarkAll = new Map<string, number>();
-
-export async function POST() {
-  const { user } = await requireServerContext();
-
-  const lastCall = lastMarkAll.get(user.id);
-  if (lastCall && Date.now() - lastCall < 5000) {
-    return NextResponse.json(
-      { error: 'Please wait before marking all as read again' },
-      { status: 429 }
-    );
-  }
-
-  lastMarkAll.set(user.id, Date.now());
-  await markAllNotificationsAsRead(user.id);
-  return NextResponse.json({ success: true });
-}
-```
-
----
 
 ### Issue 30: Keyboard Navigation Accessibility
 
