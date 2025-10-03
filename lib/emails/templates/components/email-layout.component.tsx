@@ -9,38 +9,35 @@ import {
 } from '@react-email/components';
 import type { ReactNode } from 'react';
 
-import { colors, spacing, typography } from '@/lib/design-system';
-
 import { DEFAULT_BRAND_SIGNATURE } from '../constants';
 import { EmailFooter } from './email-footer.component';
 import { EmailHeader } from './email-header.component';
 
-const palette = colors.light;
 const baseFontFamily =
   '"Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 const bodyStyle = {
-  backgroundColor: palette.background,
-  color: palette.foreground,
+  backgroundColor: 'var(--color-background)',
+  color: 'var(--color-foreground)',
   fontFamily: baseFontFamily,
-  fontSize: typography.fontSizes.base,
+  fontSize: '16px', // base font size
   margin: '0',
-  padding: spacing[8],
+  padding: '32px', // 32px (spacing[8] equivalent)
 } as const;
 
 const containerStyle = {
   width: '100%',
   maxWidth: '600px',
   margin: '0 auto',
-  padding: spacing[8],
-  backgroundColor: palette.card,
+  padding: '32px', // 32px (spacing[8] equivalent)
+  backgroundColor: 'var(--color-card)',
   borderRadius: '16px',
   boxShadow: '0 16px 40px rgba(15, 23, 42, 0.08)',
 } as const;
 
 const contentSectionStyle = {
-  paddingTop: spacing[6],
-  paddingBottom: spacing[6],
+  paddingTop: '24px', // 24px (spacing[6] equivalent)
+  paddingBottom: '24px', // 24px (spacing[6] equivalent)
 } as const;
 
 export type EmailLayoutProps = {

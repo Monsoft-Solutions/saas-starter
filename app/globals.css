@@ -83,6 +83,84 @@
   width: 100%;
 }
 
+/* Container width utilities */
+@utility container-sm {
+  max-width: 24rem; /* 384px */
+}
+
+@utility container-md {
+  max-width: 28rem; /* 448px */
+}
+
+@utility container-lg {
+  max-width: 32rem; /* 512px */
+}
+
+@utility container-xl {
+  max-width: 36rem; /* 576px */
+}
+
+@utility container-2xl {
+  max-width: 42rem; /* 672px */
+}
+
+@utility container-3xl {
+  max-width: 48rem; /* 768px */
+}
+
+@utility container-4xl {
+  max-width: 56rem; /* 896px */
+}
+
+@utility container-5xl {
+  max-width: 64rem; /* 1024px */
+}
+
+@utility container-6xl {
+  max-width: 72rem; /* 1152px */
+}
+
+@utility container-7xl {
+  max-width: 80rem; /* 1280px */
+}
+
+/* Responsive grid layouts */
+@utility grid-dashboard {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .grid-dashboard {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@utility grid-cards {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@utility grid-two-column {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .grid-two-column {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Dark theme overrides using CSS custom properties */
 @layer base {
   .dark {

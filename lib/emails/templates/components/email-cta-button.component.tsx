@@ -1,19 +1,15 @@
 import React from 'react';
 import { Button } from '@react-email/components';
 
-import { colors, notionRadius, spacing, typography } from '@/lib/design-system';
-
-const palette = colors.light;
-
 const buttonStyle = {
   display: 'inline-block',
-  backgroundColor: palette.primary,
-  color: palette['primary-foreground'],
-  padding: `${spacing[3]} ${spacing[6]}`,
-  borderRadius: notionRadius.button,
+  backgroundColor: 'var(--color-primary)',
+  color: 'var(--color-primary-foreground)',
+  padding: '12px 24px', // 12px top/bottom, 24px left/right
+  borderRadius: '6px', // 6px (notionRadius.button equivalent)
   textDecoration: 'none',
-  fontWeight: typography.fontWeights.semibold,
-  fontSize: typography.fontSizes.base,
+  fontWeight: '600', // semibold
+  fontSize: '16px', // base font size
 } as const;
 
 export type EmailCtaButtonProps = {

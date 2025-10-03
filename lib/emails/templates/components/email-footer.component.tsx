@@ -1,27 +1,23 @@
 import React from 'react';
 import { Section, Text } from '@react-email/components';
 
-import { colors, spacing, typography } from '@/lib/design-system';
-
-const palette = colors.light;
-
 const containerStyle = {
-  borderTop: `1px solid ${palette.border}`,
-  paddingTop: spacing[4],
+  borderTop: '1px solid var(--color-border)',
+  paddingTop: '16px', // 16px (spacing[4] equivalent)
 } as const;
 
 const supportStyle = {
   margin: '0',
-  fontSize: typography.fontSizes.sm,
-  color: palette['muted-foreground'],
-  lineHeight: typography.lineHeights.relaxed,
+  fontSize: '14px', // small font size
+  color: 'var(--color-muted-foreground)',
+  lineHeight: '1.6', // relaxed line height
 } as const;
 
 const signatureStyle = {
   margin: '12px 0 0 0',
-  fontSize: typography.fontSizes.base,
-  fontWeight: typography.fontWeights.medium,
-  color: palette.foreground,
+  fontSize: '16px', // base font size
+  fontWeight: '500', // medium font weight
+  color: 'var(--color-foreground)',
 } as const;
 
 export type EmailFooterProps = {
