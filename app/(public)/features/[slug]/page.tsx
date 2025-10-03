@@ -1,30 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import type { CSSProperties } from 'react';
 import { ChevronRight, Home } from 'lucide-react';
 
 import { FeatureDetail } from '@/components/marketing/features';
-import { notionSpacing, typography } from '@/lib/design-system';
 import { FEATURES, getFeatureBySlug } from '@/lib/marketing/features.data';
 import {
   FEATURE_SLUGS,
   type FeatureDefinition,
 } from '@/lib/marketing/features.schema';
 import { resolveRoute } from '@/lib/navigation/resolve-route.util';
-
-const pageStyles: CSSProperties = {
-  paddingBlock: notionSpacing.sectionGap,
-  gap: notionSpacing.sectionGap,
-};
-
-const breadcrumbStyles: CSSProperties = {
-  gap: notionSpacing.microGap,
-};
-
-const breadcrumbLabelStyles: CSSProperties = {
-  fontSize: typography.fontSizes.sm,
-};
 
 const featureSlugSet = new Set<string>([...FEATURE_SLUGS]);
 
@@ -91,7 +76,7 @@ export default async function FeatureDetailPage({
   const featuresHref = resolveRoute('marketing.features');
 
   return (
-    <div className="page-container relative flex flex-col" style={pageStyles}>
+    <div className="page-container relative flex flex-col py-12 gap-12">
       {/* Background gradient effects */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div
@@ -108,14 +93,12 @@ export default async function FeatureDetailPage({
 
       {/* Enhanced breadcrumb navigation */}
       <nav
-        className="animate-in fade-in slide-in-from-bottom-2 flex items-center text-sm text-muted-foreground duration-500"
+        className="animate-in fade-in slide-in-from-bottom-2 flex items-center gap-2 text-sm text-muted-foreground duration-500"
         aria-label="Breadcrumb"
-        style={breadcrumbStyles}
       >
         <Link
           href="/"
-          className="group inline-flex items-center gap-1.5 rounded-md px-2 py-1 transition-all hover:bg-muted/50 hover:text-foreground"
-          style={breadcrumbLabelStyles}
+          className="group inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-all hover:bg-muted/50 hover:text-foreground"
         >
           <Home className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
           <span>Home</span>
@@ -123,16 +106,12 @@ export default async function FeatureDetailPage({
         <ChevronRight className="h-4 w-4" aria-hidden="true" />
         <Link
           href={featuresHref}
-          className="rounded-md px-2 py-1 transition-all hover:bg-muted/50 hover:text-foreground"
-          style={breadcrumbLabelStyles}
+          className="rounded-md px-2 py-1 text-sm transition-all hover:bg-muted/50 hover:text-foreground"
         >
           Features
         </Link>
         <ChevronRight className="h-4 w-4" aria-hidden="true" />
-        <span
-          className="rounded-md bg-primary/10 px-2 py-1 font-medium text-foreground"
-          style={breadcrumbLabelStyles}
-        >
+        <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-medium text-foreground">
           {feature.label}
         </span>
       </nav>

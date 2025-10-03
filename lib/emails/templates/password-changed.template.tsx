@@ -1,18 +1,23 @@
 import React from 'react';
 import { Section, Text } from '@react-email/components';
 
-import { colors, typography } from '@/lib/design-system';
+// Design system tokens replaced with direct values for email compatibility
 import type { PasswordChangedEmailProps } from '@/lib/types';
 
 import { DEFAULT_BRAND_NAME, DEFAULT_BRAND_SIGNATURE } from './constants';
 import { EmailLayout } from './components/email-layout.component';
 import { renderEmail, type RenderedEmail } from './render-email';
 
-const palette = colors.light;
+// Color palette for email (light theme)
+const palette = {
+  foreground: '#37352f',
+  'muted-foreground': '#787066',
+  warning: '#cb6040',
+};
 
 const paragraphStyle = {
-  fontSize: typography.fontSizes.base,
-  lineHeight: typography.lineHeights.relaxed,
+  fontSize: '1rem', // 16px
+  lineHeight: '1.625',
   color: palette.foreground,
   margin: '0 0 16px 0',
 } as const;

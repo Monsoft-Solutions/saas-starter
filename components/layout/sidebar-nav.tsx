@@ -30,7 +30,6 @@ import {
   UserRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { notionSpacing } from '@/lib/design-system';
 import { appNav } from '@/config/navigation';
 import { resolveRoute } from '@/lib/navigation/resolve-route.util';
 import { filterNavigationItems } from '@/lib/navigation/filter-navigation-items.util';
@@ -201,12 +200,7 @@ export function SidebarNav({
       </div>
 
       {/* Sidebar Footer */}
-      <div
-        className="border-t"
-        style={{
-          padding: notionSpacing.sidebarPadding,
-        }}
-      >
+      <div className="border-t p-4">
         <div
           className={cn(
             'flex items-center',

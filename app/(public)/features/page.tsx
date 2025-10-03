@@ -1,60 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FeatureCard } from '@/components/marketing/features';
 import { sortedFeatures } from '@/lib/marketing/features.data';
-import {
-  notionRadius,
-  notionSpacing,
-  themeUtils,
-  typography,
-} from '@/lib/design-system';
 
 export const metadata: Metadata = {
   title: 'Features | SaaS Starter',
   description:
     'Explore how the SaaS Starter handles authentication, billing, email, testing, and design system workflows out of the box.',
-};
-
-const heroStyles: CSSProperties = {
-  paddingBlock: notionSpacing.sectionGap,
-  gap: notionSpacing.elementGap,
-};
-
-const heroBadgeStyles: CSSProperties = {
-  borderRadius: notionRadius.badge,
-};
-
-const heroTitleStyles: CSSProperties = {
-  fontSize: typography.fontSizes['4xl'],
-  lineHeight: typography.lineHeights.tight,
-  letterSpacing: typography.letterSpacing.tight,
-  fontWeight: typography.fontWeights.semibold,
-};
-
-const heroHighlightListStyles: CSSProperties = {
-  gap: notionSpacing.elementGap,
-};
-
-const heroHighlightItemStyles: CSSProperties = {
-  gap: notionSpacing.microGap,
-};
-
-const heroActionsStyles: CSSProperties = {
-  gap: notionSpacing.elementGap,
-};
-
-const featureSectionStyles: CSSProperties = {
-  paddingBlock: notionSpacing.sectionGap,
-  gap: notionSpacing.sectionGap,
-};
-
-const featureGridStyles: CSSProperties = {
-  gap: notionSpacing.componentGap,
 };
 
 /**
@@ -84,35 +40,22 @@ export default function FeaturesPage() {
       </div>
 
       {/* Hero section with enhanced visuals */}
-      <section
-        className="page-container relative flex flex-col"
-        style={heroStyles}
-      >
-        <div
-          className="flex flex-col items-start"
-          style={{ gap: notionSpacing.elementGap }}
-        >
+      <section className="page-container relative flex flex-col py-12 gap-4">
+        <div className="flex flex-col items-start gap-4">
           <Badge
             variant="outline"
-            className="group animate-in fade-in slide-in-from-bottom-2 border-primary/20 bg-primary/5 text-primary duration-700"
-            style={heroBadgeStyles}
+            className="group animate-in fade-in slide-in-from-bottom-2 border-primary/20 bg-primary/5 text-primary duration-700 rounded-sm"
           >
             <Sparkles className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover:rotate-12" />
             Product Tour
           </Badge>
-          <h1
-            className="max-w-3xl animate-in fade-in slide-in-from-bottom-3 text-balance text-foreground duration-700 fill-mode-backwards delay-100"
-            style={heroTitleStyles}
-          >
+          <h1 className="max-w-3xl animate-in fade-in slide-in-from-bottom-3 text-balance text-foreground duration-700 fill-mode-backwards delay-100 text-4xl font-semibold leading-tight tracking-tight">
             Feature deep dives engineered for{' '}
             <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               launch-day confidence
             </span>
           </h1>
-          <p
-            className="max-w-2xl animate-in fade-in slide-in-from-bottom-4 text-pretty text-lg text-muted-foreground duration-700 fill-mode-backwards delay-200"
-            style={{ lineHeight: typography.lineHeights.relaxed }}
-          >
+          <p className="max-w-2xl animate-in fade-in slide-in-from-bottom-4 text-pretty text-lg text-muted-foreground duration-700 fill-mode-backwards delay-200 leading-relaxed">
             Discover how the SaaS Starter delivers authentication, billing,
             email, testing, and design system foundations without sacrificing
             quality or speed.
@@ -120,23 +63,17 @@ export default function FeaturesPage() {
         </div>
 
         {/* Enhanced highlight cards with stagger animation */}
-        <div
-          className="grid gap-6 sm:grid-cols-2"
-          style={heroHighlightListStyles}
-        >
+        <div className="grid gap-4 gap-6 sm:grid-cols-2">
           {pageHighlights.map((highlight, index) => (
             <div
               key={highlight}
-              className="group animate-in fade-in slide-in-from-bottom-5 flex items-start rounded-xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 p-6 text-sm text-muted-foreground shadow-sm backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-primary/20 hover:shadow-md fill-mode-backwards"
+              className="group animate-in fade-in slide-in-from-bottom-5 flex items-start gap-2 rounded-lg border border-border/60 bg-gradient-to-br from-card/80 to-card/40 p-6 text-sm text-muted-foreground shadow-sm backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-primary/20 hover:shadow-md fill-mode-backwards"
               style={{
-                ...heroHighlightItemStyles,
-                borderRadius: notionRadius.card,
                 animationDelay: `${300 + index * 100}ms`,
               }}
             >
               <span
-                className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full shadow-sm transition-transform group-hover:scale-110"
-                style={{ backgroundColor: themeUtils.getColorValue('primary') }}
+                className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full shadow-sm transition-transform group-hover:scale-110 bg-primary"
                 aria-hidden="true"
               />
               <span className="transition-colors group-hover:text-foreground">
@@ -147,10 +84,7 @@ export default function FeaturesPage() {
         </div>
 
         {/* Enhanced CTA buttons */}
-        <div
-          className="animate-in fade-in slide-in-from-bottom-6 flex flex-col items-start gap-4 sm:flex-row fill-mode-backwards delay-500"
-          style={heroActionsStyles}
-        >
+        <div className="animate-in fade-in slide-in-from-bottom-6 flex flex-col items-start gap-4 sm:flex-row fill-mode-backwards delay-500">
           <Button
             size="lg"
             className="group shadow-md transition-shadow hover:shadow-lg"
@@ -173,26 +107,12 @@ export default function FeaturesPage() {
       </section>
 
       {/* Features grid section */}
-      <section
-        className="page-container relative flex flex-col"
-        style={featureSectionStyles}
-      >
-        <div className="flex flex-col" style={{ gap: notionSpacing.microGap }}>
-          <h2
-            className="text-3xl text-foreground"
-            style={{
-              fontSize: typography.fontSizes['3xl'],
-              lineHeight: typography.lineHeights.tight,
-              letterSpacing: typography.letterSpacing.tight,
-              fontWeight: typography.fontWeights.semibold,
-            }}
-          >
+      <section className="page-container relative flex flex-col py-12 gap-12">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-3xl text-foreground text-3xl font-semibold leading-tight tracking-tight">
             Explore every cornerstone feature
           </h2>
-          <p
-            className="max-w-2xl text-base text-muted-foreground"
-            style={{ lineHeight: typography.lineHeights.relaxed }}
-          >
+          <p className="max-w-2xl text-base text-muted-foreground leading-relaxed">
             Each card links to an in-depth walkthrough covering technical docs,
             guardrails, and implementation patterns tailored to modern SaaS
             teams.
@@ -200,10 +120,7 @@ export default function FeaturesPage() {
         </div>
 
         {/* Staggered grid animation */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
-          style={featureGridStyles}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <div
               key={feature.slug}

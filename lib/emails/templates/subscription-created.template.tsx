@@ -1,7 +1,7 @@
 import React from 'react';
 import { Section, Text } from '@react-email/components';
 
-import { colors, spacing, typography } from '@/lib/design-system';
+// Design system tokens replaced with direct values for email compatibility
 import type { SubscriptionCreatedEmailProps } from '@/lib/types';
 
 import { DEFAULT_BRAND_SIGNATURE } from './constants';
@@ -9,27 +9,30 @@ import { EmailCtaButton } from './components/email-cta-button.component';
 import { EmailLayout } from './components/email-layout.component';
 import { renderEmail, type RenderedEmail } from './render-email';
 
-const palette = colors.light;
+// Color palette for email (light theme)
+const palette = {
+  foreground: '#37352f',
+};
 
 const paragraphStyle = {
-  fontSize: typography.fontSizes.base,
-  lineHeight: typography.lineHeights.relaxed,
+  fontSize: '1rem', // 16px
+  lineHeight: '1.625',
   color: palette.foreground,
   margin: '0 0 16px 0',
 } as const;
 
 const ctaSectionStyle = {
-  marginTop: spacing[6],
+  marginTop: '1.5rem', // 24px
 } as const;
 
 const closingStyle = {
   ...paragraphStyle,
-  marginTop: spacing[6],
+  marginTop: '1.5rem', // 24px
 } as const;
 
 const signatureStyle = {
   ...paragraphStyle,
-  marginTop: spacing[2],
+  marginTop: '0.5rem', // 8px
 } as const;
 
 /**
