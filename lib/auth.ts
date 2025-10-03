@@ -5,6 +5,7 @@ import { nextCookies } from 'better-auth/next-js';
 import { db } from './db/drizzle';
 import { env } from './env';
 import { databaseHooks } from './auth/hooks/auth.hook';
+import { enqueueEmailJob } from './jobs/services/email-job.service';
 
 // Helper function to build social providers configuration
 const buildSocialProviders = () => {
@@ -100,6 +101,20 @@ export const auth = betterAuth({
             },
           },
         },
+      },
+      async sendInvitationEmail(data) {
+        const inviteUrl = `${env.BASE_URL}/accept-invitation/${data.id}`;
+
+        await enqueueEmailJob({
+          template: 'teamInvitation',
+          to: data.email,
+          data: {
+            inviterName: data.inviter.user.name,
+            teamName: data.organization.name,
+            inviteUrl,
+            role: data.role as 'member' | 'owner',
+          },
+        });
       },
     }),
     nextCookies(),

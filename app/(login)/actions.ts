@@ -92,6 +92,11 @@ export const signIn = validatedAction(
 
     // If there's an invitation ID, redirect to accept invitation page
     if (invitationId) {
+      logger.info('[signin] User signed in with invitation', {
+        userId: user.id,
+        invitationId,
+        email,
+      });
       redirect(`/accept-invitation/${invitationId}`);
     }
 
@@ -103,6 +108,7 @@ const signUpSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   inviteId: z.string().optional(),
+  invitationId: z.string().optional(),
 });
 
 /**
@@ -111,7 +117,7 @@ const signUpSchema = z.object({
 export const signUp = validatedAction(
   signUpSchema,
   async (requestData, formData) => {
-    const { email, password, inviteId } = requestData;
+    const { email, password, inviteId, invitationId } = requestData;
 
     const result = await auth.api.signUpEmail({
       body: {
@@ -130,19 +136,21 @@ export const signUp = validatedAction(
     }
 
     const createdUser = result.user;
-    const requestHeaders = await headers();
 
-    if (inviteId) {
-      try {
-        await auth.api.acceptInvitation({
-          headers: requestHeaders,
-          body: { invitationId: inviteId },
-        });
-        await logActivity(createdUser.id, ActivityType.ACCEPT_INVITATION);
-      } catch (error) {
-        console.error('Failed to accept invitation:', error);
-        return { error: 'Invalid or expired invitation.', email, password };
-      }
+    // Handle invitation acceptance (support both inviteId and invitationId for backward compatibility)
+    const activeInvitationId = invitationId || inviteId;
+    if (activeInvitationId) {
+      logger.info(
+        '[signup] User signed up with invitation, redirecting to accept invitation',
+        {
+          userId: createdUser.id,
+          invitationId: activeInvitationId,
+          email,
+        }
+      );
+
+      // Redirect to accept invitation page where session will be properly established
+      redirect(`/accept-invitation/${activeInvitationId}`);
     }
 
     await logActivity(createdUser.id, ActivityType.SIGN_UP);
