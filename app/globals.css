@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import '../styles/utilities.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -80,12 +81,6 @@
   margin-inline: auto;
   padding-inline: 1.5rem;
   width: 100%;
-}
-
-@utility stack-md {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
 }
 
 /* Dark theme overrides using CSS custom properties */

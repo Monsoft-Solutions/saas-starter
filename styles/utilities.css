@@ -1,0 +1,258 @@
+/*
+ * Custom Tailwind CSS v4 Utilities
+ *
+ * This file contains project-specific utility classes that extend Tailwind's
+ * functionality. These utilities replace the previous TypeScript-based design
+ * system helpers and provide better performance and maintainability.
+ *
+ * Naming Convention:
+ * - Use semantic names that describe the visual outcome
+ * - Follow Tailwind's utility naming patterns
+ * - Group related utilities together with clear section headers
+ *
+ * Last Updated: Phase 2 - Design System Migration (2025-10-03)
+ */
+
+/* =================================================================
+   CONTAINER WIDTH UTILITIES
+   =================================================================
+   Replaces the design system's containerWidths object
+   Provides semantic max-width containers for consistent layouts
+
+   Usage: <div className="container-4xl mx-auto">...</div>
+   ================================================================= */
+
+@utility container-sm {
+  max-width: 24rem; /* 384px */
+}
+
+@utility container-md {
+  max-width: 28rem; /* 448px */
+}
+
+@utility container-lg {
+  max-width: 32rem; /* 512px */
+}
+
+@utility container-xl {
+  max-width: 36rem; /* 576px */
+}
+
+@utility container-2xl {
+  max-width: 42rem; /* 672px */
+}
+
+@utility container-3xl {
+  max-width: 48rem; /* 768px */
+}
+
+@utility container-4xl {
+  max-width: 56rem; /* 896px */
+}
+
+@utility container-5xl {
+  max-width: 64rem; /* 1024px */
+}
+
+@utility container-6xl {
+  max-width: 72rem; /* 1152px */
+}
+
+@utility container-7xl {
+  max-width: 80rem; /* 1280px */
+}
+
+/* =================================================================
+   RESPONSIVE GRID LAYOUT UTILITIES
+   =================================================================
+   Replaces the design system's gridSystem and responsive objects
+   Provides common grid patterns used throughout the application
+
+   Usage: <div className="grid grid-dashboard gap-6">...</div>
+   ================================================================= */
+
+/* Dashboard grid - 1 column on mobile, 4 columns on desktop */
+@utility grid-dashboard {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .grid-dashboard {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Cards grid - 1 column on mobile, 2 on tablet, 3 on desktop */
+@utility grid-cards {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Two-column grid - 1 column on mobile, 2 on desktop */
+@utility grid-two-column {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .grid-two-column {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =================================================================
+   STACK LAYOUT UTILITIES
+   =================================================================
+   Provides consistent vertical spacing patterns
+   ================================================================= */
+
+@utility stack-xs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* 8px */
+}
+
+@utility stack-sm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* 16px */
+}
+
+@utility stack-md {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* 24px */
+}
+
+@utility stack-lg {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* 32px */
+}
+
+@utility stack-xl {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem; /* 48px */
+}
+
+/* =================================================================
+   CENTERING UTILITIES
+   =================================================================
+   Common centering patterns for layout consistency
+   ================================================================= */
+
+@utility center-absolute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@utility center-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@utility center-flex-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =================================================================
+   VISUAL SEPARATOR UTILITIES
+   =================================================================
+   Consistent dividers and separators across the application
+   ================================================================= */
+
+@utility separator-horizontal {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+@utility separator-vertical {
+  width: 1px;
+  height: 100%;
+  background-color: var(--color-border);
+}
+
+@utility separator-dotted {
+  border-top: 1px dotted var(--color-border);
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
+}
+
+/* =================================================================
+   FOCUS AND INTERACTION UTILITIES
+   =================================================================
+   Enhanced focus states and interaction feedback
+   ================================================================= */
+
+@utility focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+}
+
+@utility focus-ring-inset {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset;
+}
+
+/* =================================================================
+   RESPONSIVE UTILITIES
+   =================================================================
+   Additional responsive helpers for common patterns
+   ================================================================= */
+
+@utility responsive-hide {
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .responsive-hide {
+    display: none;
+  }
+}
+
+@utility responsive-show-mobile {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .responsive-show-mobile {
+    display: block;
+  }
+}
+
+@utility responsive-show-tablet {
+  display: none;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .responsive-show-tablet {
+    display: block;
+  }
+}
+
+@utility responsive-show-desktop {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .responsive-show-desktop {
+    display: block;
+  }
+}
