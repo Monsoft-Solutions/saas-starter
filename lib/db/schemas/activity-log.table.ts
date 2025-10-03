@@ -4,7 +4,9 @@ import { user } from './user.table';
 
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
-  userId: text('user_id').references(() => user.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
   action: text('action').notNull(),
   timestamp: timestamp('timestamp').notNull().defaultNow(),
   ipAddress: varchar('ip_address', { length: 45 }),
