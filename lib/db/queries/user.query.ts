@@ -31,5 +31,5 @@ export async function getUserById(userId: string) {
  * Call this when user data is updated
  */
 export async function invalidateUserCache(userId: string): Promise<void> {
-  await cacheService.delete(CacheKeys.user(userId));
+  await cacheService.invalidatePattern(CacheKeys.userPattern(userId));
 }

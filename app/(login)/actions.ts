@@ -40,6 +40,7 @@ import {
 import { env } from '@/lib/env';
 import { ActivityType } from '@/lib/types';
 import logger from '@/lib/logger/logger.service';
+import { CacheKeys, cacheService } from '@/lib/cache';
 
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
@@ -274,6 +275,7 @@ export const updateAccount = validatedActionWithUser(
   async (data, _, user) => {
     const { name, email } = data;
     const oldEmail = user.email;
+    const requestHeaders = await headers();
 
     if (email && email !== oldEmail) {
       // Send confirmation emails to both old and new addresses
@@ -314,11 +316,16 @@ export const updateAccount = validatedActionWithUser(
     }
 
     await Promise.all([
-      authClient.updateUser({
-        name,
+      auth.api.updateUser({
+        body: {
+          name,
+        },
+        headers: requestHeaders,
       }),
       logActivity(user.id, ActivityType.UPDATE_ACCOUNT),
       invalidateUserCache(user.id), // Invalidate user cache after account update
+      cacheService.invalidatePattern(CacheKeys.serverContext(requestHeaders)),
+      cacheService.invalidatePattern(CacheKeys.serverSession(requestHeaders)),
     ]);
 
     return { name, success: 'Account updated successfully.' };
