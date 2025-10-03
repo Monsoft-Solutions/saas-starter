@@ -7,11 +7,26 @@ import { cn } from '@/lib/utils';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [isDark, setIsDark] = React.useState(theme === 'dark');
+  const [isDark, setIsDark] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
+    setMounted(true);
     setIsDark(theme === 'dark');
   }, [theme]);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <button
+        className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-300 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        aria-label="Toggle theme"
+      >
+        <span className="sr-only">Toggle theme</span>
+        <span className="pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out translate-x-0" />
+      </button>
+    );
+  }
 
   const toggleTheme = () => {
     setTheme(isDark ? 'light' : 'dark');
