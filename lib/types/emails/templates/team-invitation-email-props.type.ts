@@ -6,7 +6,7 @@ export type TeamInvitationEmailProps = {
   inviterName: string;
   teamName: string;
   inviteUrl: string;
-  role: 'member' | 'owner';
+  role: 'member' | 'owner' | 'admin';
   supportEmail?: string;
   expiresAt?: string;
 };

@@ -491,6 +491,18 @@ export const inviteOrganizationMember = validatedActionWithUser(
       return { error: 'User is not part of an organization' };
     }
 
+    // Authorization: only owners and admins can invite
+    const inviterRole = (activeMember as { role?: string } | null)?.role;
+    const canInvite = inviterRole === 'owner' || inviterRole === 'admin';
+    if (!canInvite) {
+      return { error: 'Insufficient permissions to invite members' };
+    }
+
+    // Only owners can assign the owner role
+    if (role === 'owner' && inviterRole !== 'owner') {
+      return { error: 'Only owners can assign the owner role' };
+    }
+
     const organizationId = activeMember.organizationId;
     const trimmedEmail = email.trim();
     const normalizedEmail = trimmedEmail.toLowerCase();

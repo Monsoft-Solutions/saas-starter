@@ -49,7 +49,12 @@ export function InvitationLanding({
   const signUpUrl = `/sign-up?invitationId=${invitationId}`;
   const signInUrl = `/sign-in?invitationId=${invitationId}`;
 
-  const isExpired = invitation.expiresAt < new Date();
+  // Handle serialized date strings from server
+  const expiresAtDate =
+    invitation.expiresAt instanceof Date
+      ? invitation.expiresAt
+      : new Date(invitation.expiresAt);
+  const isExpired = expiresAtDate < new Date();
 
   if (isExpired) {
     return (

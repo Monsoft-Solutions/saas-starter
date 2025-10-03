@@ -3,6 +3,8 @@ import { organization } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
 import { db } from './db/drizzle';
+import { invitation as invitationTable } from '@/lib/db/schemas';
+import { eq } from 'drizzle-orm';
 import { env } from './env';
 import { databaseHooks } from './auth/hooks/auth.hook';
 import { enqueueEmailJob } from './jobs/services/email-job.service';
@@ -105,6 +107,23 @@ export const auth = betterAuth({
       async sendInvitationEmail(data) {
         const inviteUrl = `${env.BASE_URL}/accept-invitation/${data.id}`;
 
+        // Look up invitation expiry from our DB schema for richer email context
+        let expiresAtIso: string | undefined;
+        try {
+          const row = await db
+            .select({ expiresAt: invitationTable.expiresAt })
+            .from(invitationTable)
+            .where(eq(invitationTable.id, data.id))
+            .limit(1);
+          const expiresAt = row[0]?.expiresAt;
+          expiresAtIso = expiresAt
+            ? new Date(expiresAt).toISOString()
+            : undefined;
+        } catch (_) {
+          // Non-fatal; proceed without expiry in email
+          expiresAtIso = undefined;
+        }
+
         await enqueueEmailJob({
           template: 'teamInvitation',
           to: data.email,
@@ -112,7 +131,8 @@ export const auth = betterAuth({
             inviterName: data.inviter.user.name,
             teamName: data.organization.name,
             inviteUrl,
-            role: data.role as 'member' | 'owner',
+            role: data.role as 'member' | 'owner' | 'admin',
+            expiresAt: expiresAtIso,
           },
         });
       },

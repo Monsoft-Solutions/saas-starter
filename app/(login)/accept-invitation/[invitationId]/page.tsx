@@ -14,6 +14,7 @@ import { InvitationLanding } from './invitation-landing.component';
 import { db } from '@/lib/db/drizzle';
 import { invitation, organization, user } from '@/lib/db/schemas';
 import { eq } from 'drizzle-orm';
+import { createInvitationAcceptedNotification } from '@/lib/notifications/events/team-events.helper';
 
 type AcceptInvitationPageProps = {
   params: Promise<{
@@ -24,6 +25,16 @@ type AcceptInvitationPageProps = {
 export default async function AcceptInvitationPage({
   params,
 }: AcceptInvitationPageProps) {
+  function isNextRedirectError(error: unknown): boolean {
+    const maybe = error as { digest?: unknown } | null | undefined;
+    return (
+      !!maybe &&
+      typeof maybe === 'object' &&
+      typeof maybe.digest === 'string' &&
+      (maybe.digest as string).startsWith('NEXT_REDIRECT')
+    );
+  }
+
   const { invitationId } = await params;
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -70,8 +81,29 @@ export default async function AcceptInvitationPage({
       redirect('/sign-in?error=invitation-already-processed');
     }
 
+    // Enforce expiry before attempting acceptance
+    if (invitationData.expiresAt < new Date()) {
+      logger.warn('[invitation] Invitation expired', {
+        invitationId,
+      });
+      redirect('/sign-in?error=invitation-not-found');
+    }
+
     // If user is authenticated, try to accept the invitation
     if (session) {
+      // Optional: ensure the signed-in user email matches the invited email
+      const sessionEmail = session.user?.email?.toLowerCase?.();
+      const invitedEmail = invitationData.email.toLowerCase();
+      if (sessionEmail && sessionEmail !== invitedEmail) {
+        logger.warn(
+          '[invitation] Session email does not match invitation email',
+          {
+            invitationId,
+            sessionEmail,
+          }
+        );
+        redirect('/sign-in?error=invitation-failed');
+      }
       try {
         const result = await auth.api.acceptInvitation({
           body: {
@@ -86,9 +118,51 @@ export default async function AcceptInvitationPage({
           organizationId: result?.invitation?.organizationId,
         });
 
+        // Ensure the accepted organization is set as active
+        const acceptedOrgId =
+          (result as any)?.invitation?.organizationId ??
+          invitationData.organizationId;
+        if (acceptedOrgId) {
+          try {
+            await auth.api.setActiveOrganization({
+              headers: await headers(),
+              body: { organizationId: acceptedOrgId },
+            });
+          } catch (error) {
+            logger.warn(
+              '[invitation] Failed to set active organization after acceptance',
+              {
+                error: error instanceof Error ? error.message : 'Unknown error',
+              }
+            );
+          }
+        }
+
+        // Notify inviter that invitation was accepted
+        try {
+          const acceptedUserName = session.user.name || session.user.email;
+          const orgName = invitationData.organization?.name || 'Organization';
+          await createInvitationAcceptedNotification(
+            invitationData.inviterId,
+            acceptedUserName,
+            orgName,
+            invitationData.organizationId
+          );
+        } catch (error) {
+          logger.warn(
+            '[invitation] Failed to enqueue acceptance notification',
+            {
+              error: error instanceof Error ? error.message : 'Unknown error',
+            }
+          );
+        }
+
         // Redirect to the organization dashboard
         redirect('/app');
       } catch (error) {
+        if (isNextRedirectError(error)) {
+          throw error;
+        }
         logger.error('[invitation] Failed to accept invitation', {
           invitationId,
           userId: session.user.id,
@@ -108,6 +182,9 @@ export default async function AcceptInvitationPage({
       />
     );
   } catch (error) {
+    if (isNextRedirectError(error)) {
+      throw error;
+    }
     logger.error('[invitation] Failed to load invitation', {
       invitationId,
       error: error instanceof Error ? error.message : 'Unknown error',
