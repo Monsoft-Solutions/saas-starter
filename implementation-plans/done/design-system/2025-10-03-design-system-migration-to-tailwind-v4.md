@@ -1262,21 +1262,11 @@ Search for `/lib/design-system` and update accordingly.
    rm -rf migration-screenshots/
    ```
 
-2. **Update CHANGELOG** (if exists)
-   - Document the migration
-   - Note breaking changes (none expected)
-   - Provide migration guide for contributors
-
-3. **Create migration guide for team**
-   - Document new patterns
-   - Provide examples of common migrations
-   - Add to project wiki or docs
-
-4. **Update README** (if necessary)
+2. **Update README** (if necessary)
    - Update any references to design system
    - Clarify Tailwind v4 usage
 
-5. **Git commit**
+3. **Git commit**
    - Create comprehensive commit message
    - Reference all changes
    - Include migration notes
@@ -1317,10 +1307,8 @@ Tested:
 
 **Deliverables**:
 
-- Migration guide document
 - Updated README
 - Comprehensive commit
-- Team communication prepared
 
 **Success Criteria**:
 
