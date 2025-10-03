@@ -3,3 +3,4 @@ export * from './email-log.query';
 export * from './activity-log.query';
 export * from './user.query';
 export * from './job-execution.query';
+export * from './notification.query';

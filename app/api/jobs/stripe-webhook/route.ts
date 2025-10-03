@@ -22,6 +22,13 @@ import {
   sendSubscriptionCreatedEmailAsync,
   sendPaymentFailedEmailAsync,
 } from '@/lib/emails/enqueue';
+import {
+  createPaymentFailedNotification,
+  createPaymentSuccessNotification,
+  createSubscriptionCreatedNotification,
+  createSubscriptionCanceledNotification,
+  createTrialEndingNotification,
+} from '@/lib/notifications/events';
 import { env } from '@/lib/env';
 import logger from '@/lib/logger/logger.service';
 import type { StripeWebhookJobPayload } from '@/lib/types/jobs/schemas/stripe-webhook-job.schema';
@@ -72,6 +79,20 @@ const stripeWebhookJobHandler = async (
                   : '0.00',
                 dashboardUrl: `${env.BASE_URL}/app/general`,
               });
+
+              // Create in-app notification
+              await createSubscriptionCreatedNotification(
+                ownerId,
+                organization.planName || 'Unknown Plan'
+              ).catch((err) =>
+                logger.error(
+                  '[stripe] Failed to create subscription notification',
+                  {
+                    error: err.message,
+                    ownerId,
+                  }
+                )
+              );
             }
           }
         }
@@ -101,7 +122,49 @@ const stripeWebhookJobHandler = async (
                 amountDue: (invoice.amount_due / 100).toFixed(2),
                 paymentDetailsUrl: `${env.BASE_URL}/app/settings/billing`,
               });
+
+              // Create in-app notification
+              await createPaymentFailedNotification(
+                ownerId,
+                invoice.amount_due / 100
+              ).catch((err) =>
+                logger.error(
+                  '[stripe] Failed to create payment failed notification',
+                  {
+                    error: err.message,
+                    ownerId,
+                  }
+                )
+              );
             }
+          }
+        }
+      }
+      break;
+    }
+
+    case 'invoice.payment_succeeded': {
+      const invoice = eventData as Stripe.Invoice;
+      if (invoice.customer) {
+        const organization = await getOrganizationByStripeCustomerId(
+          invoice.customer as string
+        );
+        if (organization) {
+          const ownerId = await getOrganizationOwner(organization.id);
+          if (ownerId) {
+            // Create in-app notification (no email for success to avoid noise)
+            await createPaymentSuccessNotification(
+              ownerId,
+              (invoice.amount_paid ?? 0) / 100
+            ).catch((err) =>
+              logger.error(
+                '[stripe] Failed to create payment success notification',
+                {
+                  error: err.message,
+                  ownerId,
+                }
+              )
+            );
           }
         }
       }
@@ -160,8 +223,59 @@ const stripeWebhookJobHandler = async (
             ActivityType.SUBSCRIPTION_DELETED,
             ipAddress ?? ''
           );
+
+          // Create in-app notification
+          const subAny = subscription as Stripe.Subscription & {
+            current_period_end?: number;
+          };
+          const endDate = subAny.current_period_end
+            ? new Date(subAny.current_period_end * 1000)
+            : new Date();
+          await createSubscriptionCanceledNotification(
+            ownerId,
+            organization.planName || 'Unknown Plan',
+            endDate
+          ).catch((err) =>
+            logger.error(
+              '[stripe] Failed to create subscription canceled notification',
+              {
+                error: err.message,
+                ownerId,
+              }
+            )
+          );
         }
         // TODO: Send subscription deleted email
+      }
+      break;
+    }
+
+    case 'customer.subscription.trial_will_end': {
+      const subscription = eventData as Stripe.Subscription;
+      const organization = await getOrganizationByStripeCustomerId(
+        subscription.customer as string
+      );
+      if (organization) {
+        const ownerId = await getOrganizationOwner(organization.id);
+        if (ownerId) {
+          const nowMs = Date.now();
+          const trialEndMs = (subscription.trial_end ?? 0) * 1000;
+          const daysRemaining = Math.max(
+            0,
+            Math.ceil((trialEndMs - nowMs) / (1000 * 60 * 60 * 24))
+          );
+
+          await createTrialEndingNotification(ownerId, daysRemaining).catch(
+            (err) =>
+              logger.error(
+                '[stripe] Failed to create trial ending notification',
+                {
+                  error: err.message,
+                  ownerId,
+                }
+              )
+          );
+        }
       }
       break;
     }

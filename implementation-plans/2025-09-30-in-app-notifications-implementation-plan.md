@@ -548,7 +548,7 @@ export const notificationPriorityEnum = pgEnum(
 
 **Features:**
 
-- ✅ Create notification (direct DB insert, no queue)
+- ✅ Create notification (async via job dispatcher)
 - ✅ Batch create notifications
 - ✅ Mark as read/unread
 - ✅ Dismiss notification
@@ -559,24 +559,145 @@ export const notificationPriorityEnum = pgEnum(
 **Key Functions:**
 
 ```typescript
-async createNotification(event: NotificationEvent): Promise<void> {
+async createNotification(event: NotificationEvent): Promise<string> {
   // Validate with Zod
   const validated = notificationEventSchema.parse(event);
 
-  // Direct insert to PostgreSQL
-  await db.insert(notifications).values({
-    ...validated,
-    category: deriveCategory(validated.type),
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-  });
+  // Enqueue job for async processing using job-dispatcher
+  const jobId = await jobDispatcher.enqueue(
+    JOB_TYPES.CREATE_NOTIFICATION,
+    {
+      ...validated,
+      category: deriveCategory(validated.type),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+    {
+      userId: validated.userId,
+      idempotencyKey: validated.metadata?.idempotencyKey,
+    }
+  );
+
+  return jobId;
 }
 
-async batchCreateNotifications(events: NotificationEvent[]): Promise<void>
+async batchCreateNotifications(events: NotificationEvent[]): Promise<string>
 async markAsRead(notificationId: number, userId: string): Promise<void>
 async markAllAsRead(userId: string): Promise<void>
 async dismissNotification(notificationId: number, userId: string): Promise<void>
 async getUserNotifications(userId: string, filters?: NotificationFilters): Promise<Notification[]>
 async getUnreadCount(userId: string): Promise<number>
+```
+
+#### 2.2 Notification Job Type
+
+**Files to create:**
+
+- `lib/types/jobs/schemas/create-notification-job.schema.ts`
+- `app/api/jobs/notifications/route.ts` (job worker)
+
+**Job Schema:**
+
+```typescript
+// lib/types/jobs/schemas/create-notification-job.schema.ts
+import { z } from 'zod';
+import { BaseJobSchema } from './base-job.schema';
+import { JOB_TYPES } from '..';
+import { notificationEventSchema } from '@/lib/types/notifications';
+
+export const CreateNotificationJobPayloadSchema = z.object({
+  userId: z.string().min(1),
+  type: z.enum(NOTIFICATION_TYPES),
+  category: z.enum(NOTIFICATION_CATEGORIES),
+  priority: z.enum(NOTIFICATION_PRIORITIES).default('info'),
+  title: z.string().min(1).max(255),
+  message: z.string().min(1).max(1000),
+  metadata: z.record(z.unknown()).optional(),
+  expiresAt: z.date().optional(),
+});
+
+export const CreateNotificationJobSchema = BaseJobSchema.extend({
+  type: z.literal(JOB_TYPES.CREATE_NOTIFICATION),
+  payload: CreateNotificationJobPayloadSchema,
+});
+
+export type CreateNotificationJobPayload = z.infer<
+  typeof CreateNotificationJobPayloadSchema
+>;
+export type CreateNotificationJob = z.infer<typeof CreateNotificationJobSchema>;
+```
+
+**Job Worker:**
+
+```typescript
+// app/api/jobs/notifications/route.ts
+import { createJobWorker } from '@/lib/jobs/job-worker.handler';
+import type { BaseJob } from '@/lib/types/jobs/schemas/base-job.schema';
+import type { CreateNotificationJobPayload } from '@/lib/types/jobs/schemas/create-notification-job.schema';
+import logger from '@/lib/logger/logger.service';
+import { db } from '@/lib/db/drizzle';
+import { notifications } from '@/lib/db/schemas/notification.table';
+
+const createNotificationHandler = async (
+  payload: CreateNotificationJobPayload,
+  job: BaseJob & { payload: CreateNotificationJobPayload }
+) => {
+  const {
+    userId,
+    type,
+    category,
+    priority,
+    title,
+    message,
+    metadata,
+    expiresAt,
+  } = payload;
+
+  logger.info('[jobs] Creating notification', {
+    jobId: job.jobId,
+    userId,
+    type,
+  });
+
+  // Insert notification into database
+  await db.insert(notifications).values({
+    userId,
+    type,
+    category,
+    priority,
+    title,
+    message,
+    metadata: metadata ?? null,
+    expiresAt: expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    isRead: false,
+    isDismissed: false,
+  });
+
+  logger.info('[jobs] Notification created successfully', {
+    jobId: job.jobId,
+    userId,
+    type,
+  });
+};
+
+export const POST = createJobWorker<CreateNotificationJobPayload>(
+  createNotificationHandler
+);
+```
+
+**Job Registry Entry:**
+
+```typescript
+// Add to lib/jobs/job-registry.ts
+export const JOB_REGISTRY: Record<JobType, JobConfig> = {
+  // ... existing configs
+  [JOB_TYPES.CREATE_NOTIFICATION]: {
+    type: JOB_TYPES.CREATE_NOTIFICATION,
+    endpoint: '/api/jobs/notifications',
+    retries: 3,
+    timeout: 30,
+    description: 'Create in-app notification asynchronously',
+  },
+};
 ```
 
 ### Phase 3: API Layer (Days 3-4)
@@ -776,11 +897,16 @@ export function useNotifications() {
 - Helper functions to create event payloads
 - Type-safe event builders
 - Default metadata population
+- Direct integration with job dispatcher
 
 **Example:**
 
 ```typescript
 // lib/notifications/events/billing-events.ts
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { JOB_TYPES } from '@/lib/types/jobs';
+import type { NotificationEvent } from '@/lib/types/notifications';
+
 export function paymentFailedEvent(
   userId: string,
   amount: number
@@ -794,8 +920,108 @@ export function paymentFailedEvent(
     metadata: {
       actionUrl: '/settings/billing',
       actionLabel: 'Update Payment',
+      amount: amount.toString(),
     },
   };
+}
+
+/**
+ * Create payment failed notification asynchronously
+ */
+export async function createPaymentFailedNotification(
+  userId: string,
+  amount: number,
+  organizationId?: number
+): Promise<string> {
+  const event = paymentFailedEvent(userId, amount);
+
+  return jobDispatcher.enqueue(
+    JOB_TYPES.CREATE_NOTIFICATION,
+    {
+      ...event,
+      category: 'billing',
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+    {
+      userId,
+      organizationId,
+      idempotencyKey: `payment-failed-${userId}-${Date.now()}`,
+    }
+  );
+}
+```
+
+**Team Events Example:**
+
+```typescript
+// lib/notifications/events/team-events.ts
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { JOB_TYPES } from '@/lib/types/jobs';
+
+export async function createTeamInvitationNotification(
+  userId: string,
+  inviterName: string,
+  organizationName: string,
+  organizationId: number
+): Promise<string> {
+  return jobDispatcher.enqueue(
+    JOB_TYPES.CREATE_NOTIFICATION,
+    {
+      userId,
+      type: 'team.invitation_received',
+      category: 'team',
+      priority: 'important',
+      title: 'Team Invitation',
+      message: `${inviterName} invited you to join ${organizationName}`,
+      metadata: {
+        actionUrl: `/invitations`,
+        actionLabel: 'View Invitation',
+        inviterName,
+        organizationName,
+      },
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+    {
+      userId,
+      organizationId,
+    }
+  );
+}
+```
+
+**Security Events Example:**
+
+```typescript
+// lib/notifications/events/security-events.ts
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { JOB_TYPES } from '@/lib/types/jobs';
+
+export async function createPasswordChangedNotification(
+  userId: string,
+  ipAddress?: string
+): Promise<string> {
+  return jobDispatcher.enqueue(
+    JOB_TYPES.CREATE_NOTIFICATION,
+    {
+      userId,
+      type: 'security.password_changed',
+      category: 'security',
+      priority: 'important',
+      title: 'Password Changed',
+      message:
+        'Your password was changed successfully. If you did not make this change, please contact support immediately.',
+      metadata: {
+        actionUrl: '/settings/security',
+        actionLabel: 'Review Security',
+        ipAddress,
+      },
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+    {
+      userId,
+      idempotencyKey: `password-changed-${userId}-${Date.now()}`,
+    }
+  );
 }
 ```
 
@@ -810,25 +1036,85 @@ export function paymentFailedEvent(
 
 **Tasks:**
 
-- Add `createNotification()` calls after key actions
-- Pass appropriate event data
+- Add notification creation calls after key actions
+- Use event helper functions from Phase 5.1
 - Ensure async/non-blocking execution
 - Add error handling (don't fail main flow if notification fails)
 
-**Example Integration:**
+**Example Integration - Stripe Webhook:**
 
 ```typescript
-// In Stripe webhook handler
+// app/api/stripe/webhook/route.ts
+import { createPaymentFailedNotification } from '@/lib/notifications/events/billing-events';
+
+// In webhook handler
 if (event.type === 'invoice.payment_failed') {
   const subscription = await getSubscription(invoice.subscription);
   const organization = await getOrgByStripeCustomerId(invoice.customer);
 
-  // Create notification (async, non-blocking)
-  await createNotification(
-    paymentFailedEvent(organization.ownerId, invoice.amount_due / 100)
-  ).catch((err) => logger.error('Failed to create notification', err));
+  // Create notification asynchronously via job dispatcher
+  await createPaymentFailedNotification(
+    organization.ownerId,
+    invoice.amount_due / 100,
+    organization.id
+  ).catch((err) => logger.error('Failed to enqueue notification job', err));
 }
 ```
+
+**Example Integration - Team Invitation:**
+
+```typescript
+// app/actions/team/invite-user.action.ts
+import { createTeamInvitationNotification } from '@/lib/notifications/events/team-events';
+
+export const inviteUserAction = validatedActionWithUser(
+  inviteUserSchema,
+  async (data, _, user) => {
+    // ... existing invitation logic
+
+    // Create notification for invited user (async, non-blocking)
+    await createTeamInvitationNotification(
+      invitation.invitedUserId,
+      user.name,
+      organization.name,
+      organization.id
+    ).catch((err) => logger.error('Failed to enqueue notification job', err));
+
+    return { success: true };
+  }
+);
+```
+
+**Example Integration - Password Change:**
+
+```typescript
+// app/actions/auth/change-password.action.ts
+import { createPasswordChangedNotification } from '@/lib/notifications/events/security-events';
+
+export const changePasswordAction = validatedActionWithUser(
+  changePasswordSchema,
+  async (data, _, user) => {
+    // ... existing password change logic
+
+    // Create notification for user (async, non-blocking)
+    const ipAddress = headers().get('x-forwarded-for');
+    await createPasswordChangedNotification(
+      user.id,
+      ipAddress ?? undefined
+    ).catch((err) => logger.error('Failed to enqueue notification job', err));
+
+    return { success: true };
+  }
+);
+```
+
+**Best Practices:**
+
+- ✅ Always use `.catch()` to prevent notification failures from breaking main flow
+- ✅ Use descriptive idempotency keys to prevent duplicate notifications
+- ✅ Include relevant metadata for actions (actionUrl, actionLabel)
+- ✅ Log errors for monitoring and debugging
+- ✅ Jobs are processed asynchronously via QStash with automatic retries
 
 ### Phase 6: Testing & Documentation (Days 7-8)
 
@@ -1171,6 +1457,440 @@ If issues arise:
 | Notification fatigue            | Medium      | High   | User preferences, smart batching, priority levels |
 | User confusion with categories  | Low         | Low    | Clear UI labels, tooltips, icons                  |
 | Users expect real-time delivery | Low         | Medium | Document 30s delay, upgrade path available        |
+
+## How to Create New Notifications
+
+This section provides a comprehensive guide on how to create new notifications using the job dispatcher service.
+
+### Overview
+
+The notification system uses the **async job processing system** (QStash + job-dispatcher) to create notifications asynchronously. This ensures that notification creation:
+
+- ✅ **Never blocks API responses** - Jobs are queued immediately
+- ✅ **Automatically retries on failure** - QStash handles retries with exponential backoff
+- ✅ **Scales independently** - Notification processing doesn't impact API performance
+- ✅ **Provides observability** - All jobs are tracked in the database
+
+### Architecture Flow
+
+```
+Application Code
+    ↓
+jobDispatcher.enqueue(CREATE_NOTIFICATION, payload)
+    ↓
+QStash Queue
+    ↓
+POST /api/jobs/notifications (Job Worker)
+    ↓
+INSERT INTO notifications table
+    ↓
+User sees notification (via SWR polling)
+```
+
+### Method 1: Using Event Helper Functions (Recommended)
+
+**Best for:** Common notification types with predefined templates
+
+**Step 1:** Use the appropriate event helper function:
+
+```typescript
+import { createPaymentFailedNotification } from '@/lib/notifications/events/billing-events';
+import { createTeamInvitationNotification } from '@/lib/notifications/events/team-events';
+import { createPasswordChangedNotification } from '@/lib/notifications/events/security-events';
+
+// Example: Payment failed notification
+const jobId = await createPaymentFailedNotification(
+  userId,
+  amount,
+  organizationId // optional
+);
+
+// Example: Team invitation notification
+const jobId = await createTeamInvitationNotification(
+  invitedUserId,
+  inviterName,
+  organizationName,
+  organizationId
+);
+
+// Example: Security notification
+const jobId = await createPasswordChangedNotification(
+  userId,
+  ipAddress // optional
+);
+```
+
+**Benefits:**
+
+- ✅ Type-safe with predefined event schemas
+- ✅ Consistent notification formatting
+- ✅ Automatic metadata population
+- ✅ Built-in idempotency keys
+
+### Method 2: Direct Job Dispatcher (Flexible)
+
+**Best for:** Custom notifications or ad-hoc use cases
+
+**Step 1:** Import the job dispatcher:
+
+```typescript
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { JOB_TYPES } from '@/lib/types/jobs';
+```
+
+**Step 2:** Enqueue the notification job:
+
+```typescript
+const jobId = await jobDispatcher.enqueue(
+  JOB_TYPES.CREATE_NOTIFICATION,
+  {
+    userId: 'user-123',
+    type: 'billing.payment_failed', // Must match NOTIFICATION_TYPES enum
+    category: 'billing', // Auto-derived if not provided
+    priority: 'critical', // critical | important | info
+    title: 'Payment Failed',
+    message: 'Your payment could not be processed.',
+    metadata: {
+      actionUrl: '/settings/billing',
+      actionLabel: 'Update Payment',
+      amount: '29.99',
+    },
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+  },
+  {
+    // Job metadata (for tracking)
+    userId: 'user-123',
+    organizationId: 456,
+    idempotencyKey: 'payment-failed-user-123-2025-09-30',
+  },
+  {
+    // Optional: Job options
+    retries: 3,
+    delay: 0, // milliseconds
+  }
+);
+```
+
+**Complete Example:**
+
+```typescript
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { JOB_TYPES } from '@/lib/types/jobs';
+import logger from '@/lib/logger/logger.service';
+
+export async function notifyUserOfNewFeature(userId: string): Promise<string> {
+  try {
+    const jobId = await jobDispatcher.enqueue(
+      JOB_TYPES.CREATE_NOTIFICATION,
+      {
+        userId,
+        type: 'product.feature_released',
+        category: 'product',
+        priority: 'info',
+        title: 'New Feature Available',
+        message: 'Check out our new analytics dashboard!',
+        metadata: {
+          actionUrl: '/app/analytics',
+          actionLabel: 'View Analytics',
+          featureName: 'Analytics Dashboard',
+        },
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      },
+      {
+        userId,
+        idempotencyKey: `feature-release-${userId}-analytics-2025-09-30`,
+      }
+    );
+
+    logger.info('Notification job enqueued', { jobId, userId });
+    return jobId;
+  } catch (error) {
+    logger.error('Failed to enqueue notification job', {
+      userId,
+      error: error.message,
+    });
+    throw error;
+  }
+}
+```
+
+### Method 3: Batch Notifications
+
+**Best for:** Sending the same notification to multiple users
+
+```typescript
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { JOB_TYPES } from '@/lib/types/jobs';
+
+// Create notifications for multiple users
+async function notifyTeamMembers(userIds: string[], message: string) {
+  const jobs = userIds.map((userId) =>
+    jobDispatcher.enqueue(
+      JOB_TYPES.CREATE_NOTIFICATION,
+      {
+        userId,
+        type: 'team.member_added',
+        category: 'team',
+        priority: 'info',
+        title: 'Team Update',
+        message,
+        metadata: {
+          actionUrl: '/team',
+          actionLabel: 'View Team',
+        },
+      },
+      { userId }
+    )
+  );
+
+  // Enqueue all jobs in parallel
+  const jobIds = await Promise.all(jobs);
+  return jobIds;
+}
+```
+
+### Creating New Event Helper Functions
+
+When you need a new notification type frequently, create a helper function:
+
+**Step 1:** Add the notification type to constants:
+
+```typescript
+// lib/types/notifications/notification-type.constant.ts
+export const NOTIFICATION_TYPES = [
+  // ... existing types
+  'product.feature_released',
+  'activity.comment_mention',
+] as const;
+```
+
+**Step 2:** Create event helper function:
+
+```typescript
+// lib/notifications/events/product-events.ts
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { JOB_TYPES } from '@/lib/types/jobs';
+
+export async function createFeatureReleaseNotification(
+  userId: string,
+  featureName: string,
+  featureUrl: string
+): Promise<string> {
+  return jobDispatcher.enqueue(
+    JOB_TYPES.CREATE_NOTIFICATION,
+    {
+      userId,
+      type: 'product.feature_released',
+      category: 'product',
+      priority: 'info',
+      title: 'New Feature Available',
+      message: `Check out our new ${featureName} feature!`,
+      metadata: {
+        actionUrl: featureUrl,
+        actionLabel: 'Learn More',
+        featureName,
+      },
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
+    {
+      userId,
+      idempotencyKey: `feature-release-${featureName}-${userId}`,
+    }
+  );
+}
+```
+
+**Step 3:** Export from index:
+
+```typescript
+// lib/notifications/events/index.ts
+export * from './billing-events';
+export * from './team-events';
+export * from './security-events';
+export * from './product-events'; // Add new module
+```
+
+### Best Practices
+
+#### 1. Error Handling
+
+Always wrap notification creation in try-catch to prevent main flow failure:
+
+```typescript
+try {
+  await createPaymentFailedNotification(userId, amount);
+} catch (error) {
+  logger.error('Failed to create notification', { userId, error });
+  // Don't throw - main flow should continue
+}
+```
+
+Or use `.catch()`:
+
+```typescript
+await createPaymentFailedNotification(userId, amount).catch((err) =>
+  logger.error('Failed to create notification', err)
+);
+```
+
+#### 2. Idempotency Keys
+
+Use descriptive idempotency keys to prevent duplicate notifications:
+
+```typescript
+// Good: Specific and unique
+idempotencyKey: `payment-failed-${userId}-${invoiceId}`;
+
+// Bad: Not unique enough
+idempotencyKey: `payment-failed-${userId}`;
+```
+
+#### 3. Metadata Structure
+
+Include actionable metadata for better UX:
+
+```typescript
+metadata: {
+  actionUrl: '/settings/billing',        // Where to go
+  actionLabel: 'Update Payment',         // What to do
+  // Additional context
+  amount: '29.99',
+  invoiceId: 'inv_123',
+  dueDate: '2025-10-01',
+}
+```
+
+#### 4. Expiry Dates
+
+Set appropriate expiry dates based on notification type:
+
+```typescript
+// Critical: 30 days
+expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+// Informational: 7 days
+expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+// Time-sensitive: 24 hours
+expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000);
+```
+
+#### 5. Logging
+
+Always log notification creation for debugging:
+
+```typescript
+logger.info('Creating notification', {
+  userId,
+  type: 'billing.payment_failed',
+  jobId,
+});
+```
+
+### Integration Examples
+
+#### Stripe Webhook Integration
+
+```typescript
+// app/api/stripe/webhook/route.ts
+import { createPaymentFailedNotification } from '@/lib/notifications/events/billing-events';
+
+if (event.type === 'invoice.payment_failed') {
+  await createPaymentFailedNotification(
+    organization.ownerId,
+    invoice.amount_due / 100,
+    organization.id
+  ).catch((err) => logger.error('Notification failed', err));
+}
+```
+
+#### Server Action Integration
+
+```typescript
+// app/actions/team/add-member.action.ts
+import { createTeamMemberAddedNotification } from '@/lib/notifications/events/team-events';
+
+export const addTeamMemberAction = validatedActionWithUser(
+  addMemberSchema,
+  async (data, _, user) => {
+    const member = await addMember(data);
+
+    // Notify new member
+    await createTeamMemberAddedNotification(
+      member.userId,
+      user.name,
+      organization.name,
+      organization.id
+    ).catch((err) => logger.error('Notification failed', err));
+
+    return { success: true };
+  }
+);
+```
+
+### Monitoring Job Status
+
+Track notification job status in the database:
+
+```typescript
+import { getJobExecutionByJobId } from '@/lib/db/queries';
+
+const jobId = await createPaymentFailedNotification(userId, amount);
+
+// Later, check job status
+const execution = await getJobExecutionByJobId(jobId);
+console.log(execution.status); // pending | processing | completed | failed
+```
+
+### Testing Notifications
+
+**Unit Test Example:**
+
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+import { createPaymentFailedNotification } from '@/lib/notifications/events/billing-events';
+
+describe('Payment Failed Notification', () => {
+  it('should enqueue notification job', async () => {
+    const jobId = await createPaymentFailedNotification('user-123', 29.99);
+    expect(jobId).toBeDefined();
+  });
+});
+```
+
+**Integration Test Example:**
+
+```typescript
+// Test full flow: enqueue → process → database insert
+import { jobDispatcher } from '@/lib/jobs/job-dispatcher.service';
+import { getNotificationsByUserId } from '@/lib/db/queries';
+
+it('should create notification in database', async () => {
+  await jobDispatcher.enqueue(JOB_TYPES.CREATE_NOTIFICATION, payload);
+
+  // Wait for job processing
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  const notifications = await getNotificationsByUserId('user-123');
+  expect(notifications).toHaveLength(1);
+});
+```
+
+### Quick Reference
+
+| Method                          | Use Case                           | Complexity |
+| ------------------------------- | ---------------------------------- | ---------- |
+| Event Helper Functions          | Common notification types          | Low        |
+| Direct Job Dispatcher           | Custom/ad-hoc notifications        | Medium     |
+| Batch Notifications             | Multiple users, same notification  | Medium     |
+| Create New Event Helper         | New frequently-used notification   | High       |
+| Integration with Existing Flows | Add to webhooks, actions, services | Medium     |
+
+### Related Documentation
+
+- **[Async Job Processing](../docs/async-job-processing.md)** - QStash job system overview
+- **[Creating Jobs](../docs/async-job-processing/creating-jobs.md)** - How to create new job types
+- **[Job Dispatcher API](../docs/async-job-processing/api-reference.md)** - Complete API reference
 
 ## Conclusion
 

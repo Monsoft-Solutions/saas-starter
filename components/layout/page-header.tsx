@@ -2,8 +2,9 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, HelpCircle, Bell } from 'lucide-react';
+import { Search, HelpCircle } from 'lucide-react';
 import { BreadcrumbNav } from './breadcrumb-nav';
+import { NotificationBell } from '@/components/notifications/notification-bell.component';
 import { cn } from '@/lib/design-system';
 
 interface PageHeaderProps {
@@ -75,18 +76,7 @@ export function PageHeader({
           )}
 
           {/* Notifications button */}
-          {showNotifications && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="relative text-muted-foreground hover:text-foreground"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">Notifications</span>
-              {/* Notification indicator */}
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive"></span>
-            </Button>
-          )}
+          {showNotifications && <NotificationBell />}
 
           {/* Quick search button */}
           {showSearch && onSearchClick && (

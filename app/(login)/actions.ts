@@ -8,7 +8,11 @@
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
-import { User, user as userTable } from '@/lib/db/schemas';
+import {
+  User,
+  user as userTable,
+  organization as organizationTable,
+} from '@/lib/db/schemas';
 // BetterAuth handles password hashing and session management internally
 import { redirect } from 'next/navigation';
 import { createCheckoutSession } from '@/lib/payments/stripe';
@@ -28,8 +32,14 @@ import {
   sendEmailChangeConfirmationEmailAsync,
   sendPasswordResetEmailAsync,
 } from '@/lib/emails/enqueue';
+import {
+  createPasswordChangedNotification,
+  createTeamInvitationNotification,
+  createMemberRemovedNotification,
+} from '@/lib/notifications/events';
 import { env } from '@/lib/env';
 import { ActivityType } from '@/lib/types';
+import logger from '@/lib/logger/logger.service';
 
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
@@ -207,6 +217,19 @@ export const updatePassword = validatedActionWithUser(
       // Don't fail the password update if email fails - log and continue
     }
 
+    // Create in-app notification
+    const requestHeaders = await headers();
+    const ipAddress = requestHeaders.get('x-forwarded-for');
+    await createPasswordChangedNotification(
+      user.id,
+      ipAddress ?? undefined
+    ).catch((err) =>
+      logger.error('Failed to create password changed notification', {
+        error: err.message,
+        userId: user.id,
+      })
+    );
+
     return {
       success: 'Password updated successfully.',
     };
@@ -374,6 +397,13 @@ export const removeOrganizationMember = validatedActionWithUser(
       return { error: 'User is not part of an organization' };
     }
 
+    // Get member details before removal for notification
+    const memberList = await auth.api.listMembers({
+      headers: requestHeaders,
+      query: { organizationId: activeMember.organizationId },
+    });
+    const removedMember = memberList.members.find((m) => m.id === memberId);
+
     try {
       await auth.api.removeMember({
         headers: requestHeaders,
@@ -390,6 +420,29 @@ export const removeOrganizationMember = validatedActionWithUser(
     }
 
     await logActivity(user.id, ActivityType.REMOVE_ORGANIZATION_MEMBER);
+
+    // Create in-app notification for removed member
+    if (removedMember) {
+      // Fetch organization name
+      const org = await db
+        .select({ name: organizationTable.name })
+        .from(organizationTable)
+        .where(eq(organizationTable.id, activeMember.organizationId))
+        .limit(1);
+      const orgName = org[0]?.name || 'Organization';
+
+      await createMemberRemovedNotification(
+        removedMember.user.id,
+        removedMember.user.name || removedMember.user.email,
+        orgName,
+        activeMember.organizationId
+      ).catch((err) =>
+        logger.error('Failed to create member removed notification', {
+          error: err.message,
+          userId: removedMember.user.id,
+        })
+      );
+    }
 
     return { success: 'Organization member removed successfully' };
   }
@@ -464,6 +517,38 @@ export const inviteOrganizationMember = validatedActionWithUser(
     }
 
     await logActivity(currentUser.id, ActivityType.INVITE_ORGANIZATION_MEMBER);
+
+    // Check if the invited email belongs to an existing user
+    const invitedUsers = await db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.email, normalizedEmail))
+      .limit(1);
+
+    // Create in-app notification if user exists
+    if (invitedUsers.length > 0) {
+      const invitedUser = invitedUsers[0];
+
+      // Fetch organization name
+      const org = await db
+        .select({ name: organizationTable.name })
+        .from(organizationTable)
+        .where(eq(organizationTable.id, organizationId))
+        .limit(1);
+      const orgName = org[0]?.name || 'Organization';
+
+      await createTeamInvitationNotification(
+        invitedUser.id,
+        currentUser.name || currentUser.email,
+        orgName,
+        organizationId
+      ).catch((err) =>
+        logger.error('Failed to create team invitation notification', {
+          error: err.message,
+          userId: invitedUser.id,
+        })
+      );
+    }
 
     return { success: 'Invitation sent successfully' };
   }

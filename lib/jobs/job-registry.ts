@@ -15,6 +15,13 @@ export const JOB_REGISTRY: Record<JobType, JobConfig> = {
     timeout: 30,
     description: 'Send transactional emails via Resend',
   },
+  [JOB_TYPES.CREATE_NOTIFICATION]: {
+    type: JOB_TYPES.CREATE_NOTIFICATION,
+    endpoint: '/api/jobs/notifications',
+    retries: 3,
+    timeout: 30,
+    description: 'Create in-app notifications for users',
+  },
   [JOB_TYPES.PROCESS_WEBHOOK]: {
     type: JOB_TYPES.PROCESS_WEBHOOK,
     endpoint: '/api/jobs/webhook',

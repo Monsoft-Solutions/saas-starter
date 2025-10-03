@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Toaster } from '@/components/ui/sonner';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { CommandPalette } from '@/components/layout/command-palette';
 import { PageHeader } from '@/components/layout/page-header';
@@ -56,7 +57,10 @@ export default function DashboardLayout({
         <main className="flex-1 overflow-y-auto">
           <ContentContainer className="h-full">
             <div className="space-y-6">
-              <PageHeader onSearchClick={() => setCommandPaletteOpen(true)} />
+              <PageHeader
+                onSearchClick={() => setCommandPaletteOpen(true)}
+                showNotifications={true}
+              />
               {children}
             </div>
           </ContentContainer>
@@ -68,6 +72,9 @@ export default function DashboardLayout({
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
       />
+
+      {/* Toast Notifications */}
+      <Toaster />
     </div>
   );
 }
