@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 
 interface CardSkeletonProps {
   className?: string;

@@ -9,7 +9,7 @@ import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { CommandPalette } from '@/components/layout/command-palette';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContentContainer } from '@/components/layout/content-container';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 
 export default function DashboardLayout({
   children,

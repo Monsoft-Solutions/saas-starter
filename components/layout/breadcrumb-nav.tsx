@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronRight, Home } from 'lucide-react';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 import { appNav, navigationIndex } from '@/config/navigation';
 import { resolveRoute } from '@/lib/navigation/resolve-route.util';
 

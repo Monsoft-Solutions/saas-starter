@@ -1,5 +1,5 @@
 import { Check, Crown } from 'lucide-react';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { checkoutAction, customerPortalAction } from '@/lib/payments/actions';

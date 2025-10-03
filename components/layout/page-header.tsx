@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, HelpCircle } from 'lucide-react';
 import { BreadcrumbNav } from './breadcrumb-nav';
 import { NotificationBell } from '@/components/notifications/notification-bell.component';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 
 interface PageHeaderProps {
   title?: string;

@@ -29,7 +29,7 @@ import {
   LogOut,
   UserRound,
 } from 'lucide-react';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 import { notionSpacing } from '@/lib/design-system';
 import { appNav } from '@/config/navigation';
 import { resolveRoute } from '@/lib/navigation/resolve-route.util';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 
 /**
  * Props for the StatsCounter component

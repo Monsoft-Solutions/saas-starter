@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 import type { Notification } from '@/lib/types/notifications';
 import { useNotificationContext } from './notification-provider.component';
 import { NotificationItem } from './notification-item.component';

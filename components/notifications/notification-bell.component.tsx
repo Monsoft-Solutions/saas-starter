@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 import { useNotificationContext } from './notification-provider.component';
 import { NotificationCenter } from './notification-center.component';
 
