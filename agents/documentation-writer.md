@@ -115,6 +115,7 @@ Add to `nav` array if it's a top-level section.
    - Subdirectory: `[Page](./subdir/file.md)`
 
 3. **Verify file structure before linking:**
+
    ```bash
    # Check if target file exists
    ls docs/async-job-processing/setup.md
@@ -139,6 +140,7 @@ Add to `nav` array if it's a top-level section.
 **Before committing documentation:**
 
 1. **Build test** - Run `pnpm docs:build` to catch dead links:
+
    ```bash
    pnpm docs:build
    # VitePress will fail with "(!) Found dead link" errors
