@@ -1,0 +1,21 @@
+# Build and run tests before pushing
+
+echo "Building project..."
+pnpm build
+
+if [ $? -ne 0 ]; then
+  echo "❌ Build failed. Push aborted."
+  echo "Fix the build errors before pushing."
+  exit 1
+fi
+
+echo "Running tests..."
+pnpm test
+
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Push aborted."
+  echo "Fix the failing tests before pushing."
+  exit 1
+fi
+
+echo "✅ Build and tests passed. Proceeding with push..."
