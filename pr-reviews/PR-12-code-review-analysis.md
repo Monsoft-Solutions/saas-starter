@@ -24,7 +24,7 @@ This PR completes the migration from a custom TypeScript-based design system to 
 
 ## 🚨 Critical Issues (2)
 
-### 1. Email Template CSS Variables Not Supported in Email Clients
+### 1. Email Template CSS Variables Not Supported in Email Clients (DONE)
 
 **Issue**: 11 instances of CSS custom properties (`var(--color-*)`) across 4 email component files will not render in most email clients.
 
@@ -186,7 +186,7 @@ According to the [React Email Tailwind documentation](https://react.email/docs/c
 
 This approach is superior because it eliminates the need for manual color mapping and maintains perfect consistency with your Tailwind v4 design system.
 
-### 2. Auth Cookies Not Preserved in Social Login Redirects
+### 2. Auth Cookies Not Preserved in Social Login Redirects (DONE)
 
 **Issue**: `Response.redirect()` creates fresh responses without preserving `Set-Cookie` headers from the original response.
 
@@ -212,7 +212,7 @@ return redirectWithCookies(dashboardUrl);
 
 ## ⚠️ High Priority Issues (3)
 
-### 1. Malformed Auth Link Query String Construction
+### 1. Malformed Auth Link Query String Construction (DONE)
 
 **Issue**: Template literal concatenation creates malformed URLs when redirect parameter is missing.
 
@@ -245,7 +245,7 @@ const authLinkHref = `${authLinkTarget}${
 <Link href={authLinkHref}>
 ```
 
-### 2. Console.error Usage Instead of Structured Logging
+### 2. Console.error Usage Instead of Structured Logging (DONE)
 
 **Issue**: Using `console.error` instead of the project's structured logger.
 
@@ -264,7 +264,7 @@ import logger from '@/lib/logger/logger.service';
   return NextResponse.json(
 ```
 
-### 3. Build Command Requires .env File
+### 3. Build Command Requires .env File (DONE)
 
 **Issue**: `dotenv -e .env -- next build` fails when `.env` is missing.
 

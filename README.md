@@ -372,16 +372,16 @@ lib/
 
 ```bash
 # Development
-pnpm dev                 # Start development server with Turbopack (uses .env.local if present)
-pnpm dev:local          # Explicitly use .env.local
-pnpm dev:staging        # Run dev server with staging environment
-pnpm dev:prod           # Run dev server with production environment
-pnpm build              # Build for production
-pnpm build:staging      # Build with staging environment
-pnpm build:prod         # Build with production environment
-pnpm start              # Start production server
-pnpm start:staging      # Start with staging environment
-pnpm start:prod         # Start with production environment
+pnpm dev                 # Start dev server (Next.js auto-loads .env.local → .env.development → .env)
+pnpm dev:local          # Start dev server for local development (no external services)
+pnpm dev:staging        # Run dev server with staging environment (.env.staging)
+pnpm dev:prod           # Run dev server with production environment (.env.production)
+pnpm build              # Build for production (Next.js auto-loads env files, no .env required)
+pnpm build:staging      # Build with staging environment (.env.staging)
+pnpm build:prod         # Build with production environment (.env.production)
+pnpm start              # Start production server (uses built-in env vars)
+pnpm start:staging      # Start with staging environment (.env.staging)
+pnpm start:prod         # Start with production environment (.env.production)
 
 # Database Management
 pnpm db:setup           # Interactive environment setup (local)

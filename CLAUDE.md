@@ -6,16 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Development (Multi-Environment Support)
-pnpm dev                 # Start development server with Turbopack (uses .env.local if present)
-pnpm dev:local          # Explicitly use .env.local
-pnpm dev:staging        # Run dev server with staging environment
-pnpm dev:prod           # Run dev server with production environment
-pnpm build              # Build for production
-pnpm build:staging      # Build with staging environment
-pnpm build:prod         # Build with production environment
-pnpm start              # Start production server
-pnpm start:staging      # Start with staging environment
-pnpm start:prod         # Start with production environment
+pnpm dev                 # Start dev server (Next.js loads .env.local → .env.development → .env automatically)
+pnpm dev:local          # Start dev server for local development (same as pnpm dev, no external services)
+pnpm dev:staging        # Run dev server with staging environment (.env.staging)
+pnpm dev:prod           # Run dev server with production environment (.env.production)
+pnpm build              # Build for production (Next.js loads env files automatically)
+pnpm build:staging      # Build with staging environment (.env.staging)
+pnpm build:prod         # Build with production environment (.env.production)
+pnpm start              # Start production server (uses built-in env vars)
+pnpm start:staging      # Start with staging environment (.env.staging)
+pnpm start:prod         # Start with production environment (.env.production)
 
 # Database (Multi-Environment Support)
 pnpm db:setup           # Create .env file (interactive setup for local)
@@ -48,6 +48,21 @@ The application supports multiple environments. See [Environment Configuration G
 - `.env.production` - Production environment (committed, no secrets)
 - `.env.example` - Template file (committed)
 - `.env.local.example` - Local template (committed)
+
+### Environment Loading Priority
+
+**Next.js automatically loads environment files in this order (highest to lowest priority):**
+
+1. `.env.local` (local development, gitignored) - **Highest priority**
+2. `.env.[environment]` (e.g., `.env.development`, `.env.staging`, `.env.production`)
+3. `.env` (fallback for shared defaults)
+
+**Important Notes:**
+
+- The base `pnpm dev` and `pnpm build` commands rely on Next.js's automatic env loading
+- No `.env` file is required - Next.js will work with `.env.local` or environment-specific files
+- For staging/production, use `dotenv-cli` to explicitly load environment-specific files
+- CI/CD environments should inject variables directly (Vercel, Railway, etc.)
 
 ### Quick Setup
 

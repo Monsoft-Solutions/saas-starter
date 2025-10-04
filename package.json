@@ -1,10 +1,11 @@
 {
   "private": true,
   "scripts": {
-    "dev": "dotenv -e .env -- next dev --turbopack & pnpm stripe:listen & pnpm qstash:listen",
+    "dev": "next dev --turbopack & pnpm stripe:listen & pnpm qstash:listen",
+    "dev:local": "next dev --turbopack",
     "dev:staging": "dotenv -e .env.staging -- next dev --turbopack",
     "dev:prod": "dotenv -e .env.production -- next dev --turbopack",
-    "build": "dotenv -e .env -- next build",
+    "build": "next build",
     "build:staging": "dotenv -e .env.staging -- next build",
     "build:prod": "dotenv -e .env.production -- next build",
     "start": "next start",
