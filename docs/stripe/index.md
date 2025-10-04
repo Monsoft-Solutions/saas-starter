@@ -20,7 +20,7 @@ Our Stripe integration provides:
 - **[Setup Script Guide](./setup-script-guide)** - Automated Stripe account configuration
 - **[Webhooks Configuration](./webhooks-configuration)** - Real-time event processing
 - **[Checkout & Billing Portal](./checkout-and-billing-portal)** - Subscription flows
-- **[Metadata Validation](../stripe-metadata-validation)** - Type-safe Stripe data handling
+- **[Metadata Validation](./stripe-metadata-validation.md)** - Type-safe Stripe data handling
 
 ### 🔑 Key Features
 

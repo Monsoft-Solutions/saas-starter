@@ -33,7 +33,7 @@ This directory contains comprehensive documentation for the SaaS Starter applica
 ### 🧪 **Development & Testing**
 
 - **[Unit Testing](./unit-testing.md)**: Testing framework and patterns
-- **[Stripe Metadata Validation](./stripe-metadata-validation.md)**: Type-safe Stripe data handling
+- **[Stripe Metadata Validation](./stripe/stripe-metadata-validation.md)**: Type-safe Stripe data handling
 
 ## 🚀 Quick Start
 

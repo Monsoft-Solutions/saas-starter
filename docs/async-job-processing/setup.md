@@ -195,6 +195,6 @@ curl http://localhost:8080
 
 ## Next Steps
 
-- **[Core Concepts](../core-concepts)** - Learn about job types, schemas, and lifecycle
-- **[Usage Guide](../usage)** - Start using jobs in your application
-- **[Creating Jobs](../creating-jobs)** - Add new job types to the system
+- **[Core Concepts](./core-concepts.md)** - Learn about job types, schemas, and lifecycle
+- **[Usage Guide](./usage.md)** - Start using jobs in your application
+- **[Creating Jobs](./creating-jobs.md)** - Add new job types to the system

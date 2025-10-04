@@ -357,6 +357,6 @@ export const JOB_STATUSES = {
 
 ## Next Steps
 
-- **[Setup Guide](../setup)** - Complete setup instructions
-- **[Usage Guide](../usage)** - Learn how to use the job system
-- **[Creating Jobs](../creating-jobs)** - Add new job types
+- **[Setup Guide](./setup.md)** - Complete setup instructions
+- **[Usage Guide](./usage.md)** - Learn how to use the job system
+- **[Creating Jobs](./creating-jobs.md)** - Add new job types

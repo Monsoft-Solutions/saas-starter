@@ -277,7 +277,7 @@ const checkJobStatus = async () => {
 
 ## Next Steps
 
-- **[Core Concepts](../core-concepts)** - Understand job types and schemas
-- **[Email Jobs](../email-jobs)** - Deep dive into email job specifics
-- **[Webhook Jobs](../webhook-jobs)** - Webhook processing details
-- **[Creating Jobs](../creating-jobs)** - Learn how to add new job types
+- **[Core Concepts](./core-concepts.md)** - Understand job types and schemas
+- **[Email Jobs](./email-jobs.md)** - Deep dive into email job specifics
+- **[Webhook Jobs](./webhook-jobs.md)** - Webhook processing details
+- **[Creating Jobs](./creating-jobs.md)** - Learn how to add new job types

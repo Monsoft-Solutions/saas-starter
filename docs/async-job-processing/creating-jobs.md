@@ -313,6 +313,6 @@ const myJobHandler = async (payload: MyPayload, job: BaseJob) => {
 
 ## Next Steps
 
-- **[Usage Guide](../usage)** - Learn how to use your new job type
-- **[Testing](../testing)** - Write comprehensive tests for your job
-- **[Monitoring](../monitoring)** - Set up monitoring and alerting
+- **[Usage Guide](./usage.md)** - Learn how to use your new job type
+- **[Testing](./testing.md)** - Write comprehensive tests for your job
+- **[Monitoring](./monitoring.md)** - Set up monitoring and alerting

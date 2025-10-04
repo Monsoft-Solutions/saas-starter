@@ -699,8 +699,8 @@ pnpm build:prod       # Explicitly loads .env.production
 - **[OAuth Setup Guide](./auth/OAUTH_SETUP.md)** - Configure social authentication providers
 - **[Stripe Integration](./stripe/stripe-integration.md)** - Set up payment processing
 - **[Email Configuration](./emails.md)** - Configure Resend and email templates
-- **[Database Setup](./README.md#database-setup)** - PostgreSQL and Drizzle ORM
-- **[Deployment Guide](../README.md#production-deployment)** - Deploy to production
+- **[Database Setup](./index.md#database-setup)** - PostgreSQL and Drizzle ORM
+- **[Deployment Guide](./index.md#production-deployment)** - Deploy to production
 
 ## External Resources
 

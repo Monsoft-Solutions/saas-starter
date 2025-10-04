@@ -442,6 +442,6 @@ transports: [
 
 ## Next Steps
 
-- **[Testing](../testing)** - Learn testing strategies for jobs
-- **[Deployment](../deployment)** - Production deployment guide
-- **[API Reference](../api-reference)** - Complete API documentation
+- **[Testing](./testing.md)** - Learn testing strategies for jobs
+- **[Deployment](./deployment.md)** - Production deployment guide
+- **[API Reference](./api-reference.md)** - Complete API documentation

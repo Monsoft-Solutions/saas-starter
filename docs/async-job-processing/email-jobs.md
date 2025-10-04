@@ -359,6 +359,6 @@ describe('Email Job Integration', () => {
 
 ## Next Steps
 
-- **[Usage Guide](../usage)** - Learn how to use email jobs
-- **[Webhook Jobs](../webhook-jobs)** - Process webhooks asynchronously
-- **[Testing](../testing)** - Test your email jobs comprehensively
+- **[Usage Guide](./usage.md)** - Learn how to use email jobs
+- **[Webhook Jobs](./webhook-jobs.md)** - Process webhooks asynchronously
+- **[Testing](./testing.md)** - Test your email jobs comprehensively

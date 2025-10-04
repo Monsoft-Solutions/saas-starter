@@ -310,6 +310,6 @@ The job system is resilient to failures:
 
 ## Next Steps
 
-- **[Monitoring](../monitoring)** - Set up comprehensive monitoring
-- **[API Reference](../api-reference)** - Complete API documentation
-- **[Setup Guide](../setup)** - Review setup instructions
+- **[Monitoring](./monitoring.md)** - Set up comprehensive monitoring
+- **[API Reference](./api-reference.md)** - Complete API documentation
+- **[Setup Guide](./setup.md)** - Review setup instructions

@@ -534,6 +534,6 @@ export const resetTestDatabase = async () => {
 
 ## Next Steps
 
-- **[Creating Jobs](../creating-jobs)** - Learn how to create new job types
-- **[Deployment](../deployment)** - Production deployment guide
-- **[Monitoring](../monitoring)** - Monitor your job system in production
+- **[Creating Jobs](./creating-jobs.md)** - Learn how to create new job types
+- **[Deployment](./deployment.md)** - Production deployment guide
+- **[Monitoring](./monitoring.md)** - Monitor your job system in production

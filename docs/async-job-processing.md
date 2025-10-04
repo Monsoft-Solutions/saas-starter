@@ -11,16 +11,16 @@ Complete guide to the asynchronous job processing system using Upstash QStash fo
 >
 > This documentation has been split into multiple focused guides for better navigation:
 >
-> - **[Setup Guide](./async-job-processing/setup)** - Local development and production setup
-> - **[Core Concepts](./async-job-processing/core-concepts)** - Job types, schemas, lifecycle, and retry policies
-> - **[Usage Guide](./async-job-processing/usage)** - How to enqueue jobs and available job types
-> - **[Creating Jobs](./async-job-processing/creating-jobs)** - Step-by-step guide for adding new job types
-> - **[Email Jobs](./async-job-processing/email-jobs)** - Email-specific deep dive and best practices
-> - **[Webhook Jobs](./async-job-processing/webhook-jobs)** - Webhook processing details and examples
-> - **[Monitoring](./async-job-processing/monitoring)** - Debugging, monitoring, and troubleshooting
-> - **[Testing](./async-job-processing/testing)** - Testing strategies and examples
-> - **[Deployment](./async-job-processing/deployment)** - Production deployment guide
-> - **[API Reference](./async-job-processing/api-reference)** - Complete API documentation
+> - **[Setup Guide](./async-job-processing/setup.md)** - Local development and production setup
+> - **[Core Concepts](./async-job-processing/core-concepts.md)** - Job types, schemas, lifecycle, and retry policies
+> - **[Usage Guide](./async-job-processing/usage.md)** - How to enqueue jobs and available job types
+> - **[Creating Jobs](./async-job-processing/creating-jobs.md)** - Step-by-step guide for adding new job types
+> - **[Email Jobs](./async-job-processing/email-jobs.md)** - Email-specific deep dive and best practices
+> - **[Webhook Jobs](./async-job-processing/webhook-jobs.md)** - Webhook processing details and examples
+> - **[Monitoring](./async-job-processing/monitoring.md)** - Debugging, monitoring, and troubleshooting
+> - **[Testing](./async-job-processing/testing.md)** - Testing strategies and examples
+> - **[Deployment](./async-job-processing/deployment.md)** - Production deployment guide
+> - **[API Reference](./async-job-processing/api-reference.md)** - Complete API documentation
 
 ## Overview
 
@@ -40,18 +40,18 @@ The SaaS starter application includes a robust asynchronous job processing syste
 
 This documentation is organized into focused guides for better navigation:
 
-| Guide                              | Description                                         |
-| ---------------------------------- | --------------------------------------------------- |
-| **[Setup Guide](setup)**           | Local development and production setup instructions |
-| **[Core Concepts](core-concepts)** | Job types, schemas, lifecycle, and retry policies   |
-| **[Usage Guide](usage)**           | How to enqueue jobs and available job types         |
-| **[Creating Jobs](creating-jobs)** | Step-by-step guide for adding new job types         |
-| **[Email Jobs](email-jobs)**       | Email-specific deep dive and best practices         |
-| **[Webhook Jobs](webhook-jobs)**   | Webhook processing details and examples             |
-| **[Monitoring](monitoring)**       | Debugging, monitoring, and troubleshooting          |
-| **[Testing](testing)**             | Testing strategies and examples                     |
-| **[Deployment](deployment)**       | Production deployment guide                         |
-| **[API Reference](api-reference)** | Complete API documentation                          |
+| Guide                                                        | Description                                         |
+| ------------------------------------------------------------ | --------------------------------------------------- |
+| **[Setup Guide](./async-job-processing/setup.md)**           | Local development and production setup instructions |
+| **[Core Concepts](./async-job-processing/core-concepts.md)** | Job types, schemas, lifecycle, and retry policies   |
+| **[Usage Guide](./async-job-processing/usage.md)**           | How to enqueue jobs and available job types         |
+| **[Creating Jobs](./async-job-processing/creating-jobs.md)** | Step-by-step guide for adding new job types         |
+| **[Email Jobs](./async-job-processing/email-jobs.md)**       | Email-specific deep dive and best practices         |
+| **[Webhook Jobs](./async-job-processing/webhook-jobs.md)**   | Webhook processing details and examples             |
+| **[Monitoring](./async-job-processing/monitoring.md)**       | Debugging, monitoring, and troubleshooting          |
+| **[Testing](./async-job-processing/testing.md)**             | Testing strategies and examples                     |
+| **[Deployment](./async-job-processing/deployment.md)**       | Production deployment guide                         |
+| **[API Reference](./async-job-processing/api-reference.md)** | Complete API documentation                          |
 
 ## Quick Start
 
@@ -89,7 +89,7 @@ This documentation is organized into focused guides for better navigation:
 3. Run database migrations
 4. Monitor via QStash dashboard
 
-See the **[Setup Guide](setup)** for complete instructions.
+See the **[Setup Guide](./async-job-processing/setup.md)** for complete instructions.
 
 ## Common Job Operations
 

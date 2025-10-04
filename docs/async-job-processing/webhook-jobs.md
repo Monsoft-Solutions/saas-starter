@@ -445,6 +445,6 @@ const webhookHealth = await db
 
 ## Next Steps
 
-- **[Usage Guide](../usage)** - Learn how to use webhook jobs
-- **[Monitoring](../monitoring)** - Set up monitoring and alerting
-- **[Testing](../testing)** - Test your webhook jobs comprehensively
+- **[Usage Guide](./usage.md)** - Learn how to use webhook jobs
+- **[Monitoring](./monitoring.md)** - Set up monitoring and alerting
+- **[Testing](./testing.md)** - Test your webhook jobs comprehensively
