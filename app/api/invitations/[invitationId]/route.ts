@@ -13,7 +13,7 @@ import { eq } from 'drizzle-orm';
  * Zod schema for validating route parameters
  */
 const ParamsSchema = z.object({
-  invitationId: z.string().uuid('Invalid invitation ID format'),
+  invitationId: z.string().min(1, 'Invalid invitation ID format'),
 });
 
 type RouteParams = {
