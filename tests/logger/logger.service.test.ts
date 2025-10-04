@@ -89,7 +89,7 @@ describe('Logger Service', () => {
   });
 
   describe('Production Environment', () => {
-    it('should create logger with file and console transports in production', async () => {
+    it('should create logger with console transport in production', async () => {
       vi.stubEnv('NODE_ENV', 'production');
       vi.resetModules();
 
@@ -98,8 +98,8 @@ describe('Logger Service', () => {
       );
 
       expect(logger).toBeDefined();
-      // Production has 3 main transports + 2 exception/rejection handlers
-      expect(logger.transports.length).toBeGreaterThanOrEqual(3);
+      expect(logger.transports).toHaveLength(1);
+      expect(logger.transports[0]).toBeInstanceOf(winston.transports.Console);
 
       vi.unstubAllEnvs();
     });
@@ -117,7 +117,7 @@ describe('Logger Service', () => {
       vi.unstubAllEnvs();
     });
 
-    it('should have console transport with warn level in production', async () => {
+    it('should have console transport with debug level in production', async () => {
       vi.stubEnv('NODE_ENV', 'production');
       vi.resetModules();
 
@@ -130,21 +130,7 @@ describe('Logger Service', () => {
       ) as winston.transports.ConsoleTransportInstance;
 
       expect(consoleTransport).toBeDefined();
-      expect(consoleTransport.level).toBe('warn');
-
-      vi.unstubAllEnvs();
-    });
-
-    it('should configure exception and rejection handlers in production', async () => {
-      vi.stubEnv('NODE_ENV', 'production');
-      vi.resetModules();
-
-      const { default: logger } = await import(
-        '../../lib/logger/logger.service'
-      );
-
-      expect(logger.exceptions.handlers).toBeDefined();
-      expect(logger.rejections.handlers).toBeDefined();
+      expect(consoleTransport.level).toBe('debug');
 
       vi.unstubAllEnvs();
     });

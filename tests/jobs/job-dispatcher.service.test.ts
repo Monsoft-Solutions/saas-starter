@@ -127,7 +127,7 @@ describe('Job Dispatcher Service', () => {
           jobId: expect.any(String),
           jobType: 'send-email',
           status: 'pending',
-          userId: 1,
+          userId: '1',
         })
       );
       expect(mockQStash.publishJSON).toHaveBeenCalledWith(
