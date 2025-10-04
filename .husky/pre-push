@@ -1,7 +1,7 @@
 # Build and run tests before pushing
 
 echo "Building project..."
-pnpm build
+pnpm build:local
 
 if [ $? -ne 0 ]; then
   echo "❌ Build failed. Push aborted."

@@ -6,6 +6,7 @@
     "dev:staging": "dotenv -e .env.staging -- next dev --turbopack",
     "dev:prod": "dotenv -e .env.production -- next dev --turbopack",
     "build": "next build",
+    "build:local": "dotenv -e .env -- next build",
     "build:staging": "dotenv -e .env.staging -- next build",
     "build:prod": "dotenv -e .env.production -- next build",
     "start": "next start",
