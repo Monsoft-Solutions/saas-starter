@@ -1,5 +1,4 @@
 import winston from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
 import { env } from '../env';
 import type { ErrorPayload, LogMetadata, ErrorInput } from './logger.types';
 import { isError, isPlainObject } from './logger.types';
@@ -57,45 +56,13 @@ const consoleFormat = winston.format.combine(
 // Define transports based on environment
 const transports: winston.transport[] = [];
 
-if (env.NODE_ENV === 'production') {
-  // Production: File logging with daily rotation
-  const fileRotateTransport = new DailyRotateFile({
-    filename: 'logs/application-%DATE%.log',
-    datePattern: 'YYYY-MM-DD',
-    maxSize: '20m',
-    maxFiles: '14d', // Keep logs for 14 days
-    format: format,
-  });
+// Development: Console logging with all levels
+const consoleTransport = new winston.transports.Console({
+  level: 'debug',
+  format: consoleFormat,
+});
 
-  const errorFileRotateTransport = new DailyRotateFile({
-    filename: 'logs/error-%DATE%.log',
-    datePattern: 'YYYY-MM-DD',
-    level: 'error',
-    maxSize: '20m',
-    maxFiles: '14d',
-    format: format,
-  });
-
-  // In production, only log errors and warnings to console
-  const consoleTransport = new winston.transports.Console({
-    level: 'warn',
-    format: consoleFormat,
-  });
-
-  transports.push(
-    fileRotateTransport,
-    errorFileRotateTransport,
-    consoleTransport
-  );
-} else {
-  // Development: Console logging with all levels
-  const consoleTransport = new winston.transports.Console({
-    level: 'debug',
-    format: consoleFormat,
-  });
-
-  transports.push(consoleTransport);
-}
+transports.push(consoleTransport);
 
 // Create the logger
 const logger = winston.createLogger({
@@ -106,23 +73,6 @@ const logger = winston.createLogger({
   // Do not exit on handled exceptions
   exitOnError: false,
 });
-
-// Handle uncaught exceptions and unhandled promise rejections
-if (env.NODE_ENV === 'production') {
-  logger.exceptions.handle(
-    new winston.transports.File({
-      filename: 'logs/exceptions.log',
-      format: format,
-    })
-  );
-
-  logger.rejections.handle(
-    new winston.transports.File({
-      filename: 'logs/rejections.log',
-      format: format,
-    })
-  );
-}
 
 /**
  * Normalizes error input into a consistent ErrorPayload structure
