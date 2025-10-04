@@ -57,6 +57,13 @@
       "when": 1759483397592,
       "tag": "0007_parallel_shadowcat",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1759534250891,
+      "tag": "0008_spotty_jocasta",
+      "breakpoints": true
     }
   ]
 }
