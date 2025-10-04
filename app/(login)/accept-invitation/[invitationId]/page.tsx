@@ -36,8 +36,11 @@ export default async function AcceptInvitationPage({
   }
 
   const { invitationId } = await params;
+  // Cache headers once for all downstream calls
+  const requestHeaders = await headers();
+
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: requestHeaders,
   });
 
   try {
@@ -109,7 +112,7 @@ export default async function AcceptInvitationPage({
           body: {
             invitationId,
           },
-          headers: await headers(),
+          headers: requestHeaders,
         });
 
         logger.info('[invitation] Invitation accepted successfully', {
@@ -125,7 +128,7 @@ export default async function AcceptInvitationPage({
         if (acceptedOrgId) {
           try {
             await auth.api.setActiveOrganization({
-              headers: await headers(),
+              headers: requestHeaders,
               body: { organizationId: acceptedOrgId },
             });
           } catch (error) {

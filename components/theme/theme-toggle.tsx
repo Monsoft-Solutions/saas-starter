@@ -19,7 +19,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-300 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-muted transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         aria-label="Toggle theme"
       >
         <span className="sr-only">Toggle theme</span>
@@ -37,7 +37,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className={cn(
         'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-        isDark ? 'bg-primary' : 'bg-gray-300'
+        isDark ? 'bg-primary' : 'bg-muted'
       )}
     >
       <span className="sr-only">Toggle theme</span>

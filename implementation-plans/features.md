@@ -18,7 +18,7 @@
 ## Communication:
 
 - In-app notifications - Real-time notifications system (done)
-- NOtification Center - The main hub for the notification. It desides what notifications should be for emails, in-app, sms..
+- Notification Center - The main hub for notifications. It decides which notifications are sent via email, in-app, SMS, etc.
 - (done) Email templates - Transactional emails beyond just Resend
   integration
 - Support/help desk - Basic ticketing or chat widget integration
