@@ -6,14 +6,19 @@ import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [isDark, setIsDark] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
+  // Mount component once to prevent hydration mismatch
   React.useEffect(() => {
     setMounted(true);
-    setIsDark(theme === 'dark');
-  }, [theme]);
+  }, []);
+
+  // Track resolved theme changes (handles "system" theme correctly)
+  React.useEffect(() => {
+    setIsDark(resolvedTheme === 'dark');
+  }, [resolvedTheme]);
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {

@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const invitationId = url.searchParams.get('invitationId');
 
-  if (invitationId && response.status === 200) {
+  // Accept both 2xx success and 3xx redirect status codes (social logins often return redirects)
+  if (invitationId && response.status >= 200 && response.status < 400) {
     try {
       // Wait a bit for the session to be fully established
       await new Promise((resolve) => setTimeout(resolve, 100));

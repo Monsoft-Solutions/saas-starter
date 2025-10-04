@@ -38,7 +38,7 @@ The codebase shows good progress but requires these remaining fixes for producti
 
 ### HIGH PRIORITY: Critical Issues (3 pending)
 
-#### 1. Type Definition Issues - Type Safety Violation
+#### 1. Type Definition Issues - Type Safety Violation (DONE)
 
 **File**: `app/(login)/accept-invitation/[invitationId]/invitation-landing.component.tsx:35,22-41`
 **Issue**: `expiresAt` field typed as `Date` only but runtime handles both `Date` and string; types not exported
@@ -97,72 +97,7 @@ export type InvitationLandingProps = {
 **Guidelines**: Type everything explicitly - no implicit any types
 **Impact**: Prevents runtime errors from type mismatches
 
-#### 2. Next.js App Router Params Typing - Framework Compliance
-
-**File**: `app/api/invitations/[invitationId]/route.ts:12-15,19`, `app/(login)/accept-invitation/[invitationId]/page.tsx:20-23,38`
-**Issue**: Incorrect Promise typing for params in Next.js 15 App Router
-**Current Code**:
-
-```typescript
-// API Route
-type RouteParams = {
-  params: Promise<{
-    invitationId: string;
-  }>;
-};
-
-export async function GET(_request: NextRequest, { params }: RouteParams) {
-  const { invitationId } = await params; // ❌ Incorrect - params not Promise
-}
-
-// Page Component
-type AcceptInvitationPageProps = {
-  params: Promise<{
-    invitationId: string;
-  }>;
-};
-
-export default async function AcceptInvitationPage({
-  params,
-}: AcceptInvitationPageProps) {
-  const { invitationId } = await params; // ❌ Incorrect - params not Promise
-}
-```
-
-**Problem**: Violates Next.js 15 App Router patterns - params are plain objects, not Promises
-**Solution**: Remove Promise wrapper and await from params destructuring
-**Fix**:
-
-```typescript
-// API Route
-type RouteParams = {
-  params: {
-    invitationId: string;
-  };
-};
-
-export async function GET(_request: NextRequest, { params }: RouteParams) {
-  const { invitationId } = params; // ✅ Correct - no await needed
-}
-
-// Page Component
-type AcceptInvitationPageProps = {
-  params: {
-    invitationId: string;
-  };
-};
-
-export default async function AcceptInvitationPage({
-  params,
-}: AcceptInvitationPageProps) {
-  const { invitationId } = params; // ✅ Correct - no await needed
-}
-```
-
-**Guidelines**: Follow Next.js App Router patterns and TypeScript best practices
-**Impact**: Ensures compatibility with Next.js 15 and proper framework usage
-
-#### 3. Auth Callback Bug - Social Login Invitation Processing
+#### 3. Auth Callback Bug - Social Login Invitation Processing (DONE)
 
 **File**: `app/api/auth/[...all]/route.ts:18`
 **Issue**: Only accepts status === 200 but social logins return 3xx redirects
@@ -187,7 +122,7 @@ if (invitationId && (response.status >= 200 && response.status < 400)) {
 
 ### MEDIUM PRIORITY: Code Quality Issues (2 pending)
 
-#### 4. Theme Toggle State Management - UX Issue
+#### 4. Theme Toggle State Management - UX Issue (DONE)
 
 **File**: `components/theme/theme-toggle.tsx:9,13-16`
 **Issue**: Uses `theme` instead of `resolvedTheme`, causing incorrect state for "system" theme users

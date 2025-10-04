@@ -4,9 +4,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { db } from '@/lib/db/drizzle';
 import { invitation } from '@/lib/db/schemas';
 import { eq } from 'drizzle-orm';
+
+/**
+ * Zod schema for validating route parameters
+ */
+const ParamsSchema = z.object({
+  invitationId: z.string().uuid('Invalid invitation ID format'),
+});
 
 type RouteParams = {
   params: Promise<{
@@ -16,14 +24,17 @@ type RouteParams = {
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    const { invitationId } = await params;
+    const resolvedParams = await params;
 
-    if (!invitationId) {
-      return NextResponse.json(
-        { error: 'Invitation ID is required' },
-        { status: 400 }
-      );
+    // Validate route parameters with Zod
+    const parsed = ParamsSchema.safeParse(resolvedParams);
+    if (!parsed.success) {
+      const errorMessage =
+        parsed.error.errors[0]?.message ?? 'Invalid invitation ID';
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
+
+    const { invitationId } = parsed.data;
 
     // Fetch invitation details
     const invitationDetails = await db
