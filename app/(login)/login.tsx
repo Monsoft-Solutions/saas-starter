@@ -363,11 +363,29 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
 
           <div className="mt-6">
             <Link
-              href={`${mode === 'signin' ? '/sign-up' : '/sign-in'}${
-                redirect ? `?redirect=${redirect}` : ''
-              }${priceId ? `&priceId=${priceId}` : ''}${
-                invitationId ? `&invitationId=${invitationId}` : ''
-              }`}
+              href={(() => {
+                const authLinkTarget =
+                  mode === 'signin' ? '/sign-up' : '/sign-in';
+                const authLinkSearchParams = new URLSearchParams();
+
+                if (redirect) {
+                  authLinkSearchParams.set('redirect', redirect);
+                }
+                if (priceId) {
+                  authLinkSearchParams.set('priceId', priceId);
+                }
+                if (invitationId) {
+                  authLinkSearchParams.set('invitationId', invitationId);
+                }
+
+                const authLinkHref = `${authLinkTarget}${
+                  authLinkSearchParams.toString()
+                    ? `?${authLinkSearchParams.toString()}`
+                    : ''
+                }`;
+
+                return authLinkHref;
+              })()}
               className="w-full flex justify-center py-2 px-4 border border-border rounded-full shadow-sm text-sm font-medium text-muted-foreground bg-card hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {mode === 'signin'
