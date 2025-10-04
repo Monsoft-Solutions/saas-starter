@@ -1,3 +1,8 @@
+---
+title: 'Design System - Tailwind CSS v4'
+description: 'Complete guide to the Tailwind CSS v4 design system and design tokens'
+---
+
 # Design System - Tailwind CSS v4
 
 This project uses Tailwind CSS v4's CSS-first configuration approach. All design tokens are defined in `app/globals.css` using the `@theme` directive and are automatically available as utility classes throughout the application.

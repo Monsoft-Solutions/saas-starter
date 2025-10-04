@@ -65,10 +65,7 @@ export function FeatureCard({
       <CardHeader className="relative gap-4">
         <Badge
           variant="outline"
-          className={cn(
-            'w-fit bg-muted/70 text-muted-foreground transition-all duration-300 group-data-[interactive=true]:group-hover:border-primary/40 group-data-[interactive=true]:group-hover:bg-primary/10 group-data-[interactive=true]:group-hover:text-primary rounded-sm',
-            className
-          )}
+          className="w-fit bg-muted/70 text-muted-foreground transition-all duration-300 group-data-[interactive=true]:group-hover:border-primary/40 group-data-[interactive=true]:group-hover:bg-primary/10 group-data-[interactive=true]:group-hover:text-primary rounded-sm"
         >
           {feature.label}
         </Badge>
