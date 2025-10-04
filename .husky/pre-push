@@ -9,6 +9,15 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+echo "Building docus..."
+pnpm docs:build
+
+if [ $? -ne 0 ]; then
+  echo "❌ Build docs failed. Push aborted."
+  echo "Fix the build errors before pushing."
+  exit 1
+fi
+
 echo "Running tests..."
 pnpm test
 

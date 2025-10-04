@@ -45,7 +45,9 @@ email-preview.html
 # vitepress
 docs/.vitepress/cache
 docs/.vitepress/dist
+docs/.vitepress/.temp
 
 # logs
 logs/**
 !logs/.gitkeep
+docs/.vitepress/.temp/async-job-processing_creating-jobs.md.js
