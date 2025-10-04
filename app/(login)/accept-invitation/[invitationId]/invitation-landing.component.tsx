@@ -18,27 +18,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CircleIcon, UserPlus, LogIn, Users, Mail } from 'lucide-react';
-
-type Invitation = {
-  id: string;
-  email: string;
-  role: string | null;
-  status: string;
-  organization: {
-    id: string;
-    name: string;
-  } | null;
-  inviter: {
-    name: string | null;
-    email: string | null;
-  } | null;
-  expiresAt: Date;
-};
-
-type InvitationLandingProps = {
-  invitation: Invitation;
-  invitationId: string;
-};
+import type { InvitationLandingProps } from '@/lib/types/invitation';
 
 export function InvitationLanding({
   invitation,

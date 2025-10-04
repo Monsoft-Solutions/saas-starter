@@ -3,231 +3,337 @@
 **PR Title**: feat: Enhanced invitation system with role-based permissions and acceptance flow
 **Author**: flechilla
 **Reviewer**: pr-review-analyzer
-**Analysis Date**: 2025-10-03
-**Total Comments**: 8 (from CodeRabbit AI)
-**Actionable Items**: 5 ✅ **ALL FIXED**
-**Critical Issues**: 0
-**High Priority**: 1 ✅ **FIXED**
-**Medium Priority**: 3 ✅ **ALL FIXED**
-**Low Priority**: 1 ✅ **FIXED**
-**Requires Action**: No
-**Estimated Effort**: 45 minutes
+**Analysis Date**: 2025-10-04 (Updated)
+**Total Comments**: 30+ (from CodeRabbit AI reviews)
+**Actionable Items**: 5 ✅ **RESOLVED** + 5 ❌ **STILL PENDING**
+**Critical Issues**: 2
+**High Priority**: 3 ❌ **PENDING**
+**Medium Priority**: 2 ❌ **PENDING**
+**Low Priority**: 0
+**Requires Action**: Yes
+**Estimated Effort**: 30 minutes
 
 ## Executive Summary
 
-This PR introduces a comprehensive invitation system with role-based permissions and acceptance flow. The implementation is well-structured and addresses the core requirements. **All identified issues have been successfully resolved:**
+This PR introduces a comprehensive invitation system with role-based permissions and acceptance flow. **Partial progress has been made** with some issues resolved, but **5 critical issues remain** that must be addressed before merge:
 
-✅ **Design System Compliance**: Fixed hardcoded color classes in theme toggle
-✅ **Performance Optimization**: Cached headers() calls for improved performance
-✅ **Error Handling**: Verified distinct error codes for invitation states
-✅ **Database Performance**: Added performance indexes for invitation queries
-✅ **Documentation Quality**: Fixed typos in features documentation
+✅ **RESOLVED ISSUES**:
 
-The codebase is now production-ready with improved performance, better error handling, consistent design system usage, and professional documentation quality.
+- Database Performance: Added performance indexes for invitation queries (migration 0008)
+- Documentation Quality: Fixed typos in features documentation
+- Design System Compliance: Replaced hardcoded colors with semantic tokens in theme toggle
+- Performance Optimization: Cached headers() calls in accept invitation page
+
+❌ **PENDING ISSUES** (5 critical):
+
+- Type Definition Issues: `expiresAt` field type safety violations
+- Next.js App Router Compliance: Incorrect params typing in API routes and pages
+- Auth Callback Bug: Social login invitation processing fails due to status code check
+- Theme Toggle State: Incorrect theme state management for "system" theme users
+- API Validation: Missing Zod validation for route parameters
+
+The codebase shows good progress but requires these remaining fixes for production readiness.
 
 ## Issues Requiring Action
 
-**🎉 ALL ISSUES RESOLVED** - This PR is now ready for merge!
+### HIGH PRIORITY: Critical Issues (3 pending)
 
-### HIGH PRIORITY: Design System Violations ✅ RESOLVED
+#### 1. Type Definition Issues - Type Safety Violation
 
-#### 1. Hardcoded Color Classes in Theme Toggle
-
-**File**: `components/theme/theme-toggle.tsx:22,40`
-**Issue**: Hardcoded `bg-gray-300` classes violate design system rules
+**File**: `app/(login)/accept-invitation/[invitationId]/invitation-landing.component.tsx:35,22-41`
+**Issue**: `expiresAt` field typed as `Date` only but runtime handles both `Date` and string; types not exported
 **Current Code**:
 
 ```typescript
-// Line 22 - Hydration placeholder
-className = '... bg-gray-300 ...';
+type Invitation = {
+  id: string;
+  email: string;
+  role: string | null;
+  status: string;
+  organization: {
+    id: string;
+    name: string;
+  } | null;
+  inviter: {
+    name: string | null;
+    email: string | null;
+  } | null;
+  expiresAt: Date; // ❌ Should accept Date | string
+};
 
-// Line 40 - Light mode background
-isDark ? 'bg-primary' : 'bg-gray-300';
+type InvitationLandingProps = {
+  invitation: Invitation;
+  invitationId: string;
+}; // ❌ Should be exported for reuse
 ```
 
-**Problem**: Design system requires semantic tokens instead of hardcoded colors
-**Solution**: Replace with appropriate design system tokens
+**Problem**: Type safety violation - runtime handles string dates but type only accepts Date
+**Solution**: Update type to accept both Date and string, export types for reuse
 **Fix**:
 
 ```typescript
-// Replace hardcoded bg-gray-300 with design system equivalent
-// For light mode background, use bg-muted or similar semantic token
-className={cn(
-  'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-  isDark ? 'bg-primary' : 'bg-muted' // Use semantic token instead of bg-gray-300
-)}
+export type Invitation = {
+  id: string;
+  email: string;
+  role: string | null;
+  status: string;
+  organization: {
+    id: string;
+    name: string;
+  } | null;
+  inviter: {
+    name: string | null;
+    email: string | null;
+  } | null;
+  expiresAt: Date | string; // ✅ Accept both Date and string
+};
+
+export type InvitationLandingProps = {
+  invitation: Invitation;
+  invitationId: string;
+};
 ```
 
-**Guidelines**: Use design system tokens from never define custom colors
+**Guidelines**: Type everything explicitly - no implicit any types
+**Impact**: Prevents runtime errors from type mismatches
 
-**Impact**: Ensures consistent theming and dark mode compatibility
+#### 2. Next.js App Router Params Typing - Framework Compliance
 
-### MEDIUM PRIORITY: Code Quality Issues ✅ RESOLVED
-
-#### 2. Repeated headers() Calls - Performance Issue ✅ RESOLVED
-
-**File**: `app/(login)/accept-invitation/[invitationId]/page.tsx:39-41,108-114,127-131`
-**Issue**: Multiple `await headers()` calls should be cached for performance
+**File**: `app/api/invitations/[invitationId]/route.ts:12-15,19`, `app/(login)/accept-invitation/[invitationId]/page.tsx:20-23,38`
+**Issue**: Incorrect Promise typing for params in Next.js 15 App Router
 **Current Code**:
 
 ```typescript
-const session = await auth.api.getSession({
-  headers: await headers(), // First call
-});
+// API Route
+type RouteParams = {
+  params: Promise<{
+    invitationId: string;
+  }>;
+};
 
-// Later in same function:
-const result = await auth.api.acceptInvitation({
-  body: { invitationId },
-  headers: await headers(), // Second call - inefficient
-});
-```
+export async function GET(_request: NextRequest, { params }: RouteParams) {
+  const { invitationId } = await params; // ❌ Incorrect - params not Promise
+}
 
-**Problem**: Repeated headers reads impact performance and cache stability
-**Solution**: Cache headers once and reuse
-**Fix**:
+// Page Component
+type AcceptInvitationPageProps = {
+  params: Promise<{
+    invitationId: string;
+  }>;
+};
 
-```typescript
 export default async function AcceptInvitationPage({
   params,
 }: AcceptInvitationPageProps) {
-  // Cache headers once for all downstream calls
-  const requestHeaders = await headers();
-
-  const session = await auth.api.getSession({
-    headers: requestHeaders, // Use cached headers
-  });
-
-  // Later in function:
-  const result = await auth.api.acceptInvitation({
-    body: { invitationId },
-    headers: requestHeaders, // Reuse cached headers
-  });
-
-  await auth.api.setActiveOrganization({
-    headers: requestHeaders, // Reuse cached headers
-    body: { organizationId: acceptedOrgId },
-  });
+  const { invitationId } = await params; // ❌ Incorrect - params not Promise
 }
 ```
 
-**Impact**: Improves performance and reduces redundant I/O operations
-
-#### 3. Missing Distinct Error Codes for Invitation States ✅ RESOLVED
-
-**File**: `app/api/invitations/[invitationId]/route.ts`
-**Issue**: Generic 404/410 responses don't distinguish between different invitation states
-**Current Code**:
-
-```typescript
-if (!invitation || invitation.status !== 'pending') {
-  return Response.json(
-    { error: 'Invitation not found or expired' },
-    { status: 404 }
-  );
-}
-```
-
-**Problem**: UX confusion between "not found" vs "expired" states
-**Solution**: Return distinct error codes for clarity
+**Problem**: Violates Next.js 15 App Router patterns - params are plain objects, not Promises
+**Solution**: Remove Promise wrapper and await from params destructuring
 **Fix**:
 
 ```typescript
-if (!invitation) {
-  return Response.json({ error: 'Invitation not found' }, { status: 404 });
+// API Route
+type RouteParams = {
+  params: {
+    invitationId: string;
+  };
+};
+
+export async function GET(_request: NextRequest, { params }: RouteParams) {
+  const { invitationId } = params; // ✅ Correct - no await needed
 }
 
-if (invitation.status !== 'pending') {
-  return Response.json(
-    { error: 'Invitation expired or already processed' },
-    { status: 410 }
-  );
+// Page Component
+type AcceptInvitationPageProps = {
+  params: {
+    invitationId: string;
+  };
+};
+
+export default async function AcceptInvitationPage({
+  params,
+}: AcceptInvitationPageProps) {
+  const { invitationId } = params; // ✅ Correct - no await needed
 }
 ```
 
-**Impact**: Better user experience with clear error messaging
+**Guidelines**: Follow Next.js App Router patterns and TypeScript best practices
+**Impact**: Ensures compatibility with Next.js 15 and proper framework usage
 
-#### 4. Missing Database Indexes for Performance ✅ RESOLVED
+#### 3. Auth Callback Bug - Social Login Invitation Processing
 
-**File**: `lib/db/migrations/0007_parallel_shadowcat.sql`
-**Issue**: No indexes for common invitation access patterns
-**Current Code**: Migration only handles FK constraints
-**Problem**: Slow queries for invitation lookups by org, email, expiry
-**Solution**: Add performance indexes
-**Fix**:
-
-The fix should be implemented in the table and create a new migration through the generate command
-
-```sql
--- Add to migration file after FK constraint changes
-CREATE INDEX IF NOT EXISTS idx_invitation_org ON "invitation" ("organization_id");
-CREATE INDEX IF NOT EXISTS idx_invitation_org_email_pending ON "invitation" (lower("email"), "organization_id") WHERE "status" = 'pending';
-CREATE INDEX IF NOT EXISTS idx_invitation_expires_at ON "invitation" ("expires_at");
-```
-
-**Impact**: Significantly improves invitation system performance
-
-### LOW PRIORITY: Documentation Issues ✅ RESOLVED
-
-#### 5. Typos in Features Documentation ✅ RESOLVED
-
-**File**: `implementation-plans/features.md:21`
-**Issue**: Spelling errors in notification center description
+**File**: `app/api/auth/[...all]/route.ts:18`
+**Issue**: Only accepts status === 200 but social logins return 3xx redirects
 **Current Code**:
 
-```
-- NOtification Center - The main hub for the notification. It desides what notifications should be for emails, in-app, sms..
+```typescript
+if (invitationId && response.status === 200) { // ❌ Only 200, misses 3xx redirects
 ```
 
-**Problem**: Typos affect professional documentation quality
-**Solution**: Fix spelling and improve clarity
+**Problem**: Social login callbacks often return 302/303 redirects, causing invitation auto-accept to fail
+**Solution**: Accept both 2xx success and 3xx redirect status codes
 **Fix**:
 
-```markdown
-- Notification Center - The main hub for notifications. It decides which notifications are sent via email, in-app, SMS, etc.
+```typescript
+if (invitationId && (response.status >= 200 && response.status < 400)) {
+// or more specifically:
+// if (invitationId && response.ok) { // covers 2xx-3xx
 ```
 
-**Impact**: Improves documentation professionalism
+**Guidelines**: Handle HTTP status codes correctly for auth flows
+**Impact**: Fixes social login invitation processing
+
+### MEDIUM PRIORITY: Code Quality Issues (2 pending)
+
+#### 4. Theme Toggle State Management - UX Issue
+
+**File**: `components/theme/theme-toggle.tsx:9,13-16`
+**Issue**: Uses `theme` instead of `resolvedTheme`, causing incorrect state for "system" theme users
+**Current Code**:
+
+```typescript
+const { theme, setTheme } = useTheme(); // ❌ Should use resolvedTheme
+const [isDark, setIsDark] = React.useState(false);
+
+React.useEffect(() => {
+  setMounted(true);
+  setIsDark(theme === 'dark'); // ❌ Wrong for "system" theme users
+}, [theme]); // ❌ Runs setMounted on every theme change
+```
+
+**Problem**: Toggle shows wrong state for users with "system" theme preference
+**Solution**: Use `resolvedTheme` and optimize effect to avoid redundant setMounted calls
+**Fix**:
+
+```typescript
+const { resolvedTheme, setTheme } = useTheme(); // ✅ Use resolvedTheme
+const [isDark, setIsDark] = React.useState(false);
+const [mounted, setMounted] = React.useState(false);
+
+React.useEffect(() => {
+  setMounted(true);
+}, []); // ✅ Only run once on mount
+
+React.useEffect(() => {
+  setIsDark(resolvedTheme === 'dark'); // ✅ Correct state for all theme modes
+}, [resolvedTheme]);
+```
+
+**Guidelines**: Use proper theme state management for better UX
+**Impact**: Theme toggle correctly reflects actual active theme
+
+#### 5. Missing API Validation - Input Validation Gap
+
+**File**: `app/api/invitations/[invitationId]/route.ts:6-26`
+**Issue**: No Zod validation for route params (invitationId UUID validation)
+**Current Code**:
+
+```typescript
+// ❌ No validation for invitationId
+export async function GET(_request: NextRequest, { params }: RouteParams) {
+  const { invitationId } = params;
+
+  if (!invitationId) {
+    return NextResponse.json(
+      { error: 'Invitation ID is required' },
+      { status: 400 }
+    );
+  }
+  // ... rest of function
+}
+```
+
+**Problem**: No early validation of malformed invitation IDs, potential for invalid UUID processing
+**Solution**: Add Zod validation for route params
+**Fix**:
+
+```typescript
+import { z } from 'zod';
+
+const ParamsSchema = z.object({
+  invitationId: z.string().uuid('Invalid invitation ID'),
+});
+
+export async function GET(_request: NextRequest, { params }: RouteParams) {
+  const parsed = ParamsSchema.safeParse(params);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.errors[0]?.message ?? 'Invalid invitation ID' },
+      { status: 400 }
+    );
+  }
+
+  const { invitationId } = parsed.data; // ✅ Validated UUID
+  // ... rest of function
+}
+```
+
+**Guidelines**: Validate inputs at API boundaries using Zod schemas
+**Impact**: Early validation prevents malformed requests from processing
 
 ## Positive Aspects
 
 ✅ **Well-structured invitation acceptance flow**
 ✅ **Proper database schema relationships**
 ✅ **Good error handling patterns**
-✅ **Type-safe implementation**
 ✅ **Comprehensive implementation plans**
+✅ **Progress on design system compliance**
+✅ **Database performance optimization**
 
 ## Recommendations
 
-✅ **All issues resolved!** This PR is now ready for merge.
+**Address the 5 remaining critical issues before merge:**
 
-**Previous recommendations:**
+1. **Fix HIGH priority type safety and framework compliance issues** (Items 1-3)
+2. **Fix MEDIUM priority theme toggle and API validation issues** (Items 4-5)
 
-1. ~~Address HIGH priority design system issue~~ ✅ **COMPLETED**
-2. ~~Fix MEDIUM priority performance issues~~ ✅ **COMPLETED**
-3. ~~Consider LOW priority documentation improvements~~ ✅ **COMPLETED**
+**Updated Action Plan:**
+
+- Fix type definitions for `expiresAt` field and export types
+- Update Next.js App Router params typing (remove Promise wrappers)
+- Fix auth callback to handle 3xx redirects for social login
+- Update theme toggle to use `resolvedTheme` for correct state
+- Add Zod validation for API route parameters
 
 ## Files Requiring Attention
 
-✅ **All files updated and issues resolved!**
+❌ **Files with pending issues:**
 
-- `components/theme/theme-toggle.tsx` ✅ Design system compliance
-- `app/(login)/accept-invitation/[invitationId]/page.tsx` ✅ Performance optimization
-- `app/api/invitations/[invitationId]/route.ts` ✅ Error code improvements
-- `lib/db/schemas/invitation.table.ts` ✅ Database performance indexes
+- `app/(login)/accept-invitation/[invitationId]/invitation-landing.component.tsx` ❌ Type definitions
+- `app/api/invitations/[invitationId]/route.ts` ❌ Params typing & validation
+- `app/(login)/accept-invitation/[invitationId]/page.tsx` ❌ Params typing
+- `app/api/auth/[...all]/route.ts` ❌ Auth callback status check
+- `components/theme/theme-toggle.tsx` ❌ Theme state management
+
+✅ **Files already resolved:**
+
+- `lib/db/migrations/0008_spotty_jocasta.sql` ✅ Database performance indexes
 - `implementation-plans/features.md` ✅ Documentation quality
+- `components/theme/theme-toggle.tsx` ✅ Design system compliance (colors)
+- `app/(login)/accept-invitation/[invitationId]/page.tsx` ✅ Performance optimization (headers)
 
 ## Overall Assessment
 
-**Quality Score**: 10/10 ✅ **PERFECT**
-**Readiness**: ✅ **Ready for merge**
+**Quality Score**: 7/10 ⚠️ **REQUIRES FIXES**
+**Readiness**: ❌ **Not ready for merge**
 **Complexity**: Medium-High
 
-The PR implements an excellent invitation system with all identified issues successfully resolved. The codebase now demonstrates:
+The PR shows good progress with several issues already resolved, but **5 critical issues remain** that must be addressed:
 
-- ✅ **Design System Compliance**: Proper semantic tokens usage
-- ✅ **Performance Optimization**: Efficient headers() caching and database indexes
-- ✅ **Error Handling**: Distinct error codes for better UX
-- ✅ **Database Performance**: Optimized queries with proper indexing
-- ✅ **Documentation Quality**: Professional and error-free documentation
+- **Type Safety**: Runtime type mismatches that could cause errors
+- **Framework Compliance**: Next.js App Router patterns not followed correctly
+- **Authentication Flow**: Social login invitation processing broken
+- **User Experience**: Theme toggle doesn't reflect actual state correctly
+- **Input Validation**: Missing early validation for API parameters
 
-This PR is production-ready and follows all best practices for code quality, performance, and maintainability.
+**Next Steps:**
+
+1. Address the 5 pending issues identified above
+2. Test social login invitation flow thoroughly
+3. Verify theme toggle works correctly for all theme modes
+4. Ensure type safety throughout the invitation system
+5. Validate API input handling
+
+This PR has solid foundations but needs these fixes to ensure reliability and proper functionality before production deployment.
