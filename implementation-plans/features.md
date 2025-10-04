@@ -5,7 +5,7 @@
   error tracking (Sentry). Send errors to slack
 - Rate limiting - API protection and abuse prevention
 - Caching layer - Redis for session storage and performance
-  optimization
+  optimization (done)
 
 ## User Management (needs work):
 
@@ -17,7 +17,8 @@
 
 ## Communication:
 
-- In-app notifications - Real-time notifications system
+- In-app notifications - Real-time notifications system (done)
+- Notification Center - The main hub for notifications. It decides which notifications are sent via email, in-app, SMS, etc.
 - (done) Email templates - Transactional emails beyond just Resend
   integration
 - Support/help desk - Basic ticketing or chat widget integration

@@ -40,10 +40,12 @@ import {
 import { env } from '@/lib/env';
 import { ActivityType } from '@/lib/types';
 import logger from '@/lib/logger/logger.service';
+import { CacheKeys, cacheService } from '@/lib/cache';
 
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
   password: z.string().min(8).max(100),
+  invitationId: z.string().optional(),
 });
 
 /**
@@ -52,7 +54,7 @@ const signInSchema = z.object({
 export const signIn = validatedAction(
   signInSchema,
   async (requestData, formData) => {
-    const { email, password } = requestData;
+    const { email, password, invitationId } = requestData;
 
     const result = await auth.api.signInEmail({
       body: {
@@ -88,6 +90,16 @@ export const signIn = validatedAction(
       });
     }
 
+    // If there's an invitation ID, redirect to accept invitation page
+    if (invitationId) {
+      logger.info('[signin] User signed in with invitation', {
+        userId: user.id,
+        invitationId,
+        email,
+      });
+      redirect(`/accept-invitation/${invitationId}`);
+    }
+
     redirect(APP_BASE_PATH);
   }
 );
@@ -96,6 +108,7 @@ const signUpSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   inviteId: z.string().optional(),
+  invitationId: z.string().optional(),
 });
 
 /**
@@ -104,7 +117,7 @@ const signUpSchema = z.object({
 export const signUp = validatedAction(
   signUpSchema,
   async (requestData, formData) => {
-    const { email, password, inviteId } = requestData;
+    const { email, password, inviteId, invitationId } = requestData;
 
     const result = await auth.api.signUpEmail({
       body: {
@@ -123,19 +136,21 @@ export const signUp = validatedAction(
     }
 
     const createdUser = result.user;
-    const requestHeaders = await headers();
 
-    if (inviteId) {
-      try {
-        await auth.api.acceptInvitation({
-          headers: requestHeaders,
-          body: { invitationId: inviteId },
-        });
-        await logActivity(createdUser.id, ActivityType.ACCEPT_INVITATION);
-      } catch (error) {
-        console.error('Failed to accept invitation:', error);
-        return { error: 'Invalid or expired invitation.', email, password };
-      }
+    // Handle invitation acceptance (support both inviteId and invitationId for backward compatibility)
+    const activeInvitationId = invitationId || inviteId;
+    if (activeInvitationId) {
+      logger.info(
+        '[signup] User signed up with invitation, redirecting to accept invitation',
+        {
+          userId: createdUser.id,
+          invitationId: activeInvitationId,
+          email,
+        }
+      );
+
+      // Redirect to accept invitation page where session will be properly established
+      redirect(`/accept-invitation/${activeInvitationId}`);
     }
 
     await logActivity(createdUser.id, ActivityType.SIGN_UP);
@@ -274,6 +289,7 @@ export const updateAccount = validatedActionWithUser(
   async (data, _, user) => {
     const { name, email } = data;
     const oldEmail = user.email;
+    const requestHeaders = await headers();
 
     if (email && email !== oldEmail) {
       // Send confirmation emails to both old and new addresses
@@ -314,11 +330,16 @@ export const updateAccount = validatedActionWithUser(
     }
 
     await Promise.all([
-      authClient.updateUser({
-        name,
+      auth.api.updateUser({
+        body: {
+          name,
+        },
+        headers: requestHeaders,
       }),
       logActivity(user.id, ActivityType.UPDATE_ACCOUNT),
       invalidateUserCache(user.id), // Invalidate user cache after account update
+      cacheService.invalidatePattern(CacheKeys.serverContext(requestHeaders)),
+      cacheService.invalidatePattern(CacheKeys.serverSession(requestHeaders)),
     ]);
 
     return { name, success: 'Account updated successfully.' };
@@ -468,6 +489,18 @@ export const inviteOrganizationMember = validatedActionWithUser(
 
     if (!activeMember?.organizationId) {
       return { error: 'User is not part of an organization' };
+    }
+
+    // Authorization: only owners and admins can invite
+    const inviterRole = (activeMember as { role?: string } | null)?.role;
+    const canInvite = inviterRole === 'owner' || inviterRole === 'admin';
+    if (!canInvite) {
+      return { error: 'Insufficient permissions to invite members' };
+    }
+
+    // Only owners can assign the owner role
+    if (role === 'owner' && inviterRole !== 'owner') {
+      return { error: 'Only owners can assign the owner role' };
     }
 
     const organizationId = activeMember.organizationId;

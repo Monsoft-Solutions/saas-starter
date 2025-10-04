@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,38 +17,65 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
   const inviteId = searchParams.get('inviteId');
+  const invitationId = searchParams.get('invitationId') || inviteId;
+  const error = searchParams.get('error');
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     mode === 'signin' ? signIn : signUp,
     { error: '' }
   );
 
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [invitationEmail, setInvitationEmail] = useState<string>('');
   const [forgotPasswordState, forgotPasswordFormAction, forgotPasswordPending] =
     useActionState<ActionState, FormData>(forgotPassword, {
       error: '',
       success: '',
     });
 
+  // Fetch invitation email when invitationId is present
+  useEffect(() => {
+    if (invitationId) {
+      fetch(`/api/invitations/${invitationId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.email) {
+            setInvitationEmail(data.email);
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to fetch invitation email:', error);
+        });
+    }
+  }, [invitationId]);
+
   const resolvedCallbackURL = redirect?.length ? redirect : APP_BASE_PATH;
+
+  // Build callback URL. If invitation exists, send user directly to accept-invitation
+  const buildCallbackURL = (baseURL: string) => {
+    if (invitationId) {
+      return `${window.location.origin}/accept-invitation/${invitationId}`;
+    }
+    return new URL(baseURL, window.location.origin).toString();
+  };
 
   const handleGoogleSignIn = async () => {
     await authClient.signIn.social({
       provider: 'google',
-      callbackURL: resolvedCallbackURL,
+      callbackURL: buildCallbackURL(resolvedCallbackURL),
     });
   };
 
   const handleFacebookSignIn = async () => {
     await authClient.signIn.social({
       provider: 'facebook',
-      callbackURL: resolvedCallbackURL,
+      callbackURL: buildCallbackURL(resolvedCallbackURL),
     });
   };
 
   const handleLinkedInSignIn = async () => {
     await authClient.signIn.social({
       provider: 'linkedin',
-      callbackURL: resolvedCallbackURL,
+      callbackURL: buildCallbackURL(resolvedCallbackURL),
     });
   };
 
@@ -63,6 +90,11 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             ? 'Sign in to your account'
             : 'Create your account'}
         </h2>
+        {invitationId && (
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            You're joining a team invitation
+          </p>
+        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -71,6 +103,11 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             <input type="hidden" name="redirect" value={redirect || ''} />
             <input type="hidden" name="priceId" value={priceId || ''} />
             <input type="hidden" name="inviteId" value={inviteId || ''} />
+            <input
+              type="hidden"
+              name="invitationId"
+              value={invitationId || ''}
+            />
             <div>
               <Label
                 htmlFor="email"
@@ -84,7 +121,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  defaultValue={state.email}
+                  defaultValue={invitationEmail || state.email}
                   required
                   maxLength={50}
                   className="rounded-full py-2"
@@ -131,6 +168,25 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
 
             {state?.error && (
               <div className="text-destructive text-sm">{state.error}</div>
+            )}
+
+            {error && (
+              <div className="text-destructive text-sm">
+                {error === 'invitation-not-found' &&
+                  'Invitation not found or has expired.'}
+                {error === 'invitation-already-processed' &&
+                  'This invitation has already been used.'}
+                {error === 'invitation-load-failed' &&
+                  'Failed to load invitation details.'}
+                {error === 'invitation-failed' &&
+                  'Failed to accept invitation. Please try again.'}
+                {![
+                  'invitation-not-found',
+                  'invitation-already-processed',
+                  'invitation-load-failed',
+                  'invitation-failed',
+                ].includes(error) && 'An error occurred. Please try again.'}
+              </div>
             )}
 
             <div>
@@ -309,7 +365,9 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             <Link
               href={`${mode === 'signin' ? '/sign-up' : '/sign-in'}${
                 redirect ? `?redirect=${redirect}` : ''
-              }${priceId ? `&priceId=${priceId}` : ''}`}
+              }${priceId ? `&priceId=${priceId}` : ''}${
+                invitationId ? `&invitationId=${invitationId}` : ''
+              }`}
               className="w-full flex justify-center py-2 px-4 border border-border rounded-full shadow-sm text-sm font-medium text-muted-foreground bg-card hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {mode === 'signin'

@@ -6,12 +6,32 @@ import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [isDark, setIsDark] = React.useState(theme === 'dark');
+  const { resolvedTheme, setTheme } = useTheme();
+  const [isDark, setIsDark] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
 
+  // Mount component once to prevent hydration mismatch
   React.useEffect(() => {
-    setIsDark(theme === 'dark');
-  }, [theme]);
+    setMounted(true);
+  }, []);
+
+  // Track resolved theme changes (handles "system" theme correctly)
+  React.useEffect(() => {
+    setIsDark(resolvedTheme === 'dark');
+  }, [resolvedTheme]);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <button
+        className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-muted transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        aria-label="Toggle theme"
+      >
+        <span className="sr-only">Toggle theme</span>
+        <span className="pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out translate-x-0" />
+      </button>
+    );
+  }
 
   const toggleTheme = () => {
     setTheme(isDark ? 'light' : 'dark');
@@ -22,7 +42,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className={cn(
         'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-        isDark ? 'bg-primary' : 'bg-gray-300'
+        isDark ? 'bg-primary' : 'bg-muted'
       )}
     >
       <span className="sr-only">Toggle theme</span>

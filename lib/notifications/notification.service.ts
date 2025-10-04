@@ -81,6 +81,7 @@ export async function createNotification(
 ): Promise<Notification> {
   const category = event.category ?? getCategoryFromType(event.type);
 
+  const expiresAt = event.expiresAt ? new Date(event.expiresAt) : null;
   const notificationData: NewNotification = {
     userId: event.userId,
     type: event.type,
@@ -89,7 +90,7 @@ export async function createNotification(
     title: event.title,
     message: event.message,
     metadata: event.metadata ?? null,
-    expiresAt: event.expiresAt ?? null,
+    expiresAt,
   };
 
   const notification = await createNotificationRepo(notificationData);
