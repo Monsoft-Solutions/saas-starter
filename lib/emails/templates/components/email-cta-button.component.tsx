@@ -1,21 +1,6 @@
 import React from 'react';
 import { Button } from '@react-email/components';
 
-import { colors, notionRadius, spacing, typography } from '@/lib/design-system';
-
-const palette = colors.light;
-
-const buttonStyle = {
-  display: 'inline-block',
-  backgroundColor: palette.primary,
-  color: palette['primary-foreground'],
-  padding: `${spacing[3]} ${spacing[6]}`,
-  borderRadius: notionRadius.button,
-  textDecoration: 'none',
-  fontWeight: typography.fontWeights.semibold,
-  fontSize: typography.fontSizes.base,
-} as const;
-
 export type EmailCtaButtonProps = {
   href: string;
   label: string;
@@ -23,9 +8,13 @@ export type EmailCtaButtonProps = {
 
 /**
  * Consistent call-to-action button styled for email clients.
+ * Uses Tailwind classes that are automatically inlined by the Tailwind component.
  */
 export const EmailCtaButton = ({ href, label }: EmailCtaButtonProps) => (
-  <Button href={href} style={buttonStyle}>
+  <Button
+    href={href}
+    className="inline-block bg-primary text-primary-foreground px-6 py-3 rounded-md no-underline font-semibold text-base"
+  >
     {label}
   </Button>
 );

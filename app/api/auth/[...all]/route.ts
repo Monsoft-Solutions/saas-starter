@@ -8,6 +8,27 @@ import { ActivityType } from '@/lib/types';
 
 const handler = toNextJsHandler(auth.handler);
 
+/**
+ * Helper function to create redirects that preserve Set-Cookie headers from the original response.
+ * This is critical for social login flows where BetterAuth sets session cookies in the initial response.
+ *
+ * @param targetUrl - The URL to redirect to
+ * @param originalResponse - The original response containing Set-Cookie headers
+ * @returns A new Response with preserved cookies
+ */
+const redirectWithCookies = (
+  targetUrl: URL | string,
+  originalResponse: Response
+): Response => {
+  const headersWithCookies = new Headers(originalResponse.headers);
+  headersWithCookies.set('Location', targetUrl.toString());
+
+  return new Response(null, {
+    status: 302,
+    headers: headersWithCookies,
+  });
+};
+
 export async function GET(request: NextRequest) {
   const response = await handler.GET(request);
 
@@ -47,7 +68,7 @@ export async function GET(request: NextRequest) {
 
           // Redirect to dashboard after successful invitation acceptance
           const dashboardUrl = new URL('/app', request.url);
-          return Response.redirect(dashboardUrl.toString(), 302);
+          return redirectWithCookies(dashboardUrl, response);
         } catch (error) {
           logger.error('[social-login] Failed to accept invitation', {
             userId: session.user.id,
@@ -60,7 +81,7 @@ export async function GET(request: NextRequest) {
             '/accept-invitation/' + invitationId,
             request.url
           );
-          return Response.redirect(acceptUrl.toString(), 302);
+          return redirectWithCookies(acceptUrl, response);
         }
       } else {
         // If no session, redirect to accept-invitation page
@@ -68,7 +89,7 @@ export async function GET(request: NextRequest) {
           '/accept-invitation/' + invitationId,
           request.url
         );
-        return Response.redirect(acceptUrl.toString(), 302);
+        return redirectWithCookies(acceptUrl, response);
       }
     } catch (error) {
       logger.error('[social-login] Failed to process invitation in callback', {
@@ -80,7 +101,7 @@ export async function GET(request: NextRequest) {
         '/accept-invitation/' + invitationId,
         request.url
       );
-      return Response.redirect(acceptUrl.toString(), 302);
+      return redirectWithCookies(acceptUrl, response);
     }
   }
 

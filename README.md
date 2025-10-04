@@ -304,7 +304,7 @@ The application is compatible with:
 - **[💳 Stripe Integration](./docs/stripe/)**: Payment processing and webhooks
 - **[⚡ Cache System](./docs/cache/)**: Provider-agnostic caching with Upstash Redis
 - **[🌍 Environment Configuration](./docs/environment-configuration.md)**: Multi-environment setup guide
-- **[💎 Design System](./docs/design-system.md)**: Design tokens and components
+- **[💎 Design System](./docs/design-system.md)**: Tailwind CSS v4 design tokens and utilities
 - **[📧 Email System](./docs/emails.md)**: Email templates and delivery
 - **[🧪 Testing Guide](./docs/unit-testing.md)**: Testing framework and patterns
 
@@ -348,7 +348,7 @@ lib/
 ├── auth/            # Authentication utilities
 ├── cache/           # Provider-agnostic cache system
 ├── emails/          # Email templates and logic
-├── design-system/   # Design tokens and utilities
+├── utils/           # Utility functions (including cn)
 └── payments/        # Stripe integration logic
 ```
 
@@ -372,16 +372,16 @@ lib/
 
 ```bash
 # Development
-pnpm dev                 # Start development server with Turbopack (uses .env.local if present)
-pnpm dev:local          # Explicitly use .env.local
-pnpm dev:staging        # Run dev server with staging environment
-pnpm dev:prod           # Run dev server with production environment
-pnpm build              # Build for production
-pnpm build:staging      # Build with staging environment
-pnpm build:prod         # Build with production environment
-pnpm start              # Start production server
-pnpm start:staging      # Start with staging environment
-pnpm start:prod         # Start with production environment
+pnpm dev                 # Start dev server (Next.js auto-loads .env.local → .env.development → .env)
+pnpm dev:local          # Start dev server for local development (no external services)
+pnpm dev:staging        # Run dev server with staging environment (.env.staging)
+pnpm dev:prod           # Run dev server with production environment (.env.production)
+pnpm build              # Build for production (Next.js auto-loads env files, no .env required)
+pnpm build:staging      # Build with staging environment (.env.staging)
+pnpm build:prod         # Build with production environment (.env.production)
+pnpm start              # Start production server (uses built-in env vars)
+pnpm start:staging      # Start with staging environment (.env.staging)
+pnpm start:prod         # Start with production environment (.env.production)
 
 # Database Management
 pnpm db:setup           # Interactive environment setup (local)
@@ -410,7 +410,7 @@ pnpm type-check         # TypeScript type checking
 pnpm preview:emails     # Preview email templates
 
 # Design System
-pnpm verify:design-tokens  # Validate design tokens
+# Design tokens now managed via Tailwind CSS v4 in app/globals.css
 ```
 
 ## 🏢 Enterprise Features

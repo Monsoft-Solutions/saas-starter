@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "dev": "dotenv -e .env -- next dev --turbopack & pnpm stripe:listen & pnpm qstash:listen",
+    "dev": "next dev --turbopack & pnpm stripe:listen & pnpm qstash:listen",
+    "dev:local": "next dev --turbopack",
     "dev:staging": "dotenv -e .env.staging -- next dev --turbopack",
     "dev:prod": "dotenv -e .env.production -- next dev --turbopack",
     "build": "next build",
@@ -27,7 +28,6 @@
     "lint": "prettier --check .",
     "lint:fix": "prettier --write .",
     "type-check": "tsc --noEmit",
-    "verify:design-tokens": "npx tsx lib/design-system/scripts/verify-tokens.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "preview:emails": "tsx scripts/preview-emails.ts",

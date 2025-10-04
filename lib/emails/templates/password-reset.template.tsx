@@ -1,7 +1,6 @@
 import React from 'react';
 import { Section, Text } from '@react-email/components';
 
-import { colors, spacing, typography } from '@/lib/design-system';
 import type { PasswordResetEmailProps } from '@/lib/types';
 
 import { DEFAULT_BRAND_NAME, DEFAULT_BRAND_SIGNATURE } from './constants';
@@ -9,32 +8,9 @@ import { EmailCtaButton } from './components/email-cta-button.component';
 import { EmailLayout } from './components/email-layout.component';
 import { renderEmail, type RenderedEmail } from './render-email';
 
-const palette = colors.light;
-
-const paragraphStyle = {
-  fontSize: typography.fontSizes.base,
-  lineHeight: typography.lineHeights.relaxed,
-  color: palette.foreground,
-  margin: '0 0 16px 0',
-} as const;
-
-const warningStyle = {
-  ...paragraphStyle,
-  color: palette.warning,
-} as const;
-
-const infoStyle = {
-  ...paragraphStyle,
-  color: palette['muted-foreground'],
-} as const;
-
-const ctaSectionStyle = {
-  marginTop: spacing[5],
-  marginBottom: spacing[6],
-} as const;
-
 /**
  * React email component used to render password reset instructions.
+ * Uses Tailwind classes that are automatically inlined by the Tailwind component.
  */
 const PasswordResetTemplate = ({
   recipientName,
@@ -56,22 +32,24 @@ const PasswordResetTemplate = ({
       signature={DEFAULT_BRAND_SIGNATURE}
     >
       <Section>
-        <Text style={paragraphStyle}>{greeting}</Text>
-        <Text style={paragraphStyle}>
+        <Text className="text-base leading-relaxed text-foreground m-0 mb-4">
+          {greeting}
+        </Text>
+        <Text className="text-base leading-relaxed text-foreground m-0 mb-4">
           We received a request to reset your password. Use the secure link
           below to choose a new one.
         </Text>
       </Section>
-      <Section style={ctaSectionStyle}>
+      <Section className="mt-5 mb-6">
         <EmailCtaButton href={resetUrl} label="Reset password" />
       </Section>
       <Section>
-        <Text style={infoStyle}>
+        <Text className="text-base leading-relaxed text-muted-foreground m-0 mb-4">
           For security reasons, this link expires {expiryCopy}. If the link
           stops working, you can always request a new one from the sign-in page.
         </Text>
-        <Text style={warningStyle}>
-          Didn’t try to reset your password? Secure your account right away or
+        <Text className="text-base leading-relaxed text-warning m-0 mb-4">
+          Didn't try to reset your password? Secure your account right away or
           let our team know.
         </Text>
       </Section>

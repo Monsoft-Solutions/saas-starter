@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
 import { ArrowUpRight, Check } from 'lucide-react';
 
 import {
@@ -10,12 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  cn,
-  notionRadius,
-  notionSpacing,
-  themeUtils,
-} from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 import type { FeatureDefinition } from '@/lib/marketing/features.schema';
 
 /**
@@ -23,21 +17,9 @@ import type { FeatureDefinition } from '@/lib/marketing/features.schema';
  */
 const DEFAULT_CTA_LABEL = 'Explore feature';
 
-const listStyles: CSSProperties = {
-  gap: notionSpacing.elementGap,
-};
-
-const listItemStyles: CSSProperties = {
-  gap: notionSpacing.microGap,
-};
-
-const cardContentStyles: CSSProperties = {
-  gap: notionSpacing.elementGap,
-};
-
-const ctaStyles: CSSProperties = {
-  gap: notionSpacing.microGap,
-};
+// These are now handled by Tailwind classes
+// gap: notionSpacing.elementGap (16px) -> gap-4
+// gap: notionSpacing.microGap (8px) -> gap-2
 
 /**
  * Props describing how a feature card should render within marketing grids.
@@ -66,11 +48,9 @@ export function FeatureCard({
         'group/card relative h-full overflow-hidden border-border/60 bg-gradient-to-br from-card via-card to-card/80 transition-all duration-300',
         'group-data-[interactive=true]:group-hover:-translate-y-2 group-data-[interactive=true]:group-hover:shadow-xl group-data-[interactive=true]:group-hover:border-primary/30',
         'group-data-[interactive=true]:group-focus-visible:-translate-y-2 group-data-[interactive=true]:group-focus-visible:shadow-xl group-data-[interactive=true]:group-focus-visible:border-primary/30',
+        'rounded-xl', // 12px (notionRadius.cardLarge equivalent)
         cardClassName
       )}
-      style={{
-        borderRadius: notionRadius.cardLarge,
-      }}
     >
       {/* Hover gradient effect */}
       <div
@@ -82,16 +62,10 @@ export function FeatureCard({
         aria-hidden="true"
       />
 
-      <CardHeader
-        className="relative gap-3"
-        style={{
-          rowGap: notionSpacing.elementGap,
-        }}
-      >
+      <CardHeader className="relative gap-4">
         <Badge
           variant="outline"
-          className="w-fit bg-muted/70 text-muted-foreground transition-all duration-300 group-data-[interactive=true]:group-hover:border-primary/40 group-data-[interactive=true]:group-hover:bg-primary/10 group-data-[interactive=true]:group-hover:text-primary"
-          style={{ borderRadius: notionRadius.badge }}
+          className="w-fit bg-muted/70 text-muted-foreground transition-all duration-300 group-data-[interactive=true]:group-hover:border-primary/40 group-data-[interactive=true]:group-hover:bg-primary/10 group-data-[interactive=true]:group-hover:text-primary rounded-sm"
         >
           {feature.label}
         </Badge>
@@ -102,26 +76,19 @@ export function FeatureCard({
           {feature.summary}
         </CardDescription>
       </CardHeader>
-      <CardContent
-        className="relative flex flex-1 flex-col"
-        style={cardContentStyles}
-      >
-        <ul
-          className="flex flex-col text-sm leading-relaxed text-muted-foreground"
-          style={listStyles}
-        >
+      <CardContent className="relative flex flex-1 flex-col gap-4">
+        <ul className="flex flex-col text-sm leading-relaxed text-muted-foreground gap-4">
           {feature.highlightBullets.map((bullet, index) => (
             <li
               key={bullet}
-              className="group/item flex items-start transition-all duration-200"
+              className="group/item flex items-start transition-all duration-200 gap-2"
               style={{
-                ...listItemStyles,
                 transitionDelay: `${index * 50}ms`,
               }}
             >
               <Check
                 className="mt-0.5 h-4 w-4 transition-all duration-300 group-data-[interactive=true]:group-hover:scale-110"
-                style={{ color: themeUtils.getColorValue('primary') }}
+                style={{ color: 'var(--color-primary)' }}
                 aria-hidden="true"
               />
               <span className="transition-colors duration-200 group-data-[interactive=true]:group-hover:text-foreground/90">
@@ -131,10 +98,7 @@ export function FeatureCard({
           ))}
         </ul>
         {href && (
-          <div
-            className="mt-auto flex items-center text-sm font-medium text-primary transition-all duration-300 group-data-[interactive=true]:group-hover:translate-x-1"
-            style={ctaStyles}
-          >
+          <div className="mt-auto flex items-center text-sm font-medium text-primary transition-all duration-300 group-data-[interactive=true]:group-hover:translate-x-1 gap-2">
             <span>{ctaLabel}</span>
             <ArrowUpRight
               className="h-4 w-4 transition-all duration-300 group-data-[interactive=true]:group-hover:translate-x-1 group-data-[interactive=true]:group-hover:-translate-y-0.5 group-data-[interactive=true]:group-focus-visible:translate-x-1 group-data-[interactive=true]:group-focus-visible:-translate-y-0.5"
@@ -149,9 +113,8 @@ export function FeatureCard({
   if (!href) {
     return (
       <div
-        className={cn('group block h-full', className)}
+        className={cn('group block h-full rounded-xl', className)}
         data-interactive="false"
-        style={{ borderRadius: notionRadius.cardLarge }}
       >
         {content}
       </div>
@@ -163,11 +126,10 @@ export function FeatureCard({
       href={href}
       aria-label={`View details for ${feature.label}`}
       className={cn(
-        'group block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'group block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl',
         className
       )}
       data-interactive="true"
-      style={{ borderRadius: notionRadius.cardLarge }}
     >
       {content}
     </Link>

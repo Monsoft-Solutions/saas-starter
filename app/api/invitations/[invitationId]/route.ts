@@ -8,12 +8,13 @@ import { z } from 'zod';
 import { db } from '@/lib/db/drizzle';
 import { invitation } from '@/lib/db/schemas';
 import { eq } from 'drizzle-orm';
+import logger from '@/lib/logger/logger.service';
 
 /**
  * Zod schema for validating route parameters
  */
 const ParamsSchema = z.object({
-  invitationId: z.string().uuid('Invalid invitation ID format'),
+  invitationId: z.string().min(1, 'Invalid invitation ID format'),
 });
 
 type RouteParams = {
@@ -79,7 +80,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       email: invitationData.email,
     });
   } catch (error) {
-    console.error('Failed to fetch invitation:', error);
+    logger.error('Failed to fetch invitation', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

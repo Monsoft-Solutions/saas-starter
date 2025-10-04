@@ -1,9 +1,13 @@
 # Billing Page UI Improvements - Implementation Plan
 
-**Date**: September 30, 2025  
-**Feature**: Enhanced Billing & Subscription Management UI  
-**Estimated Effort**: 3-4 days  
+**Date**: September 30, 2025
+**Feature**: Enhanced Billing & Subscription Management UI
+**Estimated Effort**: 3-4 days
 **Complexity**: Medium
+
+> **Note**: This plan was created before the design system migration to Tailwind CSS v4 native approach.
+> References to `/lib/design-system` should be read as Tailwind utility classes.
+> See `/docs/design-system.md` for current approach.
 
 ## Executive Summary
 
@@ -29,7 +33,7 @@ This implementation plan outlines comprehensive UI/UX improvements for the billi
 - Stripe API for payments and subscriptions
 - PostgreSQL with Drizzle ORM
 - shadcn/ui components with Tailwind CSS
-- Design system tokens in `/lib/design-system/`
+- Design system tokens in `app/globals.css` using `@theme` directive
 
 **Current Files:**
 
@@ -241,8 +245,8 @@ Stripe API + Database Updates
 **Design System Usage:**
 
 ```typescript
-import { colors, spacing, radius, typography } from '@/lib/design-system';
-import { cn, themeUtils } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
+// Use Tailwind utilities directly (e.g., bg-primary, text-muted-foreground, rounded-lg)
 ```
 
 **References:**

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Section, Text } from '@react-email/components';
 
-import { colors, spacing, typography } from '@/lib/design-system';
 import type { SubscriptionCreatedEmailProps } from '@/lib/types';
 
 import { DEFAULT_BRAND_SIGNATURE } from './constants';
@@ -9,31 +8,9 @@ import { EmailCtaButton } from './components/email-cta-button.component';
 import { EmailLayout } from './components/email-layout.component';
 import { renderEmail, type RenderedEmail } from './render-email';
 
-const palette = colors.light;
-
-const paragraphStyle = {
-  fontSize: typography.fontSizes.base,
-  lineHeight: typography.lineHeights.relaxed,
-  color: palette.foreground,
-  margin: '0 0 16px 0',
-} as const;
-
-const ctaSectionStyle = {
-  marginTop: spacing[6],
-} as const;
-
-const closingStyle = {
-  ...paragraphStyle,
-  marginTop: spacing[6],
-} as const;
-
-const signatureStyle = {
-  ...paragraphStyle,
-  marginTop: spacing[2],
-} as const;
-
 /**
  * React email component used to render the subscription created template.
+ * Uses Tailwind classes that are automatically inlined by the Tailwind component.
  */
 const SubscriptionCreatedTemplate = ({
   recipientName,
@@ -53,22 +30,26 @@ const SubscriptionCreatedTemplate = ({
       signature={DEFAULT_BRAND_SIGNATURE}
     >
       <Section>
-        <Text style={paragraphStyle}>{greeting}</Text>
-        <Text style={paragraphStyle}>
+        <Text className="text-base leading-relaxed text-foreground m-0 mb-4">
+          {greeting}
+        </Text>
+        <Text className="text-base leading-relaxed text-foreground m-0 mb-4">
           Thank you for subscribing to the {planName} plan for{' '}
           <strong>{amount}</strong>. Your subscription is now active, and you
           have full access to all features included in your plan.
         </Text>
       </Section>
-      <Section style={ctaSectionStyle}>
+      <Section className="mt-6">
         <EmailCtaButton href={dashboardUrl} label="Go to your dashboard" />
       </Section>
-      <Section style={closingStyle}>
-        <Text style={paragraphStyle}>
+      <Section className="mt-6">
+        <Text className="text-base leading-relaxed text-foreground m-0 mb-4">
           We're excited to have you on board. If you have any questions, please
           don't hesitate to contact our support team.
         </Text>
-        <Text style={signatureStyle}>{DEFAULT_BRAND_SIGNATURE}</Text>
+        <Text className="text-base leading-relaxed text-foreground m-0 mt-2">
+          {DEFAULT_BRAND_SIGNATURE}
+        </Text>
       </Section>
     </EmailLayout>
   );

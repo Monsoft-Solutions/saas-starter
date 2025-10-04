@@ -6,42 +6,39 @@ import {
   Html,
   Preview,
   Section,
+  Tailwind,
 } from '@react-email/components';
 import type { ReactNode } from 'react';
-
-import { colors, spacing, typography } from '@/lib/design-system';
 
 import { DEFAULT_BRAND_SIGNATURE } from '../constants';
 import { EmailFooter } from './email-footer.component';
 import { EmailHeader } from './email-header.component';
 
-const palette = colors.light;
-const baseFontFamily =
-  '"Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-
-const bodyStyle = {
-  backgroundColor: palette.background,
-  color: palette.foreground,
-  fontFamily: baseFontFamily,
-  fontSize: typography.fontSizes.base,
-  margin: '0',
-  padding: spacing[8],
-} as const;
-
-const containerStyle = {
-  width: '100%',
-  maxWidth: '600px',
-  margin: '0 auto',
-  padding: spacing[8],
-  backgroundColor: palette.card,
-  borderRadius: '16px',
-  boxShadow: '0 16px 40px rgba(15, 23, 42, 0.08)',
-} as const;
-
-const contentSectionStyle = {
-  paddingTop: spacing[6],
-  paddingBottom: spacing[6],
-} as const;
+/**
+ * Tailwind configuration for email rendering.
+ * Uses pixel-based measurements for email client compatibility.
+ */
+const tailwindConfig = {
+  theme: {
+    extend: {
+      colors: {
+        background: '#ffffff',
+        foreground: '#37352f',
+        card: '#ffffff',
+        'card-foreground': '#37352f',
+        primary: '#2e3440',
+        'primary-foreground': '#ffffff',
+        secondary: '#fbfaf9',
+        'secondary-foreground': '#37352f',
+        muted: '#f7f6f3',
+        'muted-foreground': '#787066',
+        accent: '#f1f0ee',
+        'accent-foreground': '#37352f',
+        border: '#e9e5e2',
+      },
+    },
+  },
+};
 
 export type EmailLayoutProps = {
   children: ReactNode;
@@ -53,6 +50,7 @@ export type EmailLayoutProps = {
 
 /**
  * Shared structural layout used by all transactional email templates.
+ * Uses React Email's Tailwind component to automatically inline styles for email client compatibility.
  */
 export const EmailLayout = ({
   children,
@@ -64,12 +62,14 @@ export const EmailLayout = ({
   <Html>
     <Head />
     <Preview>{previewText ?? heading}</Preview>
-    <Body style={bodyStyle}>
-      <Container style={containerStyle}>
-        <EmailHeader heading={heading} />
-        <Section style={contentSectionStyle}>{children}</Section>
-        <EmailFooter supportEmail={supportEmail} signature={signature} />
-      </Container>
-    </Body>
+    <Tailwind config={tailwindConfig}>
+      <Body className="bg-background text-foreground font-sans m-0 p-8">
+        <Container className="w-full max-w-[600px] mx-auto p-8 bg-card rounded-2xl shadow-lg">
+          <EmailHeader heading={heading} />
+          <Section className="py-6">{children}</Section>
+          <EmailFooter supportEmail={supportEmail} signature={signature} />
+        </Container>
+      </Body>
+    </Tailwind>
   </Html>
 );

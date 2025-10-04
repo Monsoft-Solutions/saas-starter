@@ -53,11 +53,18 @@ The application supports four distinct environments:
 
 ### Environment Loading Priority
 
-Next.js loads environment variables in this order (highest to lowest priority):
+**Next.js automatically loads environment variables in this order (highest to lowest priority):**
 
-1. `.env.local` (local development, gitignored)
-2. `.env.[environment]` (environment-specific)
-3. `.env` (default fallback)
+1. `.env.local` (local development, gitignored) - **Highest priority**
+2. `.env.[environment]` (environment-specific: `.env.development`, `.env.staging`, `.env.production`)
+3. `.env` (default fallback) - **Optional, not required**
+
+**Key Points:**
+
+- ✅ **No `.env` file is required** - Next.js will automatically load from `.env.local` or environment-specific files
+- ✅ **Commands use Next.js native loading** - Base `pnpm dev` and `pnpm build` rely on automatic env detection
+- ✅ **Environment-specific commands use dotenv-cli** - Staging/prod commands explicitly load their respective files
+- ✅ **CI/CD compatible** - Build works when variables are injected by deployment platforms (Vercel, Railway, etc.)
 
 ## Quick Setup
 
@@ -530,7 +537,7 @@ pnpm db:setup
 
 #### ❌ "BASE_URL must be a valid URL"
 
-**Problem**: Invalid URL format  
+**Problem**: Invalid URL format
 **Solution**:
 
 ```bash
@@ -538,6 +545,35 @@ pnpm db:setup
 NEXT_PUBLIC_BASE_URL=http://localhost:3000  # ✅ Valid
 NEXT_PUBLIC_BASE_URL=localhost:3000         # ❌ Invalid
 ```
+
+#### ❌ "Build fails with missing .env file"
+
+**Problem**: CI/CD or build command fails because `.env` file doesn't exist
+**Solution**:
+
+The base `pnpm build` command **does not require a `.env` file**. Next.js automatically loads environment variables from:
+
+- `.env.local` (if present locally)
+- `.env.production` (for production builds)
+- Platform-injected environment variables (Vercel, Railway, etc.)
+
+```bash
+# ✅ This works without .env file
+pnpm build
+
+# ✅ For staging/prod, use environment-specific commands
+pnpm build:staging    # Uses .env.staging
+pnpm build:prod       # Uses .env.production
+
+# ✅ In CI/CD, inject variables via platform
+# No .env file needed - platform handles it
+```
+
+**Key Points:**
+
+- No `.env` file is required for builds
+- Environment variables can come from multiple sources
+- CI/CD platforms inject variables directly
 
 #### ❌ "Stripe CLI is not installed"
 
@@ -611,12 +647,18 @@ node -e "console.log(process.env.POSTGRES_URL)"
 
 ```bash
 # Verify correct environment file is loaded
-pnpm dev              # Uses .env.local (if exists)
-pnpm dev:staging      # Uses .env.staging
-pnpm dev:prod         # Uses .env.production
+pnpm dev              # Next.js loads: .env.local → .env.development → .env (auto-detection)
+pnpm dev:local        # Same as pnpm dev, no external services
+pnpm dev:staging      # Explicitly loads .env.staging via dotenv-cli
+pnpm dev:prod         # Explicitly loads .env.production via dotenv-cli
 
-# Check which env file is active
+# Check which env files exist
 ls -la .env*
+
+# Test build commands
+pnpm build            # Next.js loads env files automatically (no .env required)
+pnpm build:staging    # Explicitly loads .env.staging
+pnpm build:prod       # Explicitly loads .env.production
 ```
 
 ## Best Practices

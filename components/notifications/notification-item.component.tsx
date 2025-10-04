@@ -23,7 +23,7 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
-import { cn, notionRadius } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 import type {
   Notification,
   NotificationCategory,
@@ -135,12 +135,11 @@ export function NotificationItem({
           <CardTitle className="text-sm truncate flex-1 flex gap-2 justify-start items-center flex-row">
             <div
               className={cn(
-                'flex h-8 w-8 shrink-0 items-center justify-center transition-all',
+                'flex h-8 w-8 shrink-0 items-center justify-center transition-all rounded-md',
                 notification.isRead
                   ? ' text-muted-foreground'
                   : 'text-foreground '
               )}
-              style={{ borderRadius: notionRadius.default }}
             >
               {getCategoryIcon(notification.category)}
             </div>

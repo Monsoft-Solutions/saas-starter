@@ -6,16 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Development (Multi-Environment Support)
-pnpm dev                 # Start development server with Turbopack (uses .env.local if present)
-pnpm dev:local          # Explicitly use .env.local
-pnpm dev:staging        # Run dev server with staging environment
-pnpm dev:prod           # Run dev server with production environment
-pnpm build              # Build for production
-pnpm build:staging      # Build with staging environment
-pnpm build:prod         # Build with production environment
-pnpm start              # Start production server
-pnpm start:staging      # Start with staging environment
-pnpm start:prod         # Start with production environment
+pnpm dev                 # Start dev server (Next.js loads .env.local → .env.development → .env automatically)
+pnpm dev:local          # Start dev server for local development (same as pnpm dev, no external services)
+pnpm dev:staging        # Run dev server with staging environment (.env.staging)
+pnpm dev:prod           # Run dev server with production environment (.env.production)
+pnpm build              # Build for production (Next.js loads env files automatically)
+pnpm build:staging      # Build with staging environment (.env.staging)
+pnpm build:prod         # Build with production environment (.env.production)
+pnpm start              # Start production server (uses built-in env vars)
+pnpm start:staging      # Start with staging environment (.env.staging)
+pnpm start:prod         # Start with production environment (.env.production)
 
 # Database (Multi-Environment Support)
 pnpm db:setup           # Create .env file (interactive setup for local)
@@ -48,6 +48,21 @@ The application supports multiple environments. See [Environment Configuration G
 - `.env.production` - Production environment (committed, no secrets)
 - `.env.example` - Template file (committed)
 - `.env.local.example` - Local template (committed)
+
+### Environment Loading Priority
+
+**Next.js automatically loads environment files in this order (highest to lowest priority):**
+
+1. `.env.local` (local development, gitignored) - **Highest priority**
+2. `.env.[environment]` (e.g., `.env.development`, `.env.staging`, `.env.production`)
+3. `.env` (fallback for shared defaults)
+
+**Important Notes:**
+
+- The base `pnpm dev` and `pnpm build` commands rely on Next.js's automatic env loading
+- No `.env` file is required - Next.js will work with `.env.local` or environment-specific files
+- For staging/production, use `dotenv-cli` to explicitly load environment-specific files
+- CI/CD environments should inject variables directly (Vercel, Railway, etc.)
 
 ### Quick Setup
 
@@ -163,13 +178,15 @@ Use Stripe test card: `4242 4242 4242 4242` with any future expiry and CVC.
 **UI Components:**
 
 - Use shadcn/ui components - check shadcn docs for installation
-- **IMPORTANT**: Always use the design system from `/lib/design-system/` - import tokens, utilities, and patterns
-- Import design tokens: `import { colors, typography, spacing, radius } from '@/lib/design-system'`
-- Use `cn()` utility for class merging: `import { cn } from '@/lib/design-system'`
-- Leverage predefined patterns: `themeUtils.patterns.card`, `themeUtils.patterns.heading`, etc.
-- Use Notion-inspired spacing: `notionSpacing.cardPadding`, `notionSpacing.sectionGap`
-- Apply consistent radius: `notionRadius.default`, `notionRadius.card`, `notionRadius.button`
-- Never define custom colors, typography sizes, spacing, or radius - use design system tokens
+- **IMPORTANT**: Use Tailwind CSS v4 utilities and design tokens from `app/globals.css`
+- Use `cn()` utility for class merging: `import { cn } from '@/lib/utils'`
+- Design tokens are available as Tailwind utilities (e.g., `bg-primary`, `text-muted-foreground`, `rounded-lg`)
+- All color, spacing, and radius tokens are defined in `app/globals.css` using the `@theme` directive
+- Use semantic color classes: `bg-card`, `bg-muted`, `bg-accent` instead of raw colors
+- Apply consistent spacing with Tailwind utilities: `p-6` (card padding), `gap-6` (section gap)
+- Use Tailwind radius utilities: `rounded-md` (6px default), `rounded-lg` (8px cards), `rounded-full` (circular)
+- For custom patterns, use the custom utilities defined in `app/globals.css`: `page-container`, `stack-md`, `grid-dashboard`, `grid-cards`
+- Never define custom colors, typography sizes, spacing, or radius - extend the theme in `app/globals.css` using `@theme`
 - Avoid custom styles in components unless absolutely necessary
 
 **Schema & Database:**

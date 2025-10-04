@@ -1,7 +1,6 @@
 import React from 'react';
 import { Section, Text } from '@react-email/components';
 
-import { colors, spacing, typography } from '@/lib/design-system';
 import type { EmailChangeConfirmationEmailProps } from '@/lib/types';
 
 import { DEFAULT_BRAND_SIGNATURE } from './constants';
@@ -9,37 +8,9 @@ import { EmailCtaButton } from './components/email-cta-button.component';
 import { EmailLayout } from './components/email-layout.component';
 import { renderEmail, type RenderedEmail } from './render-email';
 
-const palette = colors.light;
-
-const paragraphStyle = {
-  fontSize: typography.fontSizes.base,
-  lineHeight: typography.lineHeights.relaxed,
-  color: palette.foreground,
-  margin: '0 0 16px 0',
-} as const;
-
-const infoStyle = {
-  ...paragraphStyle,
-  color: palette['muted-foreground'],
-} as const;
-
-const warningStyle = {
-  ...paragraphStyle,
-  color: palette.warning,
-} as const;
-
-const listItemStyle = {
-  ...infoStyle,
-  margin: '0 0 8px 0',
-} as const;
-
-const ctaSectionStyle = {
-  marginTop: spacing[5],
-  marginBottom: spacing[6],
-} as const;
-
 /**
  * React email component guiding users through email change confirmation.
+ * Uses Tailwind classes that are automatically inlined by the Tailwind component.
  */
 const EmailChangeConfirmationTemplate = ({
   recipientName,
@@ -58,27 +29,31 @@ const EmailChangeConfirmationTemplate = ({
       signature={DEFAULT_BRAND_SIGNATURE}
     >
       <Section>
-        <Text style={paragraphStyle}>{greeting}</Text>
-        <Text style={paragraphStyle}>
+        <Text className="text-base leading-relaxed text-foreground m-0 mb-4">
+          {greeting}
+        </Text>
+        <Text className="text-base leading-relaxed text-foreground m-0 mb-4">
           We just need a quick confirmation to finish updating your sign-in
           email address.
         </Text>
       </Section>
       <Section>
-        <Text style={listItemStyle}>
+        <Text className="text-base leading-relaxed text-muted-foreground m-0 mb-2">
           Current email: {oldEmail ?? 'Not provided'}
         </Text>
-        <Text style={listItemStyle}>New email: {newEmail}</Text>
+        <Text className="text-base leading-relaxed text-muted-foreground m-0 mb-2">
+          New email: {newEmail}
+        </Text>
       </Section>
-      <Section style={ctaSectionStyle}>
+      <Section className="mt-5 mb-6">
         <EmailCtaButton href={confirmationUrl} label="Confirm email change" />
       </Section>
       <Section>
-        <Text style={infoStyle}>
-          If you didn’t request this update, we recommend resetting your
+        <Text className="text-base leading-relaxed text-muted-foreground m-0 mb-4">
+          If you didn't request this update, we recommend resetting your
           password and keeping your existing email address on file.
         </Text>
-        <Text style={warningStyle}>
+        <Text className="text-base leading-relaxed text-warning m-0 mb-4">
           The change will not take effect until you confirm. Ignore this message
           if you prefer to keep your current details.
         </Text>
