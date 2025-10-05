@@ -11,6 +11,9 @@ import {
   Mail,
   CreditCard,
   Sparkles,
+  BarChart3,
+  Building2,
+  LayoutDashboard,
 } from 'lucide-react';
 import type { NavigationItem, NavigationTree, QuickAction } from '@/lib/types';
 
@@ -98,6 +101,50 @@ export const appNav: NavigationTree = {
   items: appItems,
 };
 
+const adminItems: NavigationItem[] = [
+  {
+    key: 'admin.dashboard',
+    slug: '',
+    label: 'Dashboard',
+    description: 'System overview and metrics',
+    icon: LayoutDashboard,
+  },
+  {
+    key: 'admin.users',
+    slug: 'users',
+    label: 'Users',
+    description: 'Manage all users',
+    icon: Users,
+  },
+  {
+    key: 'admin.organizations',
+    slug: 'organizations',
+    label: 'Organizations',
+    description: 'Manage all organizations',
+    icon: Building2,
+  },
+  {
+    key: 'admin.analytics',
+    slug: 'analytics',
+    label: 'Analytics',
+    description: 'Subscription and revenue analytics',
+    icon: BarChart3,
+  },
+  {
+    key: 'admin.activity',
+    slug: 'activity',
+    label: 'Activity',
+    description: 'System activity logs',
+    icon: Activity,
+  },
+];
+
+export const adminNav: NavigationTree = {
+  key: 'admin',
+  basePath: '/admin',
+  items: adminItems,
+};
+
 export const quickActions: QuickAction[] = [
   {
     key: 'action.app.organization',
@@ -153,6 +200,7 @@ export type NavigationIndexEntry = {
 export const navigationTrees: readonly NavigationTree[] = [
   marketingNav,
   appNav,
+  adminNav,
 ];
 
 /**
