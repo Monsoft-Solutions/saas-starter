@@ -1,4 +1,11 @@
 import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { getAdminStatistics } from '@/lib/db/queries/admin-statistics.query';
+import { MetricCard } from '@/components/admin/dashboard/metric-card.component';
+import { RecentActivity } from '@/components/admin/dashboard/recent-activity.component';
+import { UserGrowthChart } from '@/components/admin/dashboard/user-growth-chart.component';
+import { RevenueChart } from '@/components/admin/dashboard/revenue-chart.component';
+import { Users, Building2, CreditCard, DollarSign } from 'lucide-react';
+import { Suspense } from 'react';
 
 /**
  * Admin dashboard page.
@@ -6,6 +13,7 @@ import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
  */
 export default async function AdminDashboardPage() {
   const context = await requireSuperAdminContext();
+  const stats = await getAdminStatistics();
 
   return (
     <div className="space-y-6">
@@ -16,42 +24,102 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border bg-card p-6">
-          <div className="text-sm font-medium text-muted-foreground">
-            Total Users
-          </div>
-          <div className="mt-2 text-2xl font-bold">Coming soon</div>
-        </div>
+      {stats ? (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              label="Total Users"
+              value={stats.totalUsers.toLocaleString()}
+              icon={Users}
+              trend={
+                stats.userGrowthRate !== null
+                  ? {
+                      value: stats.userGrowthRate,
+                      isPositive: stats.userGrowthRate >= 0,
+                    }
+                  : undefined
+              }
+            />
 
-        <div className="rounded-lg border bg-card p-6">
-          <div className="text-sm font-medium text-muted-foreground">
-            Total Organizations
-          </div>
-          <div className="mt-2 text-2xl font-bold">Coming soon</div>
-        </div>
+            <MetricCard
+              label="Total Organizations"
+              value={stats.totalOrganizations.toLocaleString()}
+              icon={Building2}
+            />
 
-        <div className="rounded-lg border bg-card p-6">
-          <div className="text-sm font-medium text-muted-foreground">
-            Active Subscriptions
-          </div>
-          <div className="mt-2 text-2xl font-bold">Coming soon</div>
-        </div>
+            <MetricCard
+              label="Active Subscriptions"
+              value={stats.totalActiveSubscriptions.toLocaleString()}
+              icon={CreditCard}
+            />
 
-        <div className="rounded-lg border bg-card p-6">
-          <div className="text-sm font-medium text-muted-foreground">
-            Monthly Revenue
+            <MetricCard
+              label="Monthly Revenue"
+              value={`$${stats.totalMRR.toLocaleString()}`}
+              icon={DollarSign}
+              trend={
+                stats.revenueGrowthRate !== null
+                  ? {
+                      value: stats.revenueGrowthRate,
+                      isPositive: stats.revenueGrowthRate >= 0,
+                    }
+                  : undefined
+              }
+            />
           </div>
-          <div className="mt-2 text-2xl font-bold">Coming soon</div>
-        </div>
-      </div>
 
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-        <p className="text-sm text-muted-foreground">
-          Activity monitoring will be implemented in Phase 5.6
-        </p>
-      </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <MetricCard
+              label="Active Users (30d)"
+              value={stats.activeUsersLast30Days.toLocaleString()}
+            />
+
+            <MetricCard
+              label="New Users (30d)"
+              value={stats.newUsersLast30Days.toLocaleString()}
+            />
+
+            <MetricCard
+              label="Trial Organizations"
+              value={stats.trialOrganizations.toLocaleString()}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="rounded-lg border bg-card p-6">
+          <p className="text-sm text-muted-foreground">
+            No statistics available. Statistics will be calculated when activity
+            occurs.
+          </p>
+        </div>
+      )}
+
+      {stats && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <UserGrowthChart
+            totalUsers={stats.totalUsers}
+            newUsersLast30Days={stats.newUsersLast30Days}
+          />
+
+          <RevenueChart
+            totalMRR={stats.totalMRR}
+            totalActiveSubscriptions={stats.totalActiveSubscriptions}
+            revenueGrowthRate={stats.revenueGrowthRate}
+          />
+        </div>
+      )}
+
+      <Suspense
+        fallback={
+          <div className="rounded-lg border bg-card p-6">
+            <p className="text-sm text-muted-foreground">
+              Loading recent activity...
+            </p>
+          </div>
+        }
+      >
+        <RecentActivity />
+      </Suspense>
     </div>
   );
 }
