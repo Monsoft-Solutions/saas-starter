@@ -179,6 +179,22 @@ export class CacheKeys {
   static userNotificationPattern(userId: string): CacheKey {
     return createCacheKey(`notifications:user:${userId}:*`);
   }
+
+  /**
+   * Admin cache keys
+   */
+  static admin(resource: string, identifier?: string): CacheKey {
+    return identifier
+      ? createCacheKey(`admin:${resource}:${identifier}`)
+      : createCacheKey(`admin:${resource}`);
+  }
+
+  /**
+   * Generic custom cache key builder
+   */
+  static custom(namespace: string, key: string): CacheKey {
+    return createCacheKey(`${namespace}:${key}`);
+  }
 }
 
 function createCacheKey(key: string): CacheKey {
