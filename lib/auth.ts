@@ -1,5 +1,5 @@
 import { betterAuth } from 'better-auth';
-import { organization } from 'better-auth/plugins';
+import { organization, admin } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
 import { db } from './db/drizzle';
@@ -70,6 +70,14 @@ export const auth = betterAuth({
   },
   socialProviders,
   plugins: [
+    admin({
+      defaultRole: 'user',
+      adminRoles: ['admin', 'super-admin'],
+      impersonationSessionDuration: 3600, // 1 hour
+      defaultBanReason: 'Violation of terms of service',
+      bannedUserMessage:
+        'Your account has been suspended. Please contact support.',
+    }),
     organization({
       schema: {
         organization: {
