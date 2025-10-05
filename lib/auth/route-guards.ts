@@ -29,6 +29,7 @@ export type RouteGuardRule = {
   pattern: RouteGuardPattern;
   authRequired: boolean;
   organizationRequired?: boolean;
+  superAdminRequired?: boolean;
 };
 
 /**
@@ -131,6 +132,24 @@ function deriveAppGuards(): RouteGuardRule[] {
 function buildRegistry(): RouteGuardRegistry {
   const guards: RouteGuardRule[] = [
     ...deriveAppGuards(),
+
+    // Super admin routes
+    {
+      id: 'admin:dashboard',
+      scope: 'app',
+      pattern: createPrefixPattern('/admin'),
+      authRequired: true,
+      superAdminRequired: true,
+    },
+    {
+      id: 'api:admin',
+      scope: 'api',
+      pattern: createPrefixPattern('/api/admin'),
+      authRequired: true,
+      superAdminRequired: true,
+    },
+
+    // Organization routes
     {
       id: 'api:organization',
       scope: 'api',
