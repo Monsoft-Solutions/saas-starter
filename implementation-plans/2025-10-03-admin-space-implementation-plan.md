@@ -1342,7 +1342,7 @@ export default async function AdminLayout({
 - ✅ Recent system activity
 - ✅ Quick actions (refresh stats, view logs)
 
-#### 5.3 User Management Page
+#### 5.3 User Management Page (DONE)
 
 **Files to create:**
 
@@ -1382,6 +1382,8 @@ export default async function AdminLayout({
 - `components/admin/organizations/organization-table.component.tsx`
 - `components/admin/organizations/organization-details-dialog.component.tsx`
 
+- Pull data form the backend to display it on the new view
+
 #### 5.5 Subscription Analytics Page
 
 **Files to create:**
@@ -1390,6 +1392,8 @@ export default async function AdminLayout({
 - `components/admin/analytics/revenue-metrics.component.tsx`
 - `components/admin/analytics/plan-distribution-chart.component.tsx`
 
+- Pull data form the backend to display it on the new view
+
 #### 5.6 System Activity Logs Page
 
 **Files to create:**
@@ -1397,6 +1401,8 @@ export default async function AdminLayout({
 - `app/(admin)/admin/activity/page.tsx`
 - `components/admin/activity/activity-log-table.component.tsx`
 - `components/admin/activity/activity-filters.component.tsx`
+
+- Pull data form the backend to display it on the new view
 
 ### Phase 6: Admin Server Actions (Days 9-10)
 

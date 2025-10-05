@@ -38,7 +38,7 @@ export async function listAllUsers(filters: UserListFilters = {}) {
         );
       }
 
-      if (filters.role) {
+      if (filters.role && filters.role !== 'all') {
         conditions.push(eq(user.role, filters.role));
       }
 

@@ -22,6 +22,8 @@ export async function GET(request: Request) {
     // Verify super-admin access
     await requireSuperAdminContext();
 
+    logger.info('[api/admin/users] Loading users');
+
     const { searchParams } = new URL(request.url);
 
     const search = searchParams.get('search') ?? undefined;

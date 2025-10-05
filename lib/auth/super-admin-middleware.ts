@@ -27,7 +27,7 @@ type SuperAdminActionWrapper<T> = {
  */
 export function withSuperAdmin<T>(
   action: SuperAdminActionFunction<T>,
-  options?: {
+  _options?: {
     logAction?: string;
   }
 ): SuperAdminActionWrapper<T> {
@@ -43,18 +43,6 @@ export function withSuperAdmin<T>(
     try {
       // Verify super-admin context (uses Better Auth role)
       const context = await requireSuperAdminContext();
-
-      // Optional: Log admin action
-      if (options?.logAction) {
-        const { logActivity } = await import(
-          '@/lib/db/queries/activity-log.query'
-        );
-        await logActivity(
-          context.user.id,
-          options.logAction as any, // Admin actions will be added to ActivityType enum later
-          context.headers.get('x-forwarded-for') ?? undefined
-        );
-      }
 
       // Execute action
       const result = await action(formData, context);
