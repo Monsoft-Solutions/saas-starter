@@ -4,69 +4,68 @@
  */
 import 'server-only';
 
-import { requireServerContext, type ServerContext } from './server-context';
+import type { AdminContext } from './admin-context';
+import {
+  AdminAccessRequiredError,
+  getAdminContext,
+  getAdminContextFromHeaders,
+} from './admin-context';
 
-/**
- * Super admin context with guaranteed admin role verification.
- */
-export type SuperAdminContext = ServerContext & {
-  user: ServerContext['user'] & {
-    role: 'admin' | 'super-admin';
-  };
+export type SuperAdminContext = AdminContext & {
+  user: AdminContext['user'] & { role: 'super-admin' };
+  admin: AdminContext['admin'] & { role: 'super-admin'; isSuperAdmin: true };
 };
 
-/**
- * Error thrown when super-admin access is required but user doesn't have permission.
- */
-export class SuperAdminRequiredError extends Error {
+export class SuperAdminRequiredError extends AdminAccessRequiredError {
   constructor(message = 'Super admin access required') {
     super(message);
     this.name = 'SuperAdminRequiredError';
   }
 }
 
-/**
- * Check if user has admin role (admin or super-admin).
- */
 export function isUserAdmin(role: string | null | undefined): boolean {
   return role === 'admin' || role === 'super-admin';
 }
 
-/**
- * Check if user has super-admin role specifically.
- */
 export function isUserSuperAdmin(role: string | null | undefined): boolean {
   return role === 'super-admin';
 }
 
-/**
- * Get super-admin context if user has permission, otherwise return null.
- */
-export async function getSuperAdminContext(): Promise<SuperAdminContext | null> {
-  const context = await requireServerContext();
-
-  // Check role from user object (Better Auth populates this)
-  const userRole = (context.user as { role?: string }).role;
-
-  if (!isUserAdmin(userRole)) {
+function asSuperAdminContext(
+  context: AdminContext | null
+): SuperAdminContext | null {
+  if (!context || context.admin.role !== 'super-admin') {
     return null;
   }
 
-  return {
-    ...context,
-    user: {
-      ...context.user,
-      role: userRole as 'admin' | 'super-admin',
-    },
-  };
+  return context as SuperAdminContext;
 }
 
-/**
- * Require super-admin context, throw error if user doesn't have permission.
- */
+export async function getSuperAdminContext(): Promise<SuperAdminContext | null> {
+  const context = await getAdminContext();
+  return asSuperAdminContext(context);
+}
+
+export async function getSuperAdminContextFromHeaders(
+  requestHeaders: Headers
+): Promise<SuperAdminContext | null> {
+  const context = await getAdminContextFromHeaders(requestHeaders);
+  return asSuperAdminContext(context);
+}
+
 export async function requireSuperAdminContext(): Promise<SuperAdminContext> {
   const context = await getSuperAdminContext();
+  if (!context) {
+    throw new SuperAdminRequiredError();
+  }
 
+  return context;
+}
+
+export async function requireSuperAdminContextFromHeaders(
+  requestHeaders: Headers
+): Promise<SuperAdminContext> {
+  const context = await getSuperAdminContextFromHeaders(requestHeaders);
   if (!context) {
     throw new SuperAdminRequiredError();
   }

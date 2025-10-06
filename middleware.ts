@@ -14,6 +14,7 @@ import {
   matchRouteGuard,
   type RouteGuardScope,
 } from '@/lib/auth/route-guards';
+import { getAdminContextFromHeaders } from '@/lib/auth/admin-context';
 import {
   getServerContextFromHeaders,
   getServerSessionFromHeaders,
@@ -87,25 +88,30 @@ function handleMissingOrganization(scope: RouteGuardScope): NextResponse {
   return NextResponse.next();
 }
 
-/**
- * Responds when a user is authenticated but lacks super-admin role.
- */
-function handleSuperAdminRequired(
+function handlePermissionDenied(
   scope: RouteGuardScope,
-  request: NextRequest
+  requiredPermissions: readonly string[]
 ): NextResponse {
   if (scope === 'api') {
     return NextResponse.json(
       {
         error: 'Forbidden',
-        details: 'Super admin access required to access this endpoint.',
+        details: 'Insufficient permissions to access this endpoint.',
+        requiredPermissions,
       },
       { status: 403 }
     );
   }
 
-  // Redirect non-admins to regular app
-  return NextResponse.redirect(new URL('/app', request.url));
+  return new NextResponse(
+    'Forbidden: Your account lacks the required permissions for this area.',
+    {
+      status: 403,
+      headers: {
+        'x-required-permissions': requiredPermissions.join(','),
+      },
+    }
+  );
 }
 
 /**
@@ -132,20 +138,29 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   const requestHeaders = cloneRequestHeaders(request);
 
-  // Check super-admin requirement first (most restrictive)
-  if (rule.superAdminRequired) {
-    const session = await getServerSessionFromHeaders(requestHeaders);
+  if (rule.requiredPermissions?.length) {
+    const adminContext = await getAdminContextFromHeaders(requestHeaders);
 
-    if (!session) {
-      return handleUnauthorized(rule.scope, request);
+    if (!adminContext) {
+      const session = await getServerSessionFromHeaders(requestHeaders);
+
+      if (!session) {
+        return handleUnauthorized(rule.scope, request);
+      }
+
+      return handlePermissionDenied(rule.scope, rule.requiredPermissions);
     }
 
-    // Check user role from session (Better Auth populates this)
-    const { isUserAdmin } = await import('@/lib/auth/super-admin-context');
-    const userRole = (session.user as { role?: string }).role;
+    const missingPermission = rule.requiredPermissions.find(
+      (permission) => !adminContext.admin.permissions.has(permission)
+    );
 
-    if (!isUserAdmin(userRole)) {
-      return handleSuperAdminRequired(rule.scope, request);
+    if (missingPermission) {
+      return handlePermissionDenied(rule.scope, rule.requiredPermissions);
+    }
+
+    if (rule.organizationRequired && !adminContext.organization) {
+      return handleMissingOrganization(rule.scope);
     }
 
     return NextResponse.next();
