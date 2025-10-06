@@ -1,6 +1,5 @@
 import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
-import { AdminHeader } from '@/components/admin/admin-header.component';
-import { AdminNav } from '@/components/admin/admin-nav.component';
+import { AdminLayoutClient } from './layout-client';
 
 /**
  * Admin panel layout.
@@ -15,12 +14,16 @@ export default async function AdminLayout({
   const context = await requireSuperAdminContext();
 
   return (
-    <div className="min-h-screen bg-muted/20">
-      <AdminHeader user={context.user} />
-      <div className="flex">
-        <AdminNav />
-        <main className="flex-1 p-6">{children}</main>
-      </div>
-    </div>
+    <>
+      {/* Preload Geist font for better performance */}
+      <link
+        rel="preload"
+        href="/_next/static/media/geist-latin.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+      <AdminLayoutClient user={context.user}>{children}</AdminLayoutClient>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Shield, LogOut, User, ArrowLeft } from 'lucide-react';
+import { Shield, LogOut, User, ArrowLeft, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,12 +21,13 @@ type AdminHeaderProps = {
     name?: string | null;
     role: 'admin' | 'super-admin';
   };
+  onMobileMenuToggle?: () => void;
 };
 
 /**
  * Admin panel header with user dropdown and exit admin mode.
  */
-export function AdminHeader({ user }: AdminHeaderProps) {
+export function AdminHeader({ user, onMobileMenuToggle }: AdminHeaderProps) {
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
@@ -41,6 +42,18 @@ export function AdminHeader({ user }: AdminHeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="px-6">
         <div className="flex h-16 items-center justify-between">
+          {/* Mobile Menu Button */}
+          {onMobileMenuToggle && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMobileMenuToggle}
+              className="lg:hidden"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          )}
+
           {/* Logo and Admin Badge */}
           <div className="flex items-center gap-4">
             <Link
