@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { ensureApiPermissions } from '@/lib/auth/api-permission';
 import {
   getUserWithDetails,
   updateUserRole,
@@ -17,16 +17,22 @@ import { z } from 'zod';
  *
  * Get detailed information about a specific user.
  *
- * @requires Super-admin role
+ * @requires `users:read` admin permission
  * @returns User details with organizations and activity
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify super-admin access
-    await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.users.detail',
+      requiredPermissions: ['users:read'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
 
     const { id: userId } = await params;
 
@@ -66,7 +72,7 @@ export async function GET(
  * - Ban user: { action: "ban", reason: string, expiresInDays?: number }
  * - Unban user: { action: "unban" }
  *
- * @requires Super-admin role
+ * @requires `users:write` admin permission
  * @returns Success message
  */
 export async function PATCH(
@@ -74,8 +80,16 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify super-admin access
-    const context = await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.users.update',
+      requiredPermissions: ['users:write'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
+
+    const { context } = permissionCheck;
 
     const { id: userId } = await params;
 

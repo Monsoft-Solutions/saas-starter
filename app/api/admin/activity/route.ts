@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { ensureApiPermissions } from '@/lib/auth/api-permission';
 import {
   listAllActivityLogs,
   getActivityStatistics,
@@ -22,13 +22,19 @@ import logger from '@/lib/logger/logger.service';
  * - offset: Pagination offset (default: 0)
  * - includeStats: Include activity statistics (true/false) (optional)
  *
- * @requires Super-admin role
+ * @requires `activity:read` admin permission
  * @returns Paginated list of activity logs
  */
 export async function GET(request: Request) {
   try {
-    // Verify super-admin access
-    await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.activity.list',
+      requiredPermissions: ['activity:read'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
 
     const { searchParams } = new URL(request.url);
 

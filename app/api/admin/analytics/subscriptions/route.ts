@@ -3,18 +3,24 @@
  * GET /api/admin/analytics/subscriptions
  *
  * Returns paginated subscription data with filters.
- * Protected: Super admin only.
+ * Protected: Requires the `analytics:read` admin permission.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { ensureApiPermissions } from '@/lib/auth/api-permission';
 import { getSubscriptionTableData } from '@/lib/db/queries/admin-subscription-analytics.query';
 import { subscriptionAnalyticsFiltersSchema } from '@/lib/types/analytics/subscription-analytics-filters.schema';
 import logger from '@/lib/logger/logger.service';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify super-admin access
-    await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.analytics.subscriptions',
+      requiredPermissions: ['analytics:read'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
 
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
@@ -37,13 +43,6 @@ export async function GET(request: NextRequest) {
     logger.error('[api/admin/analytics/subscriptions] Failed to fetch data', {
       error,
     });
-
-    if (error instanceof Error && error.name === 'SuperAdminRequiredError') {
-      return NextResponse.json(
-        { error: 'Super admin access required' },
-        { status: 403 }
-      );
-    }
 
     return NextResponse.json(
       { error: 'Failed to load subscription data' },

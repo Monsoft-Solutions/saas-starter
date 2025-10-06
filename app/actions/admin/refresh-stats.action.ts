@@ -1,15 +1,16 @@
 'use server';
 
-import { withSuperAdmin } from '@/lib/auth/super-admin-middleware';
+import { withPermission } from '@/lib/auth/permission-middleware';
 import { refreshAdminStatistics } from '@/lib/db/queries/admin-statistics.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
 import logger from '@/lib/logger/logger.service';
 
 /**
  * Server action to refresh admin statistics.
- * Only accessible by super-admins.
+ * Requires the `analytics:write` admin permission.
  */
-export const refreshStatsAction = withSuperAdmin(
+export const refreshStatsAction = withPermission(
+  'analytics:write',
   async (_formData, context) => {
     try {
       // Refresh statistics (no input validation needed as this is a simple refresh operation)
@@ -66,7 +67,5 @@ export const refreshStatsAction = withSuperAdmin(
       };
     }
   },
-  {
-    logAction: 'admin.stats.refreshed',
-  }
+  'admin.analytics.refresh'
 );

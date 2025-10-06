@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { ensureApiPermissions } from '@/lib/auth/api-permission';
 import { listAllUsers } from '@/lib/db/queries/admin-user.query';
 import logger from '@/lib/logger/logger.service';
 import { TableDataResponse, UserTableData } from '@/lib/types/table';
@@ -15,13 +15,19 @@ import { TableDataResponse, UserTableData } from '@/lib/types/table';
  * - limit: Number of results per page (default: 50)
  * - offset: Pagination offset (default: 0)
  *
- * @requires Super-admin role
+ * @requires `users:read` admin permission
  * @returns Paginated list of users
  */
 export async function GET(request: Request) {
   try {
-    // Verify super-admin access
-    await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.users.list',
+      requiredPermissions: ['users:read'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
 
     logger.info('[api/admin/users] Loading users');
 

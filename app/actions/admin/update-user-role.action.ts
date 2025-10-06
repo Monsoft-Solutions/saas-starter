@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { withSuperAdmin } from '@/lib/auth/super-admin-middleware';
+import { withPermission } from '@/lib/auth/permission-middleware';
 import { updateUserRole } from '@/lib/db/queries/admin-user.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
 import { USER_ROLES } from '@/lib/types/admin/user-role.enum';
@@ -18,9 +18,10 @@ const updateUserRoleSchema = z.object({
 
 /**
  * Server action to update a user's role.
- * Only accessible by super-admins.
+ * Requires the `users:write` admin permission.
  */
-export const updateUserRoleAction = withSuperAdmin(
+export const updateUserRoleAction = withPermission(
+  'users:write',
   async (formData, context) => {
     try {
       const data = updateUserRoleSchema.parse({
@@ -50,7 +51,5 @@ export const updateUserRoleAction = withSuperAdmin(
       return { error: 'Failed to update user role' };
     }
   },
-  {
-    logAction: 'admin.user.role_updated',
-  }
+  'admin.users.update-role'
 );

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { ensureApiPermissions } from '@/lib/auth/api-permission';
 import {
   getOrganizationWithDetails,
   deleteOrganizationById,
@@ -12,16 +12,22 @@ import logger from '@/lib/logger/logger.service';
  *
  * Get detailed information about a specific organization.
  *
- * @requires Super-admin role
+ * @requires `organizations:read` admin permission
  * @returns Organization details with members and subscription info
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify super-admin access
-    await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.organizations.detail',
+      requiredPermissions: ['organizations:read'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
 
     const { id: organizationId } = await params;
 
@@ -61,16 +67,24 @@ export async function GET(
  * Delete an organization (admin only).
  * This will also delete all associated members.
  *
- * @requires Super-admin role
+ * @requires `organizations:write` admin permission
  * @returns Success message
  */
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify super-admin access
-    const context = await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.organizations.delete',
+      requiredPermissions: ['organizations:write'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
+
+    const { context } = permissionCheck;
 
     const { id: organizationId } = await params;
 

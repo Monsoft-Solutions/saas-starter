@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { withSuperAdmin } from '@/lib/auth/super-admin-middleware';
+import { withPermission } from '@/lib/auth/permission-middleware';
 import { banUserById, unbanUserById } from '@/lib/db/queries/admin-user.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
 
@@ -29,9 +29,10 @@ const unbanUserSchema = z.object({
 
 /**
  * Server action to ban a user.
- * Only accessible by super-admins.
+ * Requires the `users:write` admin permission.
  */
-export const banUserAction = withSuperAdmin(
+export const banUserAction = withPermission(
+  'users:write',
   async (formData, context) => {
     try {
       const data = banUserSchema.parse({
@@ -63,16 +64,15 @@ export const banUserAction = withSuperAdmin(
       return { error: 'Failed to ban user' };
     }
   },
-  {
-    logAction: 'admin.user.banned',
-  }
+  'admin.users.ban'
 );
 
 /**
  * Server action to unban a user.
- * Only accessible by super-admins.
+ * Requires the `users:write` admin permission.
  */
-export const unbanUserAction = withSuperAdmin(
+export const unbanUserAction = withPermission(
+  'users:write',
   async (formData, context) => {
     try {
       const data = unbanUserSchema.parse({
@@ -100,7 +100,5 @@ export const unbanUserAction = withSuperAdmin(
       return { error: 'Failed to unban user' };
     }
   },
-  {
-    logAction: 'admin.user.unbanned',
-  }
+  'admin.users.unban'
 );

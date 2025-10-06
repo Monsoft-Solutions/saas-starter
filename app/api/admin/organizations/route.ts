@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { ensureApiPermissions } from '@/lib/auth/api-permission';
 import {
   listAllOrganizations,
   getSubscriptionAnalytics,
@@ -19,13 +19,19 @@ import logger from '@/lib/logger/logger.service';
  * - offset: Pagination offset (default: 0)
  * - analytics: Include subscription analytics (true/false) (optional)
  *
- * @requires Super-admin role
+ * @requires `organizations:read` admin permission
  * @returns Paginated list of organizations
  */
 export async function GET(request: Request) {
   try {
-    // Verify super-admin access
-    await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.organizations.list',
+      requiredPermissions: ['organizations:read'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
 
     const { searchParams } = new URL(request.url);
 

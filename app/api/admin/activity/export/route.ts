@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { ensureApiPermissions } from '@/lib/auth/api-permission';
 import { exportActivityLogsToCSV } from '@/lib/db/queries/admin-activity-log.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
 import logger from '@/lib/logger/logger.service';
@@ -17,13 +17,21 @@ import logger from '@/lib/logger/logger.service';
  * - search: Search in user email or action (optional)
  * - limit: Number of results to export (default: 10000, max: 10000)
  *
- * @requires Super-admin role
+ * @requires `activity:read` admin permission
  * @returns CSV file download
  */
 export async function GET(request: Request) {
   try {
-    // Verify super-admin access
-    const context = await requireSuperAdminContext();
+    const permissionCheck = await ensureApiPermissions(request, {
+      resource: 'admin.activity.export',
+      requiredPermissions: ['activity:read'],
+    });
+
+    if (!permissionCheck.ok) {
+      return permissionCheck.response;
+    }
+
+    const { context } = permissionCheck;
 
     const { searchParams } = new URL(request.url);
 

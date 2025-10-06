@@ -1,8 +1,8 @@
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
 import { listAllActivityLogs } from '@/lib/db/queries/admin-activity-log.query';
 import { ActivityLogTable } from '@/components/admin/activity/activity-log-table.component';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
+import { requireAdminContext } from '@/lib/auth/admin-context';
 
 /**
  * Admin activity logs page.
@@ -20,7 +20,7 @@ export default async function AdminActivityPage({
     offset?: string;
   }>;
 }) {
-  await requireSuperAdminContext();
+  await requireAdminContext();
 
   const params = await searchParams;
 
