@@ -1,11 +1,56 @@
 import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import {
+  listAllOrganizations,
+  getOrganizationStatistics,
+} from '@/lib/db/queries/admin-organization.query';
+import { OrganizationTableClient } from '@/components/admin/organizations/organization-table-client.component';
+import { Building2, Users, CreditCard, TrendingUp } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 /**
  * Admin organizations management page.
  * List and manage all organizations in the system.
  */
-export default async function AdminOrganizationsPage() {
+export default async function AdminOrganizationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    search?: string;
+    subscriptionStatus?: string;
+    hasSubscription?: string;
+    limit?: string;
+    offset?: string;
+  }>;
+}) {
   await requireSuperAdminContext();
+
+  const params = await searchParams;
+
+  // Parse search parameters
+  const filters = {
+    search: params.search,
+    subscriptionStatus: params.subscriptionStatus,
+    hasSubscription:
+      params.hasSubscription === 'true'
+        ? true
+        : params.hasSubscription === 'false'
+          ? false
+          : undefined,
+    limit: parseInt(params.limit ?? '10', 10),
+    offset: parseInt(params.offset ?? '0', 10),
+  };
+
+  // Fetch organizations and statistics
+  const [organizationsData, statistics] = await Promise.all([
+    listAllOrganizations(filters),
+    getOrganizationStatistics(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -16,11 +61,96 @@ export default async function AdminOrganizationsPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border bg-card p-6">
-        <p className="text-sm text-muted-foreground">
-          Organization management interface will be implemented in Phase 5.4
-        </p>
+      {/* Statistics Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Organizations
+            </CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statistics.totalOrganizations.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Active Subscriptions
+            </CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statistics.withActiveSubscriptions.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {(
+                (statistics.withActiveSubscriptions /
+                  statistics.totalOrganizations) *
+                100
+              ).toFixed(1)}
+              % of total
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Trial Organizations
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statistics.withTrialSubscriptions.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              No Subscription
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statistics.withoutSubscriptions.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {(
+                (statistics.withoutSubscriptions /
+                  statistics.totalOrganizations) *
+                100
+              ).toFixed(1)}
+              % of total
+            </p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Organizations Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Organizations</CardTitle>
+          <CardDescription>
+            View and manage all organizations in the system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <OrganizationTableClient
+            initialData={organizationsData}
+            initialFilters={filters}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

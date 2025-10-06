@@ -12,29 +12,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { OrganizationListFilters } from '@/lib/types/admin';
 
-type UserListFilters = {
-  search?: string;
-  role?: string;
-  limit?: number;
-  offset?: number;
-};
-
-type UserFiltersProps = {
-  filters: UserListFilters;
-  onFiltersChange: (filters: Partial<UserListFilters>) => void;
+type OrganizationFiltersProps = {
+  filters: OrganizationListFilters;
+  onFiltersChange: (filters: Partial<OrganizationListFilters>) => void;
   isLoading?: boolean;
 };
 
 /**
- * User filters component for search and role filtering.
- * Provides search input, role filter, and active filter badges.
+ * Organization filters component for search and subscription status filtering.
+ * Provides search input, subscription status filter, and active filter badges.
  */
-export function UserFilters({
+export function OrganizationFilters({
   filters,
   onFiltersChange,
   isLoading = false,
-}: UserFiltersProps) {
+}: OrganizationFiltersProps) {
   const [searchValue, setSearchValue] = useState(filters.search || '');
 
   /**
@@ -55,13 +49,24 @@ export function UserFilters({
   );
 
   /**
-   * Handle role filter change
+   * Handle subscription status filter change
    */
-  const handleRoleChange = useCallback(
+  const handleSubscriptionStatusChange = useCallback(
     (value: string) => {
       onFiltersChange({
-        role: value === 'all' ? undefined : value,
+        subscriptionStatus: value === 'all' ? undefined : value,
       });
+    },
+    [onFiltersChange]
+  );
+
+  /**
+   * Handle subscription presence filter change
+   */
+  const handleHasSubscriptionChange = useCallback(
+    (value: string) => {
+      const hasSubscription = value === 'all' ? undefined : value === 'true';
+      onFiltersChange({ hasSubscription });
     },
     [onFiltersChange]
   );
@@ -73,16 +78,19 @@ export function UserFilters({
     setSearchValue('');
     onFiltersChange({
       search: undefined,
-      role: undefined,
+      subscriptionStatus: undefined,
+      hasSubscription: undefined,
     });
   }, [onFiltersChange]);
 
   /**
    * Get active filter count
    */
-  const activeFilterCount = [filters.search, filters.role].filter(
-    Boolean
-  ).length;
+  const activeFilterCount = [
+    filters.search,
+    filters.subscriptionStatus,
+    filters.hasSubscription !== undefined ? 'hasSubscription' : null,
+  ].filter(Boolean).length;
 
   return (
     <div className="space-y-4">
@@ -92,7 +100,7 @@ export function UserFilters({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search users by name or email..."
+            placeholder="Search organizations by name or slug..."
             value={searchValue}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
@@ -100,20 +108,43 @@ export function UserFilters({
           />
         </div>
 
-        {/* Role Filter */}
+        {/* Subscription Status Filter */}
         <Select
-          value={filters.role || 'all'}
-          onValueChange={handleRoleChange}
+          value={filters.subscriptionStatus || 'all'}
+          onValueChange={handleSubscriptionStatusChange}
           disabled={isLoading}
         >
           <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="All Roles" />
+            <SelectValue placeholder="Subscription Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="user">User</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="super-admin">Super Admin</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="canceled">Canceled</SelectItem>
+            <SelectItem value="trialing">Trial</SelectItem>
+            <SelectItem value="past_due">Past Due</SelectItem>
+            <SelectItem value="unpaid">Unpaid</SelectItem>
+            <SelectItem value="incomplete">Incomplete</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Has Subscription Filter */}
+        <Select
+          value={
+            filters.hasSubscription === undefined
+              ? 'all'
+              : filters.hasSubscription.toString()
+          }
+          onValueChange={handleHasSubscriptionChange}
+          disabled={isLoading}
+        >
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue placeholder="Subscription" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Organizations</SelectItem>
+            <SelectItem value="true">With Subscription</SelectItem>
+            <SelectItem value="false">No Subscription</SelectItem>
           </SelectContent>
         </Select>
 
@@ -153,15 +184,34 @@ export function UserFilters({
             </Badge>
           )}
 
-          {filters.role && (
+          {filters.subscriptionStatus && (
             <Badge variant="secondary" className="gap-1">
               <Filter className="h-3 w-3" />
-              Role: {filters.role}
+              Status: {filters.subscriptionStatus}
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 text-muted-foreground hover:text-foreground"
-                onClick={() => onFiltersChange({ role: undefined })}
+                onClick={() =>
+                  onFiltersChange({ subscriptionStatus: undefined })
+                }
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </Badge>
+          )}
+
+          {filters.hasSubscription !== undefined && (
+            <Badge variant="secondary" className="gap-1">
+              <Filter className="h-3 w-3" />
+              {filters.hasSubscription
+                ? 'With Subscription'
+                : 'No Subscription'}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                onClick={() => onFiltersChange({ hasSubscription: undefined })}
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -174,7 +224,7 @@ export function UserFilters({
       {isLoading && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-          Loading users...
+          Loading organizations...
         </div>
       )}
     </div>

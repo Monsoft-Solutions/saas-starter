@@ -1,8 +1,6 @@
-import { Suspense } from 'react';
 import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
-import { UserTable } from '@/components/admin/users/user-table.component';
-import { UserFilters } from '@/components/admin/users/user-filters.component';
-import { Skeleton } from '@/components/ui/skeleton';
+import { listAllUsers } from '@/lib/db/queries/admin-user.query';
+import { UserTableWrapper } from '@/components/admin/users/user-table-wrapper.component';
 
 /**
  * Admin user management page.
@@ -11,49 +9,58 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; role?: string; page?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    role?: string;
+    limit?: string;
+    offset?: string;
+  }>;
 }) {
-  // Verify super-admin access
   await requireSuperAdminContext();
 
-  // Await searchParams in Next.js 15
   const params = await searchParams;
-  const search = params.search;
-  const role = params.role;
-  const page = params.page ? parseInt(params.page) : 1;
+
+  // Parse search parameters
+  const filters = {
+    search: params.search,
+    role: params.role,
+    limit: parseInt(params.limit ?? '50', 10),
+    offset: parseInt(params.offset ?? '0', 10),
+  };
+
+  // Fetch users data
+  const usersData = await listAllUsers(filters);
+
+  // Convert to the format expected by the client component
+  const tableData = usersData.users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    emailVerified: user.emailVerified,
+    banned: user.banned,
+    banReason: user.banReason,
+    banExpires: user.banExpires,
+    createdAt: user.createdAt,
+  }));
+
+  const initialData = {
+    users: tableData,
+    total: usersData.total,
+    limit: filters.limit,
+    offset: filters.offset,
+  };
 
   return (
-    <div className="page-container">
-      <div className="stack-lg">
-        {/* Header */}
-        <div className="stack-sm">
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground">
-            Manage all users, update roles, and control access
-          </p>
-        </div>
-
-        {/* Filters */}
-        <UserFilters />
-
-        {/* User Table */}
-        <Suspense fallback={<TableSkeleton />}>
-          <UserTable search={search} role={role} page={page} />
-        </Suspense>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+        <p className="text-muted-foreground">
+          Manage all users, update roles, and control access
+        </p>
       </div>
-    </div>
-  );
-}
 
-function TableSkeleton() {
-  return (
-    <div className="stack-md">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-[400px] w-full" />
-      <div className="flex justify-between">
-        <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-10 w-48" />
-      </div>
+      <UserTableWrapper initialData={initialData} initialFilters={filters} />
     </div>
   );
 }

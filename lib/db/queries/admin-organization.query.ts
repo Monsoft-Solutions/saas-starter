@@ -25,7 +25,7 @@ export async function listAllOrganizations(
   return cacheService.getOrSet(
     cacheKey,
     async () => {
-      const limit = filters.limit ?? 50;
+      const limit = filters.limit ?? 10;
       const offset = filters.offset ?? 0;
 
       // Build query conditions
@@ -75,7 +75,7 @@ export async function listAllOrganizations(
             memberCount: sql<number>`(
               SELECT COUNT(*)::int
               FROM ${member}
-              WHERE ${member.organizationId} = ${organization.id}
+              WHERE ${member}.organization_id = ${organization}.id
             )`,
           })
           .from(organization)

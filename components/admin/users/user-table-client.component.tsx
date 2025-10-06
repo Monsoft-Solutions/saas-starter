@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { TablePagination } from '@/components/admin/shared/table-pagination.component';
 import { UserDetailsDialog } from './user-details-dialog.component';
 import { UpdateRoleDialog } from './update-role-dialog.component';
 import { BanUserDialog } from './ban-user-dialog.component';
@@ -55,11 +56,29 @@ export type UserTableData = {
   createdAt: Date;
 };
 
+type UserTableClientProps = {
+  users: UserTableData[];
+  total: number;
+  limit: number;
+  offset: number;
+  isLoading?: boolean;
+  onPageChange: (offset: number) => void;
+  onLimitChange: (limit: number) => void;
+};
+
 /**
  * Client-side user table component.
  * Displays users with sorting, actions, and dialogs for management.
  */
-export function UserTableClient({ users }: { users: UserTableData[] }) {
+export function UserTableClient({
+  users,
+  total,
+  limit,
+  offset,
+  isLoading = false,
+  onPageChange,
+  onLimitChange,
+}: UserTableClientProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [selectedUser, setSelectedUser] = useState<UserTableData | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -195,7 +214,7 @@ export function UserTableClient({ users }: { users: UserTableData[] }) {
   });
 
   return (
-    <>
+    <div className="space-y-4">
       <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
@@ -245,6 +264,18 @@ export function UserTableClient({ users }: { users: UserTableData[] }) {
         </Table>
       </div>
 
+      {/* Pagination */}
+      {!isLoading && users.length > 0 && (
+        <TablePagination
+          total={total}
+          limit={limit}
+          offset={offset}
+          isLoading={isLoading}
+          onPageChange={onPageChange}
+          onLimitChange={onLimitChange}
+        />
+      )}
+
       {/* Dialogs */}
       {selectedUser && (
         <>
@@ -271,6 +302,6 @@ export function UserTableClient({ users }: { users: UserTableData[] }) {
           />
         </>
       )}
-    </>
+    </div>
   );
 }

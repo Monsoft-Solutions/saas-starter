@@ -12,6 +12,7 @@ vi.mock('@/lib/db/queries', () => ({
 }));
 
 // Load .env.local first (if present), then fallback to default .env without overriding existing vars.
+require('dotenv').config({ path: '.env.local' });
 require('dotenv').config();
 
 // Database test instance - only initialize if needed for integration tests
