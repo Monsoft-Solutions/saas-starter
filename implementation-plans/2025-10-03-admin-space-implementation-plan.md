@@ -1374,35 +1374,453 @@ export default async function AdminLayout({
 - Created At
 - Actions (View, Edit Role, Ban)
 
-#### 5.4 Organization Management Page
+#### 5.4 Organization Management Page (Done)
 
 **Files to create:**
 
 - `app/(admin)/admin/organizations/page.tsx`
 - `components/admin/organizations/organization-table.component.tsx`
+- `components/admin/organizations/organization-table.config.tsx`
 - `components/admin/organizations/organization-details-dialog.component.tsx`
 
-- Pull data form the backend to display it on the new view
+**Implementation Status:**
+
+- ✅ Uses generic admin table system
+- ✅ Pull data from backend via `/api/admin/organizations`
+- ✅ Server-side rendering with initial data
+- ✅ Client-side filtering, pagination, and URL sync
+
+**Generic Table System Reference:**
+
+This page uses the generic admin table system documented in `implementation-plans/2025-10-05-generic-admin-table-system-implementation-plan.md`. See the implementation for reference on:
+
+- Type-safe table configuration (`TableConfig<TData, TFilters>`)
+- Filter definitions using `FilterFieldType` enum
+- Action definitions with dynamic variants
+- URL synchronization with `useTableUrlSync` hook
+- Server-side data fetching with pagination
+- Toast notifications for user feedback
 
 #### 5.5 Subscription Analytics Page
 
+**Implementation Approach:** Use Generic Admin Table System + Custom Charts
+
 **Files to create:**
 
-- `app/(admin)/admin/analytics/page.tsx`
-- `components/admin/analytics/revenue-metrics.component.tsx`
-- `components/admin/analytics/plan-distribution-chart.component.tsx`
+- `app/(admin)/admin/analytics/page.tsx` - Main analytics page with server-side data fetching
+- `components/admin/analytics/subscription-table.config.tsx` - **Table configuration** for subscriptions
+- `components/admin/analytics/subscription-table.component.tsx` - Subscription table using generic wrapper
+- `components/admin/analytics/revenue-metrics.component.tsx` - Revenue metric cards
+- `components/admin/analytics/plan-distribution-chart.component.tsx` - Plan distribution visualization
+- `components/admin/analytics/revenue-trend-chart.component.tsx` - Revenue over time chart
+- `lib/db/queries/admin-subscription-analytics.query.ts` - Analytics data queries
+- `lib/types/analytics/subscription-analytics.type.ts` - Type definitions
+- `app/api/admin/analytics/subscriptions/route.ts` - API endpoint for subscription data
 
-- Pull data form the backend to display it on the new view
+**Generic Table Integration:**
+
+Use the generic admin table system to display subscription data with:
+
+**Table Columns:**
+
+- Organization name (with logo)
+- Plan name
+- Subscription status (with color-coded badges)
+- MRR (Monthly Recurring Revenue)
+- Start date
+- Renewal/trial end date
+- Customer lifetime value
+
+**Filter Definitions:**
+
+```typescript
+// components/admin/analytics/subscription-table.config.tsx
+import { FilterFieldType } from '@/lib/types/table';
+
+export type SubscriptionTableFilters = {
+  search?: string;
+  status?: string; // active, trialing, canceled, past_due
+  planName?: string;
+  minMRR?: number;
+  maxMRR?: number;
+  limit?: number;
+  offset?: number;
+};
+
+export const subscriptionTableConfig: TableConfig<
+  SubscriptionTableData,
+  SubscriptionTableFilters
+> = {
+  tableId: 'subscriptions',
+  apiEndpoint: '/api/admin/analytics/subscriptions',
+
+  columns: [
+    // Organization column with logo
+    // Plan name with badge
+    // Status with color variant
+    // MRR formatted as currency
+    // Dates with relative time
+  ],
+
+  filters: [
+    {
+      key: 'search',
+      type: FilterFieldType.SEARCH,
+      placeholder: 'Search organizations...',
+      debounceMs: 300,
+    },
+    {
+      key: 'status',
+      type: FilterFieldType.SELECT,
+      placeholder: 'All Statuses',
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Trialing', value: 'trialing' },
+        { label: 'Canceled', value: 'canceled' },
+        { label: 'Past Due', value: 'past_due' },
+      ],
+    },
+    {
+      key: 'planName',
+      type: FilterFieldType.SELECT,
+      placeholder: 'All Plans',
+      options: [
+        { label: 'Basic', value: 'Basic' },
+        { label: 'Pro', value: 'Pro' },
+        { label: 'Enterprise', value: 'Enterprise' },
+      ],
+    },
+  ],
+
+  actions: [
+    {
+      id: 'view-stripe',
+      label: 'View in Stripe',
+      icon: ExternalLink,
+      onClick: (row) => {
+        window.open(
+          `https://dashboard.stripe.com/customers/${row.stripeCustomerId}`,
+          '_blank'
+        );
+      },
+    },
+  ],
+
+  pagination: {
+    defaultLimit: 50,
+    pageSizeOptions: [25, 50, 100],
+    showPageSizeSelector: true,
+  },
+};
+```
+
+**Data Fetching:**
+
+- Pull subscription data from Stripe via webhooks (already synced to database)
+- Calculate MRR, churn rate, LTV from organization table
+- Aggregate revenue metrics for charts
+- Server-side pagination and filtering
+
+**Page Structure:**
+
+```typescript
+// app/(admin)/admin/analytics/page.tsx
+export default async function SubscriptionAnalyticsPage({ searchParams }) {
+  const filters = parseFiltersFromSearchParams(searchParams);
+
+  // Fetch initial data server-side
+  const [initialTableData, revenueMetrics, planDistribution] = await Promise.all([
+    getSubscriptionTableData(filters),
+    getRevenueMetrics(),
+    getPlanDistribution(),
+  ]);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Subscription Analytics" />
+
+      {/* Metric Cards */}
+      <RevenueMetrics data={revenueMetrics} />
+
+      {/* Charts */}
+      <div className="grid grid-cols-2 gap-6">
+        <PlanDistributionChart data={planDistribution} />
+        <RevenueTrendChart />
+      </div>
+
+      {/* Subscription Table using generic system */}
+      <SubscriptionTable
+        initialData={initialTableData}
+        initialFilters={filters}
+      />
+    </div>
+  );
+}
+```
+
+**Additional Features:**
+
+- Export subscription data to CSV
+- Revenue trend over time (30/60/90 days)
+- Churn rate calculation
+- Plan distribution pie chart
+- Top customers by MRR
 
 #### 5.6 System Activity Logs Page
 
+**Implementation Approach:** Use Generic Admin Table System
+
 **Files to create:**
 
-- `app/(admin)/admin/activity/page.tsx`
-- `components/admin/activity/activity-log-table.component.tsx`
-- `components/admin/activity/activity-filters.component.tsx`
+- `app/(admin)/admin/activity/page.tsx` - Main activity logs page with server-side data
+- `components/admin/activity/activity-log-table.config.tsx` - **Table configuration** for activity logs
+- `components/admin/activity/activity-log-table.component.tsx` - Activity table using generic wrapper
+- `components/admin/activity/activity-details-dialog.component.tsx` - Detailed view of log entry
+- `lib/db/queries/admin-activity-logs.query.ts` - Activity log queries with advanced filtering
+- `lib/types/activity/activity-log-filters.type.ts` - Type definitions
+- `app/api/admin/activity/route.ts` - API endpoint for activity log data
+- `app/api/admin/activity/export/route.ts` - CSV export endpoint
 
-- Pull data form the backend to display it on the new view
+**Generic Table Integration:**
+
+Use the generic admin table system to display activity logs with:
+
+**Table Columns:**
+
+- Timestamp (with relative time display)
+- User (name, email, avatar)
+- Action type (with icon and color-coded badge)
+- Description (formatted based on action type)
+- IP Address
+- User Agent (browser/device)
+- Status (success/failure)
+
+**Filter Definitions:**
+
+```typescript
+// components/admin/activity/activity-log-table.config.tsx
+import { FilterFieldType } from '@/lib/types/table';
+
+export type ActivityLogTableFilters = {
+  search?: string; // Search user email or action
+  userId?: string;
+  action?: string; // Filter by action type
+  startDate?: string; // ISO date string
+  endDate?: string; // ISO date string
+  status?: 'success' | 'failure';
+  limit?: number;
+  offset?: number;
+};
+
+export const activityLogTableConfig: TableConfig<
+  ActivityLogTableData,
+  ActivityLogTableFilters
+> = {
+  tableId: 'activity-logs',
+  apiEndpoint: '/api/admin/activity',
+
+  columns: [
+    {
+      accessorKey: 'timestamp',
+      header: 'Time',
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">
+            {format(row.original.timestamp, 'MMM d, HH:mm:ss')}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {formatDistanceToNow(row.original.timestamp, { addSuffix: true })}
+          </div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'user',
+      header: 'User',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={row.original.user.avatar} />
+            <AvatarFallback>{row.original.user.initials}</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-medium">{row.original.user.name}</div>
+            <div className="text-sm text-muted-foreground">
+              {row.original.user.email}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'action',
+      header: 'Action',
+      cell: ({ row }) => (
+        <Badge variant={getActionBadgeVariant(row.original.action)}>
+          {formatActionLabel(row.original.action)}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'description',
+      header: 'Description',
+    },
+    {
+      accessorKey: 'ipAddress',
+      header: 'IP Address',
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">
+          {row.original.ipAddress || '—'}
+        </span>
+      ),
+    },
+  ],
+
+  filters: [
+    {
+      key: 'search',
+      type: FilterFieldType.SEARCH,
+      placeholder: 'Search by user or action...',
+      debounceMs: 300,
+      formatBadgeLabel: (value) => `Search: ${value}`,
+    },
+    {
+      key: 'action',
+      type: FilterFieldType.SELECT,
+      placeholder: 'All Actions',
+      options: [
+        { label: 'User Login', value: 'user.login' },
+        { label: 'User Logout', value: 'user.logout' },
+        { label: 'User Created', value: 'user.created' },
+        { label: 'Organization Created', value: 'organization.created' },
+        { label: 'Subscription Created', value: 'subscription.created' },
+        { label: 'Subscription Canceled', value: 'subscription.canceled' },
+        { label: 'Admin Role Updated', value: 'admin.user.role_updated' },
+        { label: 'Admin User Banned', value: 'admin.user.banned' },
+      ],
+      formatBadgeLabel: (value) => `Action: ${formatActionLabel(value)}`,
+    },
+    {
+      key: 'status',
+      type: FilterFieldType.SELECT,
+      placeholder: 'All Statuses',
+      options: [
+        { label: 'Success', value: 'success' },
+        { label: 'Failure', value: 'failure' },
+      ],
+      formatBadgeLabel: (value) => `Status: ${value}`,
+    },
+    {
+      key: 'startDate',
+      type: FilterFieldType.DATE,
+      label: 'Start Date',
+      placeholder: 'Select start date',
+    },
+    {
+      key: 'endDate',
+      type: FilterFieldType.DATE,
+      label: 'End Date',
+      placeholder: 'Select end date',
+    },
+  ],
+
+  actions: [
+    {
+      id: 'view-details',
+      label: 'View Details',
+      icon: Eye,
+      onClick: (row) => {
+        // Open dialog with full log entry details including metadata
+      },
+    },
+  ],
+
+  pagination: {
+    defaultLimit: 100,
+    pageSizeOptions: [50, 100, 250, 500],
+    showPageSizeSelector: true,
+  },
+
+  emptyState: {
+    icon: Activity,
+    title: 'No activity logs found',
+    description: 'Try adjusting your filters or date range',
+  },
+};
+```
+
+**Data Fetching:**
+
+- Query `activity_logs` table with filters
+- Join with `user` table for user details
+- Filter by date range (optimized with index on timestamp)
+- Server-side pagination for large datasets
+- Support CSV export for audit reports
+
+**Page Structure:**
+
+```typescript
+// app/(admin)/admin/activity/page.tsx
+import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { getActivityLogs } from '@/lib/db/queries/admin-activity-logs.query';
+import { ActivityLogTable } from '@/components/admin/activity/activity-log-table.component';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+
+export default async function ActivityLogsPage({ searchParams }) {
+  await requireSuperAdminContext();
+
+  const filters = parseActivityFiltersFromSearchParams(searchParams);
+  const initialData = await getActivityLogs(filters);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">System Activity Logs</h1>
+          <p className="text-muted-foreground mt-1">
+            Monitor all system activities and user actions
+          </p>
+        </div>
+
+        <Button variant="outline" asChild>
+          <a href="/api/admin/activity/export" download>
+            <Download className="h-4 w-4 mr-2" />
+            Export to CSV
+          </a>
+        </Button>
+      </div>
+
+      {/* Activity Log Table using generic system */}
+      <ActivityLogTable
+        initialData={initialData}
+        initialFilters={filters}
+      />
+    </div>
+  );
+}
+```
+
+**Additional Features:**
+
+- Real-time log updates (optional with polling or WebSocket)
+- Export logs to CSV with filters applied
+- View full log entry details in dialog
+- Filter by date range with date picker
+- Group logs by action type
+- Highlight suspicious activities (multiple failed logins, etc.)
+
+**Database Optimization:**
+
+Ensure proper indexes exist for performance:
+
+```sql
+-- Already defined in plan, but emphasize for activity logs
+CREATE INDEX idx_activity_timestamp_desc ON activity_logs(timestamp DESC);
+CREATE INDEX idx_activity_user_id ON activity_logs(user_id);
+CREATE INDEX idx_activity_action ON activity_logs(action);
+CREATE INDEX idx_activity_timestamp_range ON activity_logs(timestamp) WHERE timestamp >= NOW() - INTERVAL '90 days';
+```
 
 ### Phase 6: Admin Server Actions (Days 9-10)
 
@@ -2025,6 +2443,393 @@ Phase 1 (Better Auth + Schema) → Phase 2 (Auth Wrappers) → Phase 3 (Queries)
 13. ✅ Code review and QA
 14. ✅ Merge and deploy
 
+## Generic Admin Table System Reference
+
+### Overview
+
+The generic admin table system is a reusable, type-safe table framework built for the admin panel. It eliminates code duplication and provides a consistent UX across all admin tables.
+
+**Implementation Plan:** `implementation-plans/2025-10-05-generic-admin-table-system-implementation-plan.md`
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  Generic Admin Table System                      │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  Table Configuration (*.config.tsx)                        │ │
+│  │  • TableConfig<TData, TFilters> type                       │ │
+│  │  • Column definitions with custom cell renderers           │ │
+│  │  • Filter definitions with FilterFieldType enum            │ │
+│  │  • Action definitions with dynamic variants                │ │
+│  │  • Pagination config                                       │ │
+│  │  • Empty state config                                      │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                              ↓                                   │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  AdminTableWrapper Component                               │ │
+│  │  • State management (filters, data, loading)               │ │
+│  │  • URL synchronization with useTableUrlSync hook           │ │
+│  │  • Client-side data fetching with pagination               │ │
+│  │  • Toast notifications for errors                          │ │
+│  │  • Automatic filter reset on offset change                 │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                              ↓                                   │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  AdminTable Component                                      │ │
+│  │  • TanStack Table v8 integration                           │ │
+│  │  • Sortable columns                                        │ │
+│  │  • Row actions dropdown menu                               │ │
+│  │  • Loading skeletons                                       │ │
+│  │  • Empty state display                                     │ │
+│  │  • Accessibility (ARIA labels, screen readers)             │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                              ↓                                   │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  AdminTableFilters Component                               │ │
+│  │  • Search input with debounce (300ms)                      │ │
+│  │  • Select dropdowns for categorical filters                │ │
+│  │  • Boolean toggles for yes/no filters                      │ │
+│  │  • Date pickers for date range filters                     │ │
+│  │  • Active filter badges with clear buttons                 │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Core Files
+
+**Type Definitions:**
+
+- `lib/types/table/table-config.type.ts` - Main configuration type
+- `lib/types/table/column-definition.type.ts` - Column configuration
+- `lib/types/table/filter-definition.type.ts` - Filter configuration
+- `lib/types/table/filter-field-type.enum.ts` - Filter type enum (SEARCH, SELECT, BOOLEAN, DATE)
+- `lib/types/table/action-definition.type.ts` - Action button configuration with dynamic variants
+- `lib/types/table/pagination-config.type.ts` - Pagination settings
+- `lib/types/table/table-data-response.type.ts` - API response structure
+
+**Generic Components:**
+
+- `components/admin/generic/admin-table-wrapper.component.tsx` - State management wrapper
+- `components/admin/generic/admin-table.component.tsx` - Table rendering with TanStack Table
+- `components/admin/generic/admin-table-filters.component.tsx` - Filter UI components
+
+**Custom Hooks:**
+
+- `lib/hooks/table/use-table-url-sync.hook.ts` - Sync filters with URL parameters
+- `lib/hooks/table/use-debounced-callback.hook.ts` - Debounce callbacks with proper cleanup
+
+### Usage Pattern
+
+#### 1. Create Table Configuration File
+
+```typescript
+// components/admin/[feature]/[feature]-table.config.tsx
+import { FilterFieldType } from '@/lib/types/table';
+import type { TableConfig } from '@/lib/types/table';
+
+export type MyTableData = {
+  id: string;
+  name: string;
+  // ... other fields
+};
+
+export type MyTableFilters = {
+  search?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+};
+
+export const myTableConfig: TableConfig<MyTableData, MyTableFilters> = {
+  tableId: 'my-table',
+  apiEndpoint: '/api/admin/my-endpoint',
+
+  columns: [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: ({ row }) => <span>{row.original.name}</span>,
+    },
+    // ... more columns
+  ],
+
+  filters: [
+    {
+      key: 'search',
+      type: FilterFieldType.SEARCH,
+      placeholder: 'Search...',
+      debounceMs: 300,
+      formatBadgeLabel: (value) => `Search: ${value}`,
+    },
+    {
+      key: 'status',
+      type: FilterFieldType.SELECT,
+      placeholder: 'All Statuses',
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Inactive', value: 'inactive' },
+      ],
+      formatBadgeLabel: (value) => `Status: ${value}`,
+    },
+  ],
+
+  actions: [
+    {
+      id: 'view',
+      label: 'View Details',
+      icon: Eye,
+      onClick: (row) => console.log(row.id),
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: Trash2,
+      variant: 'destructive',
+      onClick: async (row) => {
+        // Handle delete
+      },
+    },
+  ],
+
+  pagination: {
+    defaultLimit: 50,
+    pageSizeOptions: [10, 25, 50, 100],
+    showPageSizeSelector: true,
+  },
+
+  emptyState: {
+    icon: Building2,
+    title: 'No items found',
+    description: 'Try adjusting your filters',
+  },
+};
+```
+
+#### 2. Create Wrapper Component
+
+```typescript
+// components/admin/[feature]/[feature]-table.component.tsx
+'use client';
+
+import { useState } from 'react';
+import { AdminTableWrapper } from '@/components/admin/generic/admin-table-wrapper.component';
+import { myTableConfig, type MyTableData, type MyTableFilters } from './my-table.config';
+import type { TableDataResponse } from '@/lib/types/table';
+
+type MyTableProps = {
+  initialData: TableDataResponse<MyTableData>;
+  initialFilters: MyTableFilters;
+};
+
+export function MyTable({ initialData, initialFilters }: MyTableProps) {
+  // Add any custom state or handlers here
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Optionally enhance config with custom handlers
+  const configWithHandlers = {
+    ...myTableConfig,
+    actions: myTableConfig.actions?.map((action) => {
+      if (action.id === 'view') {
+        return {
+          ...action,
+          onClick: (row: MyTableData) => setSelectedId(row.id),
+        };
+      }
+      return action;
+    }),
+  };
+
+  return (
+    <>
+      <AdminTableWrapper
+        config={configWithHandlers}
+        initialData={initialData}
+        initialFilters={initialFilters}
+      />
+
+      {/* Add dialogs or modals here */}
+      {selectedId && <MyDetailsDialog id={selectedId} onClose={() => setSelectedId(null)} />}
+    </>
+  );
+}
+```
+
+#### 3. Create Server-Side Page
+
+```typescript
+// app/(admin)/admin/[feature]/page.tsx
+import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { getMyTableData } from '@/lib/db/queries/my-query';
+import { MyTable } from '@/components/admin/[feature]/my-table.component';
+
+type PageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function MyPage({ searchParams }: PageProps) {
+  await requireSuperAdminContext();
+
+  const params = await searchParams;
+  const filters = {
+    search: typeof params.search === 'string' ? params.search : undefined,
+    status: typeof params.status === 'string' ? params.status : undefined,
+    limit: params.limit ? parseInt(params.limit as string) : 50,
+    offset: params.offset ? parseInt(params.offset as string) : 0,
+  };
+
+  const initialData = await getMyTableData(filters);
+
+  return (
+    <div className="space-y-6">
+      <h1>My Admin Page</h1>
+      <MyTable initialData={initialData} initialFilters={filters} />
+    </div>
+  );
+}
+```
+
+#### 4. Create API Route
+
+```typescript
+// app/api/admin/my-endpoint/route.ts
+import { NextResponse } from 'next/server';
+import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
+import { getMyTableData } from '@/lib/db/queries/my-query';
+
+export async function GET(request: Request) {
+  try {
+    await requireSuperAdminContext();
+
+    const { searchParams } = new URL(request.url);
+    const filters = {
+      search: searchParams.get('search') ?? undefined,
+      status: searchParams.get('status') ?? undefined,
+      limit: parseInt(searchParams.get('limit') ?? '50'),
+      offset: parseInt(searchParams.get('offset') ?? '0'),
+    };
+
+    const data = await getMyTableData(filters);
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to load data' }, { status: 500 });
+  }
+}
+```
+
+### Key Features
+
+**Type Safety:**
+
+- Full TypeScript generics throughout (`TData`, `TFilters`)
+- Zod schemas for runtime validation
+- Type inference from table configuration
+
+**Performance:**
+
+- Debounced search input (300ms)
+- Memoized columns to prevent re-renders
+- Server-side pagination
+- URL synchronization for shareable links
+
+**Accessibility:**
+
+- ARIA labels on interactive elements
+- Screen reader announcements for loading states
+- Keyboard navigation support
+- Semantic HTML
+
+**User Experience:**
+
+- Toast notifications for errors
+- Loading skeletons during fetches
+- Active filter badges with clear buttons
+- Empty state with helpful messaging
+- Responsive design
+
+**Developer Experience:**
+
+- Minimal boilerplate
+- Consistent patterns across tables
+- Easy to extend with custom handlers
+- Clear separation of concerns
+- JSDoc comments throughout
+
+### Filter Types
+
+**FilterFieldType.SEARCH:**
+
+- Text input with debounce
+- Searches across multiple fields
+- Clear button to reset
+
+**FilterFieldType.SELECT:**
+
+- Dropdown with predefined options
+- Supports single selection
+- Shows selected value in badge
+
+**FilterFieldType.BOOLEAN:**
+
+- Toggle between true/false
+- Useful for yes/no filters
+- Shows state in badge
+
+**FilterFieldType.DATE:**
+
+- Date picker for date ranges
+- startDate and endDate filters
+- ISO string format
+
+### Action Variants
+
+**Static Variants:**
+
+```typescript
+{
+  id: 'delete',
+  variant: 'destructive', // Always destructive
+}
+```
+
+**Dynamic Variants:**
+
+```typescript
+{
+  id: 'ban-user',
+  variant: (row) => (row.banned ? 'success' : 'destructive'),
+  label: (row) => (row.banned ? 'Unban User' : 'Ban User'),
+}
+```
+
+### Best Practices
+
+1. **Always use `.config.tsx` suffix** for table configuration files
+2. **Import FilterFieldType enum** instead of type casting strings
+3. **Define types for TData and TFilters** explicitly
+4. **Use formatBadgeLabel** to provide clear filter feedback
+5. **Add JSDoc comments** to table configurations
+6. **Implement server-side filtering** in query functions
+7. **Return TableDataResponse<TData>** from API routes
+8. **Handle errors with toast notifications**
+9. **Use async actions** for delete/update operations
+10. **Add loading states** during data mutations
+
+### Examples in Codebase
+
+- **User Management:** `components/admin/users/user-table.config.tsx`
+- **Organization Management:** `components/admin/organizations/organization-table.config.tsx`
+
+Both examples demonstrate:
+
+- Complete table configuration
+- Multiple filter types
+- Dynamic action variants
+- Custom cell renderers
+- Dialog integration
+- Server action handling
+
 ## References
 
 ### Official Documentation
@@ -2047,6 +2852,7 @@ Phase 1 (Better Auth + Schema) → Phase 2 (Auth Wrappers) → Phase 3 (Queries)
 
 - `docs/environment-configuration.md` - Environment setup
 - `CLAUDE.md` - Development standards and conventions
+- `implementation-plans/2025-10-05-generic-admin-table-system-implementation-plan.md` - Generic table system
 
 ## Conclusion
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
 import { listAllUsers } from '@/lib/db/queries/admin-user.query';
 import logger from '@/lib/logger/logger.service';
+import { TableDataResponse, UserTableData } from '@/lib/types/table';
 
 /**
  * GET /api/admin/users
@@ -53,7 +54,15 @@ export async function GET(request: Request) {
       offset,
     });
 
-    return NextResponse.json(result);
+    // Convert to TableDataResponse format expected by the client
+    const tableResponse: TableDataResponse<UserTableData> = {
+      data: result.users,
+      total: result.total,
+      limit: result.limit,
+      offset: result.offset,
+    };
+
+    return NextResponse.json(tableResponse);
   } catch (error) {
     logger.error('[api/admin/users] Failed to load users', { error });
 

@@ -64,16 +64,24 @@ export async function GET(request: Request) {
       offset,
     });
 
+    // Convert to TableDataResponse format expected by the client
+    const tableResponse = {
+      data: result.organizations,
+      total: result.total,
+      limit: result.limit,
+      offset: result.offset,
+    };
+
     // Optionally include subscription analytics
     if (includeAnalytics) {
       const analytics = await getSubscriptionAnalytics();
       return NextResponse.json({
-        ...result,
+        ...tableResponse,
         analytics,
       });
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(tableResponse);
   } catch (error) {
     logger.error('[api/admin/organizations] Failed to load organizations', {
       error,

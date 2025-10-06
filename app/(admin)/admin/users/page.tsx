@@ -1,6 +1,6 @@
 import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
 import { listAllUsers } from '@/lib/db/queries/admin-user.query';
-import { UserTableWrapper } from '@/components/admin/users/user-table-wrapper.component';
+import { UserTable } from '@/components/admin/users/user-table.component';
 
 /**
  * Admin user management page.
@@ -31,7 +31,7 @@ export default async function AdminUsersPage({
   // Fetch users data
   const usersData = await listAllUsers(filters);
 
-  // Convert to the format expected by the client component
+  // Convert to the format expected by the generic table (TableDataResponse)
   const tableData = usersData.users.map((user) => ({
     id: user.id,
     name: user.name,
@@ -45,7 +45,7 @@ export default async function AdminUsersPage({
   }));
 
   const initialData = {
-    users: tableData,
+    data: tableData,
     total: usersData.total,
     limit: filters.limit,
     offset: filters.offset,
@@ -60,7 +60,7 @@ export default async function AdminUsersPage({
         </p>
       </div>
 
-      <UserTableWrapper initialData={initialData} initialFilters={filters} />
+      <UserTable initialData={initialData} initialFilters={filters} />
     </div>
   );
 }

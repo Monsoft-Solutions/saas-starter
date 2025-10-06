@@ -3,7 +3,7 @@ import {
   listAllOrganizations,
   getOrganizationStatistics,
 } from '@/lib/db/queries/admin-organization.query';
-import { OrganizationTableClient } from '@/components/admin/organizations/organization-table-client.component';
+import { OrganizationTable } from '@/components/admin/organizations/organization-table.component';
 import { Building2, Users, CreditCard, TrendingUp } from 'lucide-react';
 import {
   Card,
@@ -51,6 +51,14 @@ export default async function AdminOrganizationsPage({
     listAllOrganizations(filters),
     getOrganizationStatistics(),
   ]);
+
+  // Convert to the format expected by the generic table (TableDataResponse)
+  const initialData = {
+    data: organizationsData.organizations,
+    total: organizationsData.total,
+    limit: organizationsData.limit,
+    offset: organizationsData.offset,
+  };
 
   return (
     <div className="space-y-6">
@@ -145,8 +153,8 @@ export default async function AdminOrganizationsPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <OrganizationTableClient
-            initialData={organizationsData}
+          <OrganizationTable
+            initialData={initialData}
             initialFilters={filters}
           />
         </CardContent>
