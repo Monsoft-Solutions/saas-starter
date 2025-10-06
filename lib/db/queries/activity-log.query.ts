@@ -27,7 +27,12 @@ export async function getActivityLogs() {
 export async function logActivity(
   userIdOrParams:
     | string
-    | { userId: string; action: string; metadata?: any; ipAddress?: string },
+    | {
+        userId: string;
+        action: string;
+        metadata?: Record<string, unknown>;
+        ipAddress?: string;
+      },
   type?: ActivityType,
   ipAddress?: string
 ) {

@@ -1,6 +1,7 @@
 import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
 import { getAdminStatistics } from '@/lib/db/queries/admin-statistics.query';
 import { MetricCard } from '@/components/admin/dashboard/metric-card.component';
+import { QuickActions } from '@/components/admin/dashboard/quick-actions.component';
 import { RecentActivity } from '@/components/admin/dashboard/recent-activity.component';
 import { UserGrowthChart } from '@/components/admin/dashboard/user-growth-chart.component';
 import { RevenueChart } from '@/components/admin/dashboard/revenue-chart.component';
@@ -84,6 +85,8 @@ export default async function AdminDashboardPage() {
               value={stats.trialOrganizations.toLocaleString()}
             />
           </div>
+
+          <QuickActions />
         </>
       ) : (
         <div className="rounded-lg border bg-card p-6">

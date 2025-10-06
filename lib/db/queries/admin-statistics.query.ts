@@ -4,7 +4,7 @@
  */
 import { db } from '../drizzle';
 import { adminStatistics, user, organization, activityLogs } from '../schemas';
-import { sql, gte, count, desc, and, isNotNull } from 'drizzle-orm';
+import { sql, gte, count, desc, and, isNotNull, lte } from 'drizzle-orm';
 import logger from '@/lib/logger/logger.service';
 
 /**
@@ -100,7 +100,7 @@ export async function calculateAdminStatistics() {
       .where(
         and(
           gte(user.createdAt, sixtyDaysAgo),
-          sql`${user.createdAt} < ${thirtyDaysAgo}`
+          lte(user.createdAt, thirtyDaysAgo)
         )
       );
 
