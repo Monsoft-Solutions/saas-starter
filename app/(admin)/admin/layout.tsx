@@ -16,13 +16,7 @@ export default async function AdminLayout({
   return (
     <>
       {/* Preload Geist font for better performance */}
-      <link
-        rel="preload"
-        href="/_next/static/media/geist-latin.woff2"
-        as="font"
-        type="font/woff2"
-        crossOrigin="anonymous"
-      />
+
       <AdminLayoutClient user={context.user}>{children}</AdminLayoutClient>
     </>
   );
