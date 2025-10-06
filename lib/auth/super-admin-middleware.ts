@@ -57,6 +57,8 @@ export function withSuperAdmin<T>(
 
       if (error instanceof SuperAdminRequiredError) {
         redirect('/app'); // Redirect non-admins to regular app
+
+        return undefined as unknown as T;
       }
 
       if (isStatefulCall && prevState) {
