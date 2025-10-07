@@ -325,3 +325,14 @@ export type ExtractHandlerOutput<T> =
   >
     ? z.infer<O>
     : never;
+
+/**
+ * Re-export route param handler utilities for convenience.
+ * For routes with dynamic parameters like /api/resource/[id].
+ */
+export {
+  createValidatedRouteParamHandler,
+  HandlerError,
+  type ValidatedRouteParamHandler,
+  type ValidatedRouteParamHandlerOptions,
+} from './validated-route-param-handler';

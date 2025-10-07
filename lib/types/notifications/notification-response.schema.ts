@@ -9,7 +9,7 @@ import { NOTIFICATION_PRIORITIES } from './notification-priority.constant';
  */
 export const notificationMetadataSchema = z
   .object({
-    actionUrl: z.string().url().optional(),
+    actionUrl: z.string().regex(new RegExp('^/.*$')).optional(),
     actionLabel: z.string().optional(),
     actorId: z.string().optional(),
     actorName: z.string().optional(),

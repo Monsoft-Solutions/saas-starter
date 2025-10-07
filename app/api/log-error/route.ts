@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server';
-import { createApiHandler } from '@/lib/server/api-handler';
-import { error } from '@/lib/http/response';
+import { createValidatedApiHandler } from '@/lib/server/validated-api-handler';
 import logger from '@/lib/logger/logger.service';
 import { clientErrorPayloadSchema } from '@/lib/types/logger/client-error-payload.schema';
+import { logErrorResponseSchema } from '@/lib/types/logger/log-error-response.schema';
 
 /**
  * Client Error Logging API Route
@@ -11,36 +10,17 @@ import { clientErrorPayloadSchema } from '@/lib/types/logger/client-error-payloa
  * This allows client-side errors to be captured in server logs without
  * bundling Winston in the client.
  *
- * Validates all incoming payloads with Zod to ensure type safety and prevent
- * abuse. Returns 400 for invalid payloads.
+ * Uses validated API handler with:
+ * - Input validation: Client error payload schema
+ * - Output validation: Log error response schema
+ * - No authentication required (public endpoint)
  */
 
-export const POST = createApiHandler(
-  async ({ request }: { request: NextRequest }) => {
-    const rawPayload = await request.json();
-
-    // Validate payload with Zod schema
-    const parseResult = clientErrorPayloadSchema.safeParse(rawPayload);
-
-    if (!parseResult.success) {
-      const validationErrors = parseResult.error.errors
-        .map((err) => `${err.path.join('.')}: ${err.message}`)
-        .join('; ');
-
-      logger.warn('Invalid client error payload received', {
-        meta: {
-          validationErrors: parseResult.error.errors,
-          receivedPayload: rawPayload,
-        },
-      });
-
-      return error('Invalid payload', {
-        status: 400,
-        details: validationErrors,
-      });
-    }
-
-    const payload = parseResult.data;
+export const POST = createValidatedApiHandler(
+  clientErrorPayloadSchema,
+  logErrorResponseSchema,
+  async ({ data }) => {
+    const payload = data;
 
     // Log the error with structured metadata to avoid field collisions
     logger.error('Client-side error', {
@@ -58,6 +38,7 @@ export const POST = createApiHandler(
       },
     });
 
+    // Response is automatically validated against logErrorResponseSchema
     return { success: true };
   },
   {
