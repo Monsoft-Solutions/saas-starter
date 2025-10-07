@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import type { AdminPermission } from '@/lib/types/admin/permission.enum';
 
 /**
  * Row action definition for dropdown menus.
@@ -33,4 +34,10 @@ export type ActionDefinition<TData> = {
 
   /** Disable condition */
   disabled?: (row: TData) => boolean;
+
+  /** Required permission(s) to perform this action */
+  requiredPermission?: AdminPermission;
+
+  /** Tooltip to show when action is disabled due to insufficient permissions */
+  permissionTooltip?: string;
 };

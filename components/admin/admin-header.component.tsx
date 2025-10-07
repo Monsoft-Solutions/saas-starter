@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Shield, LogOut, User, ArrowLeft, Menu } from 'lucide-react';
+import { Shield, LogOut, User, ArrowLeft, Menu, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,8 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { authClient } from '@/lib/auth/auth-client';
+import { useAdminAccess } from '@/components/admin/shared/admin-access.provider';
 
 type AdminHeaderProps = {
   user: {
@@ -28,6 +30,8 @@ type AdminHeaderProps = {
  * Admin panel header with user dropdown and exit admin mode.
  */
 export function AdminHeader({ user, onMobileMenuToggle }: AdminHeaderProps) {
+  const { isSuperAdmin } = useAdminAccess();
+
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
@@ -64,9 +68,20 @@ export function AdminHeader({ user, onMobileMenuToggle }: AdminHeaderProps) {
                 <Shield className="h-4 w-4 text-primary-foreground" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold tracking-tight">
-                  Admin Panel
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold tracking-tight">
+                    Admin Panel
+                  </span>
+                  {!isSuperAdmin && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] gap-1 px-2 py-0.5"
+                    >
+                      <Eye className="h-2.5 w-2.5" />
+                      Read-Only
+                    </Badge>
+                  )}
+                </div>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   {user.role}
                 </span>

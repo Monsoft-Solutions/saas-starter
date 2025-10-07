@@ -1,4 +1,3 @@
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
 import {
   getSubscriptionTableData,
   getRevenueMetrics,
@@ -16,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { requireAdminContext } from '@/lib/auth/admin-context';
 
 /**
  * Admin subscription analytics page.
@@ -34,7 +34,7 @@ export default async function AdminAnalyticsPage({
     offset?: string;
   }>;
 }) {
-  await requireSuperAdminContext();
+  await requireAdminContext();
 
   const params = await searchParams;
 

@@ -1,6 +1,6 @@
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
 import { listAllUsers } from '@/lib/db/queries/admin-user.query';
 import { UserTable } from '@/components/admin/users/user-table.component';
+import { requireAdminContext } from '@/lib/auth/admin-context';
 
 /**
  * Admin user management page.
@@ -16,7 +16,7 @@ export default async function AdminUsersPage({
     offset?: string;
   }>;
 }) {
-  await requireSuperAdminContext();
+  await requireAdminContext();
 
   const params = await searchParams;
 

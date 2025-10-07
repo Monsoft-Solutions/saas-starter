@@ -162,6 +162,7 @@ export const organizationTableConfig: TableConfig<
       onClick: (row) => {
         console.log('View details:', row.id);
       },
+      requiredPermission: 'organizations:read',
     },
     {
       id: 'view-in-app',
@@ -171,6 +172,7 @@ export const organizationTableConfig: TableConfig<
         window.open(`/app?org=${row.slug || row.id}`, '_blank');
       },
       separator: true,
+      requiredPermission: 'organizations:read',
     },
     {
       id: 'delete',
@@ -180,6 +182,8 @@ export const organizationTableConfig: TableConfig<
       onClick: () => {
         // Handler will be overridden in the component
       },
+      requiredPermission: 'organizations:write',
+      permissionTooltip: 'Only super admins can delete organizations',
     },
   ],
 

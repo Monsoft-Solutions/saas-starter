@@ -1,4 +1,3 @@
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
 import { getAdminStatistics } from '@/lib/db/queries/admin-statistics.query';
 import { MetricCard } from '@/components/admin/dashboard/metric-card.component';
 import { QuickActions } from '@/components/admin/dashboard/quick-actions.component';
@@ -7,13 +6,14 @@ import { UserGrowthChart } from '@/components/admin/dashboard/user-growth-chart.
 import { RevenueChart } from '@/components/admin/dashboard/revenue-chart.component';
 import { Users, Building2, CreditCard, DollarSign } from 'lucide-react';
 import { Suspense } from 'react';
+import { requireAdminContext } from '@/lib/auth/admin-context';
 
 /**
  * Admin dashboard page.
  * Main landing page for the admin panel showing system metrics and overview.
  */
 export default async function AdminDashboardPage() {
-  const context = await requireSuperAdminContext();
+  const context = await requireAdminContext();
   const stats = await getAdminStatistics();
 
   return (

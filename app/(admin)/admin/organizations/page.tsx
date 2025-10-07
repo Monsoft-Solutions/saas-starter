@@ -1,4 +1,3 @@
-import { requireSuperAdminContext } from '@/lib/auth/super-admin-context';
 import {
   listAllOrganizations,
   getOrganizationStatistics,
@@ -12,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { requireAdminContext } from '@/lib/auth/admin-context';
 
 /**
  * Admin organizations management page.
@@ -28,7 +28,7 @@ export default async function AdminOrganizationsPage({
     offset?: string;
   }>;
 }) {
-  await requireSuperAdminContext();
+  await requireAdminContext();
 
   const params = await searchParams;
 

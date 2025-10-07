@@ -26,8 +26,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { TablePagination } from '@/components/admin/shared/table-pagination.component';
 import type { TableConfig } from '@/lib/types/table';
+import { useAdminAccess } from '@/components/admin/shared/admin-access.provider';
 
 type AdminTableProps<TData> = {
   config: TableConfig<TData, unknown>;
@@ -46,6 +53,77 @@ type AdminTableProps<TData> = {
  *
  * @template TData - Shape of table row data
  */
+/**
+ * Action menu item component with permission awareness and tooltips.
+ */
+function ActionMenuItem<TData>({
+  action,
+  row,
+  index,
+  actionsLength,
+  hasPermission,
+}: {
+  action: NonNullable<TableConfig<TData, unknown>['actions']>[number];
+  row: TData;
+  index: number;
+  actionsLength: number;
+  hasPermission: boolean;
+}) {
+  const shouldShow = action.show ? action.show(row) : true;
+  const isDisabledByCondition = action.disabled ? action.disabled(row) : false;
+  const isDisabledByPermission = action.requiredPermission && !hasPermission;
+  const isDisabled = isDisabledByCondition || isDisabledByPermission;
+
+  const label =
+    typeof action.label === 'function' ? action.label(row) : action.label;
+  const variant =
+    typeof action.variant === 'function' ? action.variant(row) : action.variant;
+
+  if (!shouldShow) return null;
+
+  const menuItem = (
+    <DropdownMenuItem
+      key={action.id}
+      onClick={() => !isDisabled && action.onClick(row)}
+      disabled={isDisabled}
+      className={
+        variant === 'destructive'
+          ? 'text-destructive focus:text-destructive'
+          : variant === 'success'
+            ? 'text-success focus:text-success'
+            : ''
+      }
+    >
+      {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+      {label}
+    </DropdownMenuItem>
+  );
+
+  const itemWithSeparator =
+    action.separator && index < actionsLength - 1 ? (
+      <React.Fragment key={action.id}>
+        {menuItem}
+        <DropdownMenuSeparator />
+      </React.Fragment>
+    ) : (
+      menuItem
+    );
+
+  // Wrap in tooltip if disabled due to permission
+  if (isDisabledByPermission && action.permissionTooltip) {
+    return (
+      <Tooltip key={action.id}>
+        <TooltipTrigger asChild>{itemWithSeparator}</TooltipTrigger>
+        <TooltipContent>
+          <p>{action.permissionTooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return itemWithSeparator;
+}
+
 export function AdminTable<TData>({
   config,
   data,
@@ -57,6 +135,7 @@ export function AdminTable<TData>({
   onLimitChange,
 }: AdminTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const { permissions } = useAdminAccess();
 
   // Add actions column if actions are defined (memoized to prevent re-renders)
   const columns = useMemo(
@@ -67,78 +146,41 @@ export function AdminTable<TData>({
             {
               id: 'actions',
               cell: ({ row }: { row: { original: TData } }) => (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                      aria-label="Open actions menu"
-                    >
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    {config.actions?.map((action, index) => {
-                      const shouldShow = action.show
-                        ? action.show(row.original)
-                        : true;
-                      const isDisabled = action.disabled
-                        ? action.disabled(row.original)
-                        : false;
-                      const label =
-                        typeof action.label === 'function'
-                          ? action.label(row.original)
-                          : action.label;
-                      const variant =
-                        typeof action.variant === 'function'
-                          ? action.variant(row.original)
-                          : action.variant;
-
-                      if (!shouldShow) return null;
-
-                      const menuItem = (
-                        <DropdownMenuItem
+                <TooltipProvider>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        aria-label="Open actions menu"
+                      >
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      {config.actions?.map((action, index) => (
+                        <ActionMenuItem
                           key={action.id}
-                          onClick={() => action.onClick(row.original)}
-                          disabled={isDisabled}
-                          className={
-                            variant === 'destructive'
-                              ? 'text-destructive focus:text-destructive'
-                              : variant === 'success'
-                                ? 'text-success focus:text-success'
-                                : ''
+                          action={action}
+                          row={row.original}
+                          index={index}
+                          actionsLength={config.actions!.length}
+                          hasPermission={
+                            !action.requiredPermission ||
+                            permissions.includes(action.requiredPermission)
                           }
-                        >
-                          {action.icon && (
-                            <action.icon className="mr-2 h-4 w-4" />
-                          )}
-                          {label}
-                        </DropdownMenuItem>
-                      );
-
-                      if (
-                        action.separator &&
-                        index < config.actions!.length - 1
-                      ) {
-                        return (
-                          <React.Fragment key={action.id}>
-                            {menuItem}
-                            <DropdownMenuSeparator />
-                          </React.Fragment>
-                        );
-                      }
-
-                      return menuItem;
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                        />
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TooltipProvider>
               ),
             },
           ]
         : config.columns,
-    [config.actions, config.columns]
+    [config.actions, config.columns, permissions]
   );
 
   const table = useReactTable({

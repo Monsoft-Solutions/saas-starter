@@ -115,6 +115,7 @@ export const userTableConfig: TableConfig<UserTableData, UserTableFilters> = {
         // Will be implemented with dialog state management
         console.log('View details:', row.id);
       },
+      requiredPermission: 'users:read',
     },
     {
       id: 'update-role',
@@ -125,6 +126,8 @@ export const userTableConfig: TableConfig<UserTableData, UserTableFilters> = {
         console.log('Update role:', row.id);
       },
       separator: true,
+      requiredPermission: 'users:write',
+      permissionTooltip: 'Only super admins can update user roles',
     },
     {
       id: 'ban-user',
@@ -135,6 +138,8 @@ export const userTableConfig: TableConfig<UserTableData, UserTableFilters> = {
         // Will be implemented with dialog state management
         console.log('Ban/unban user:', row.id);
       },
+      requiredPermission: 'users:write',
+      permissionTooltip: 'Only super admins can ban/unban users',
     },
   ],
 
