@@ -7,6 +7,7 @@ import { organization } from '@/lib/db/schemas/organization.table';
 import { eq } from 'drizzle-orm';
 import { withPermission } from '@/lib/auth/permission-middleware';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
+import { ActivityType } from '@/lib/types/activity-log';
 
 /**
  * Schema for validating delete organization parameters
@@ -34,7 +35,7 @@ export const deleteOrganization = withPermission(
 
       // Log admin action
       await logActivity({
-        action: 'admin.organizations.delete',
+        action: ActivityType.ADMIN_ORGANIZATION_DELETED,
         metadata: {
           organizationId: data.organizationId,
         },

@@ -151,7 +151,7 @@ export const signUp = validatedAction(
       redirect(`/accept-invitation/${activeInvitationId}`);
     }
 
-    await logActivity(createdUser.id, ActivityType.SIGN_UP);
+    await logActivity(ActivityType.SIGN_UP);
 
     const redirectTo = formData.get('redirect') as string | null;
     if (redirectTo === 'checkout') {
@@ -546,7 +546,7 @@ export const inviteOrganizationMember = validatedActionWithUser(
       return { error: 'Failed to send invitation. Please try again.' };
     }
 
-    await logActivity(currentUser.id, ActivityType.INVITE_ORGANIZATION_MEMBER);
+    await logActivity(ActivityType.INVITE_ORGANIZATION_MEMBER);
 
     // Check if the invited email belongs to an existing user
     const invitedUsers = await db

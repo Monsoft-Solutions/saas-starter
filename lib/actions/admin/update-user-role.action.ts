@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withPermission } from '@/lib/auth/permission-middleware';
 import { updateUserRole } from '@/lib/db/queries/admin-user.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
+import { ActivityType } from '@/lib/types/activity-log';
 import { USER_ROLES } from '@/lib/types/admin/user-role.enum';
 
 /**
@@ -34,7 +35,7 @@ export const updateUserRoleAction = withPermission(
 
       // Log admin action
       await logActivity({
-        action: 'admin.user.role_updated',
+        action: ActivityType.ADMIN_USER_ROLE_UPDATED,
         metadata: {
           targetUserId: data.userId,
           newRole: data.role,

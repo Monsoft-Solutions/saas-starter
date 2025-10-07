@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withPermission } from '@/lib/auth/permission-middleware';
 import { banUserById, unbanUserById } from '@/lib/db/queries/admin-user.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
+import { ActivityType } from '@/lib/types/activity-log';
 
 /**
  * Schema for banning a user
@@ -46,7 +47,7 @@ export const banUserAction = withPermission(
 
       // Log admin action
       await logActivity({
-        action: 'admin.user.banned',
+        action: ActivityType.ADMIN_USER_BANNED,
         metadata: {
           targetUserId: data.userId,
           reason: data.reason,
@@ -83,7 +84,7 @@ export const unbanUserAction = withPermission(
 
       // Log admin action
       await logActivity({
-        action: 'admin.user.unbanned',
+        action: ActivityType.ADMIN_USER_UNBANNED,
         metadata: {
           targetUserId: data.userId,
         },

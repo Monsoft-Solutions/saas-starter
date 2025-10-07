@@ -3,6 +3,7 @@
 import { withPermission } from '@/lib/auth/permission-middleware';
 import { refreshAdminStatistics } from '@/lib/db/queries/admin-statistics.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
+import { ActivityType } from '@/lib/types/activity-log';
 import logger from '@/lib/logger/logger.service';
 
 /**
@@ -18,7 +19,7 @@ export const refreshStatsAction = withPermission(
 
       // Log admin action
       await logActivity({
-        action: 'admin.stats.refreshed',
+        action: ActivityType.ADMIN_STATS_REFRESHED,
         metadata: {
           calculationDurationMs: stats.calculationDurationMs,
           totalUsers: stats.totalUsers,

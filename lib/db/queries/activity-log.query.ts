@@ -1,7 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
 import { db } from '../drizzle';
 import { activityLogs, NewActivityLog } from '../schemas';
-import { ActivityType } from '@/lib/types';
+import type { LogActivityInput } from '@/lib/types/activity-log';
 import { requireServerSession } from '@/lib/auth/server-context';
 import type { AdminRole } from '@/lib/auth/admin-context';
 import type { AdminPermission } from '@/lib/types/admin/permission.enum';
@@ -25,20 +25,10 @@ export async function getActivityLogs() {
 }
 
 /**
- * Log activity with flexible parameter support.
- * Supports both object and individual parameters for backward compatibility.
+ * Log activity with type-safe parameter support.
+ * Enforces usage of ActivityType enum for actions.
  */
-export async function logActivity(
-  userIdOrParams:
-    | string
-    | {
-        action: string;
-        metadata?: Record<string, unknown>;
-      },
-  type?: ActivityType
-) {
-  let action: string;
-
+export async function logActivity(params: LogActivityInput): Promise<void> {
   // Get IP address for logging
   const requestHeaders = await headers();
   const ip = requestHeaders.get('x-forwarded-for') ?? undefined;
@@ -46,24 +36,19 @@ export async function logActivity(
   const session = await requireServerSession();
   const userId = session.user.id;
 
-  // Handle object parameter
-  if (typeof userIdOrParams === 'object') {
-    action = userIdOrParams.action;
-  } else {
-    // Handle individual parameters
-    action = type || '';
-  }
-
   if (!userId) {
     return;
   }
+
+  // Extract action and metadata based on parameter type
+  const action = typeof params === 'string' ? params : params.action;
+  const metadata = typeof params === 'object' ? params.metadata : undefined;
 
   const newActivity: NewActivityLog = {
     userId,
     action,
     ipAddress: ip,
-    metadata:
-      typeof userIdOrParams === 'object' ? userIdOrParams.metadata : undefined,
+    metadata,
   };
 
   await db.insert(activityLogs).values(newActivity);

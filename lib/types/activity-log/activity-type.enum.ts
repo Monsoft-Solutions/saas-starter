@@ -18,4 +18,11 @@ export enum ActivityType {
   SUBSCRIPTION_UPDATED = 'subscription.updated',
   SUBSCRIPTION_DELETED = 'subscription.deleted',
   PAYMENT_FAILED = 'payment.failed',
+  // Admin activities
+  ADMIN_ACTIVITY_EXPORTED = 'admin.activity.exported',
+  ADMIN_USER_BANNED = 'admin.user.banned',
+  ADMIN_USER_UNBANNED = 'admin.user.unbanned',
+  ADMIN_USER_ROLE_UPDATED = 'admin.user.role.updated',
+  ADMIN_ORGANIZATION_DELETED = 'admin.organization.deleted',
+  ADMIN_STATS_REFRESHED = 'admin.stats.refreshed',
 }

@@ -9,6 +9,7 @@ import {
 import { updateUserRoleSchema } from '@/lib/types/admin/update-user-role.schema';
 import { banUserSchema } from '@/lib/types/admin/ban-user.schema';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
+import { ActivityType } from '@/lib/types/activity-log';
 import logger from '@/lib/logger/logger.service';
 import { z } from 'zod';
 
@@ -123,7 +124,7 @@ export async function PATCH(
 
         // Log admin action
         await logActivity({
-          action: 'admin.user.role_updated',
+          action: ActivityType.ADMIN_USER_ROLE_UPDATED,
           metadata: {
             targetUserId: validated.userId,
             newRole: validated.role,
@@ -159,7 +160,7 @@ export async function PATCH(
 
         // Log admin action
         await logActivity({
-          action: 'admin.user.banned',
+          action: ActivityType.ADMIN_USER_BANNED,
           metadata: {
             targetUserId: validated.userId,
             reason: validated.reason,
@@ -185,7 +186,7 @@ export async function PATCH(
 
         // Log admin action
         await logActivity({
-          action: 'admin.user.unbanned',
+          action: ActivityType.ADMIN_USER_UNBANNED,
           metadata: {
             targetUserId: userId,
           },

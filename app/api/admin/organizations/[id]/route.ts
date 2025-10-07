@@ -5,6 +5,7 @@ import {
   deleteOrganizationById,
 } from '@/lib/db/queries/admin-organization.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
+import { ActivityType } from '@/lib/types/activity-log';
 import logger from '@/lib/logger/logger.service';
 
 /**
@@ -110,7 +111,7 @@ export async function DELETE(
 
     // Log admin action
     await logActivity({
-      action: 'admin.organization.deleted',
+      action: ActivityType.ADMIN_ORGANIZATION_DELETED,
       metadata: {
         organizationId,
         organizationName: organization.name,

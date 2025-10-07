@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ensureApiPermissions } from '@/lib/auth/api-permission';
 import { exportActivityLogsToCSV } from '@/lib/db/queries/admin-activity-log.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
+import { ActivityType } from '@/lib/types/activity-log';
 import logger from '@/lib/logger/logger.service';
 
 /**
@@ -80,7 +81,7 @@ export async function GET(request: Request) {
     });
 
     // Log admin action
-    await logActivity('admin.activity.exported');
+    await logActivity(ActivityType.ADMIN_ACTIVITY_EXPORTED);
 
     logger.info('[api/admin/activity/export] Activity logs exported', {
       adminUserId: context.user.id,
