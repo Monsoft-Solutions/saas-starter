@@ -6,15 +6,12 @@ import { UserDetailsDialog } from './user-details-dialog.component';
 import { UpdateRoleDialog } from './update-role-dialog.component';
 import { BanUserDialog } from './ban-user-dialog.component';
 import { userTableConfig } from './user-table.config';
-import type {
-  TableDataResponse,
-  UserTableData,
-  UserTableFilters,
-} from '@/lib/types/table';
+import type { TableDataResponse } from '@/lib/types/table';
+import { AdminUserListRequest, UserTableData } from '@/lib/types/admin';
 
 type UserTableProps = {
   initialData: TableDataResponse<UserTableData>;
-  initialFilters: UserTableFilters;
+  initialFilters: AdminUserListRequest;
 };
 
 /**

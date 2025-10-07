@@ -20,7 +20,7 @@ import {
   unbanUserAction,
 } from '@/lib/actions/admin/ban-user.action';
 import { toast } from 'sonner';
-import { UserTableData } from '@/lib/types/table';
+import { UserTableData } from '@/lib/types/admin';
 
 /**
  * Ban user dialog component.

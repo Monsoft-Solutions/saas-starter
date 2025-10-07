@@ -5,16 +5,16 @@ import { toast } from 'sonner';
 import { AdminTableWrapper } from '@/components/admin/generic/admin-table-wrapper.component';
 import { OrganizationDetailsDialog } from './organization-details-dialog.component';
 import { organizationTableConfig } from './organization-table.config';
-import type {
-  TableDataResponse,
-  OrganizationTableData,
-  OrganizationTableFilters,
-} from '@/lib/types/table';
+import type { TableDataResponse } from '@/lib/types/table';
 import { deleteOrganization } from '@/lib/actions/admin/delete-organization.action';
+import {
+  AdminOrganizationListRequest,
+  OrganizationTableData,
+} from '@/lib/types/admin';
 
 type OrganizationTableProps = {
   initialData: TableDataResponse<OrganizationTableData>;
-  initialFilters: OrganizationTableFilters;
+  initialFilters: AdminOrganizationListRequest;
 };
 
 /**

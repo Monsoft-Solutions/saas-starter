@@ -492,16 +492,25 @@ lib/types/notifications/
    - [x] Create comprehensive test suite
    - See: `implementation-plans/api-and-action-validation/phase-2.3-migration-summary.md`
 
-4. **Add Query & Route Param Validation**
-   - [ ] Create query param validator helper
-   - [ ] Create route param validator helper
-   - [ ] Apply to paginated endpoints
+4. **Add Query & Route Param Validation** ✅ DONE (Phase 2.4)
+   - [x] Create query param validator helper (built into `createValidatedAuthenticatedHandler`)
+   - [x] Create route param validator helper (`createValidatedRouteParamHandler`)
+   - [x] Apply to paginated endpoints (all admin routes)
+   - [x] Create common pagination request schemas
+   - [x] Create admin-specific query parameter schemas
+   - [x] Migrate `/api/admin/users` route to validated handler
+   - [x] Migrate `/api/admin/organizations` route to validated handler
+   - [x] Migrate `/api/admin/activity` route to validated handler
+   - [x] Migrate `/api/admin/stats` route to validated handler
 
 **Deliverables:**
 
 - ✅ 4 API routes with full validation (notifications, log-error, user)
 - ✅ Response schemas for common patterns
 - ✅ Comprehensive test suite created
+- ✅ Query parameter validation for all admin routes
+- ✅ Common pagination and filtering schemas
+- ✅ `createValidatedAdminHandler` for admin-specific routes
 - ⚠️ Integration tests need proper test environment setup (8/13 passing)
 
 ---

@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { updateUserRoleAction } from '@/lib/actions/admin/update-user-role.action';
 import { toast } from 'sonner';
-import type { UserTableData } from '@/lib/types/table';
+import { UserTableData } from '@/lib/types/admin';
 
 /**
  * Update role dialog component.

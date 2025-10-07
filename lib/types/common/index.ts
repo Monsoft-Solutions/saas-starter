@@ -3,7 +3,15 @@
  * Centralized exports for clean imports.
  */
 
-// Pagination schemas
+// Pagination request schemas
+export {
+  paginationRequestSchema,
+  type PaginationRequest,
+  searchablePaginationRequestSchema,
+  type SearchablePaginationRequest,
+} from './pagination-request.schema';
+
+// Pagination response schemas
 export {
   paginationResponseSchema,
   type PaginationResponse,

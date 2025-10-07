@@ -1,6 +1,7 @@
 import { listAllUsers } from '@/lib/db/queries/admin-user.query';
 import { UserTable } from '@/components/admin/users/user-table.component';
 import { requireAdminContext } from '@/lib/auth/admin-context';
+import { UserRole } from '@/lib/types/admin';
 
 /**
  * Admin user management page.
@@ -23,7 +24,7 @@ export default async function AdminUsersPage({
   // Parse search parameters
   const filters = {
     search: params.search,
-    role: params.role,
+    role: params.role as UserRole,
     limit: parseInt(params.limit ?? '50', 10),
     offset: parseInt(params.offset ?? '0', 10),
   };

@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { requireAdminContext } from '@/lib/auth/admin-context';
+import { adminOrganizationListRequestSchema } from '@/lib/types/admin/admin-organization-list-request.schema';
 
 /**
  * Admin organizations management page.
@@ -32,19 +33,15 @@ export default async function AdminOrganizationsPage({
 
   const params = await searchParams;
 
-  // Parse search parameters
-  const filters = {
+  // Parse and validate search parameters using schema
+  const filters = adminOrganizationListRequestSchema.parse({
     search: params.search,
     subscriptionStatus: params.subscriptionStatus,
-    hasSubscription:
-      params.hasSubscription === 'true'
-        ? true
-        : params.hasSubscription === 'false'
-          ? false
-          : undefined,
-    limit: parseInt(params.limit ?? '10', 10),
-    offset: parseInt(params.offset ?? '0', 10),
-  };
+    hasSubscription: params.hasSubscription,
+    limit: params.limit,
+    offset: params.offset,
+    analytics: undefined, // Not used on this page
+  });
 
   // Fetch organizations and statistics
   const [organizationsData, statistics] = await Promise.all([
