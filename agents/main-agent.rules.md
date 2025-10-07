@@ -71,6 +71,12 @@ This document serves as the central registry for all AI agents available in this
 - **Summary**: Analyzes PR comments and code changes, categorizes issues by priority, and creates structured documentation with specific fix instructions.
 - **Location**: `/agents/pr-review-analyzer.md`
 
+### api-actions-expert
+
+- **Purpose**: Expert in building validated API routes and server actions with proper authentication, authorization, and error handling
+- **Summary**: Specializes in creating secure, validated endpoints using the validation system, implementing type-safe server actions, and ensuring proper error handling with standardized error codes.
+- **Location**: `/agents/api-actions-expert.md`
+
 ## Agent Deployment
 
 Agents in this project are deployed across three locations:
@@ -111,5 +117,5 @@ To access the app on protected routes (_/app/_) you should use the chrome-dev MC
 
 ---
 
-_Last updated: 2025-01-01_  
-_Total agents: 10 (including main-agent)_
+_Last updated: 2025-10-07_  
+_Total agents: 11 (including main-agent)_

@@ -116,6 +116,18 @@ pnpm dev
 - Use `validatedAction()` for form validation with Zod schemas
 - Use `validatedActionWithUser()` when user context is required
 - Use `withOrganization()` wrapper for organization-scoped operations
+- Use `createTypedAction()` for type-safe actions with output validation
+- Use `createTypedActionWithUser()` for authenticated typed actions
+
+**Validation:**
+
+- **Input Validation**: Use `validateRequest()`, `validateQueryParams()`, `validateRouteParams()`, or `validateFormData()` from `lib/validation/request-validator.util.ts`
+- **Output Validation**: Use `validatedOk()` or `validatedCreated()` from `lib/validation/validated-response.util.ts` for API responses
+- **Sanitization**: Use sanitization utilities (`sanitizedEmail`, `sanitizedString`, etc.) from `lib/validation/sanitization.util.ts`
+- **Error Codes**: Use standardized error codes from `lib/validation/error-codes.enum.ts`
+- **Schema Organization**: Follow naming convention `*-request.schema.ts`, `*-response.schema.ts`, `*-action.schema.ts` in `lib/types/[domain]/`
+- **Strict Schemas**: Use `.strict()` on response schemas to prevent data leakage
+- See [Validation Guide](./docs/validation/validation-guide.md) for complete documentation
 
 **Database Queries:**
 
@@ -195,6 +207,15 @@ Use Stripe test card: `4242 4242 4242 4242` with any future expiry and CVC.
 - Use Zod for all object validation and schema definitions
 - Maintain proper type inference throughout the stack
 
+**Validation Schemas:**
+
+- Organize validation schemas by domain in `/lib/types/[domain]/`
+- Use naming convention: `*-request.schema.ts` (API/form inputs), `*-response.schema.ts` (API outputs), `*-action.schema.ts` (server action states)
+- One schema per file for maintainability
+- Export both schema and inferred type: `export const schema = z.object({ ... }); export type Type = z.infer<typeof schema>;`
+- Use `.strict()` on response schemas to prevent accidental data exposure
+- See [Schema Organization Guide](./docs/validation/schema-organization.md) for complete patterns
+
 ### Development Principles
 
 **Code Quality:**
@@ -213,9 +234,15 @@ Use Stripe test card: `4242 4242 4242 4242` with any future expiry and CVC.
 
 **Validation & Safety:**
 
-- Use Zod schemas for all data validation
+- Use Zod schemas for all data validation (inputs AND outputs)
 - Type everything explicitly - no implicit any types
-- Validate inputs at boundaries (API routes, form submissions, etc.)
+- Validate inputs at boundaries (API routes, form submissions, query params, route params)
+- Validate outputs at boundaries (API responses) to prevent data leakage
+- Use sanitization utilities for user input (`sanitizedEmail`, `sanitizedString`, etc.)
+- Use standardized error codes from `ErrorCode` enum
+- Apply `.strict()` to response schemas to reject extra fields
+- Provide clear, user-friendly error messages in schemas
+- See [Validation Guide](./docs/validation/validation-guide.md) for implementation patterns
 
 ## Naming Conventions
 
@@ -226,7 +253,10 @@ Follow the pattern: `<file-name>.<file-type>.ts`
 **Database & Schema:**
 
 - `*.table.ts` - Drizzle table definitions
-- `*.schema.ts` - Zod validation schemas
+- `*.schema.ts` - Zod validation schemas (see specific patterns below)
+- `*-request.schema.ts` - Request/input validation schemas
+- `*-response.schema.ts` - Response/output validation schemas
+- `*-action.schema.ts` - Server action state schemas
 - `*.query.ts` - Database query functions
 - `*.migration.ts` - Database migrations
 
