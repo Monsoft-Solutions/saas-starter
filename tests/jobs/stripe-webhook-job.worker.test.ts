@@ -92,6 +92,7 @@ describe('Stripe Webhook Job Worker', () => {
       CacheKeys: {
         organizationSubscription: (id: number) => `org:${id}:subscription`,
         stripeCustomer: (customerId: string) => `stripe:customer:${customerId}`,
+        custom: (namespace: string, key: string) => `${namespace}:${key}`,
       },
     }));
 
