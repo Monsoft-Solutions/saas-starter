@@ -23,39 +23,139 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
 });
 
 async function createStripeProducts() {
-  logger.info('Creating Stripe products and prices...');
+  logger.info('Checking Stripe products and prices...');
 
-  const baseProduct = await stripe.products.create({
-    name: 'Base',
-    description: 'Base subscription plan',
-  });
+  // Check if products already exist
+  const existingProducts = await stripe.products.list({ limit: 100 });
+  const baseProductExists = existingProducts.data.find(
+    (p) => p.name === 'Base'
+  );
+  const plusProductExists = existingProducts.data.find(
+    (p) => p.name === 'Plus'
+  );
 
-  await stripe.prices.create({
-    product: baseProduct.id,
-    unit_amount: 800, // $8 in cents
-    currency: 'usd',
-    recurring: {
-      interval: 'month',
-      trial_period_days: 7,
-    },
-  });
+  if (baseProductExists && plusProductExists) {
+    logger.info('Stripe products already exist, skipping creation');
+    return;
+  }
 
-  const plusProduct = await stripe.products.create({
-    name: 'Plus',
-    description: 'Plus subscription plan',
-  });
+  // Create Base product if it doesn't exist
+  let baseProduct = baseProductExists;
+  if (!baseProductExists) {
+    logger.info('Creating Base product...');
+    baseProduct = await stripe.products.create({
+      name: 'Base',
+      description: 'Base subscription plan',
+    });
 
-  await stripe.prices.create({
-    product: plusProduct.id,
-    unit_amount: 1200, // $12 in cents
-    currency: 'usd',
-    recurring: {
-      interval: 'month',
-      trial_period_days: 7,
-    },
-  });
+    // Check if prices already exist for this product
+    const existingPrices = await stripe.prices.list({
+      product: baseProduct.id,
+      limit: 100,
+    });
+    const baseMonthlyPriceExists = existingPrices.data.find(
+      (p) =>
+        p.unit_amount === 800 &&
+        p.currency === 'usd' &&
+        p.recurring?.interval === 'month'
+    );
+    const baseAnnualPriceExists = existingPrices.data.find(
+      (p) =>
+        p.unit_amount === 9600 &&
+        p.currency === 'usd' &&
+        p.recurring?.interval === 'year'
+    );
 
-  logger.info('Stripe products and prices created successfully');
+    if (!baseMonthlyPriceExists) {
+      await stripe.prices.create({
+        product: baseProduct.id,
+        unit_amount: 800, // $8/month in cents
+        currency: 'usd',
+        recurring: {
+          interval: 'month',
+          trial_period_days: 7,
+        },
+      });
+      logger.info('Base monthly price created');
+    } else {
+      logger.info('Base monthly price already exists');
+    }
+
+    if (!baseAnnualPriceExists) {
+      await stripe.prices.create({
+        product: baseProduct.id,
+        unit_amount: 9600, // $96/year in cents (12 * $8)
+        currency: 'usd',
+        recurring: {
+          interval: 'year',
+          trial_period_days: 7,
+        },
+      });
+      logger.info('Base annual price created');
+    } else {
+      logger.info('Base annual price already exists');
+    }
+  }
+
+  // Create Plus product if it doesn't exist
+  let plusProduct = plusProductExists;
+  if (!plusProductExists) {
+    logger.info('Creating Plus product...');
+    plusProduct = await stripe.products.create({
+      name: 'Plus',
+      description: 'Plus subscription plan',
+    });
+
+    // Check if prices already exist for this product
+    const existingPrices = await stripe.prices.list({
+      product: plusProduct.id,
+      limit: 100,
+    });
+    const plusMonthlyPriceExists = existingPrices.data.find(
+      (p) =>
+        p.unit_amount === 1200 &&
+        p.currency === 'usd' &&
+        p.recurring?.interval === 'month'
+    );
+    const plusAnnualPriceExists = existingPrices.data.find(
+      (p) =>
+        p.unit_amount === 14400 &&
+        p.currency === 'usd' &&
+        p.recurring?.interval === 'year'
+    );
+
+    if (!plusMonthlyPriceExists) {
+      await stripe.prices.create({
+        product: plusProduct.id,
+        unit_amount: 1200, // $12/month in cents
+        currency: 'usd',
+        recurring: {
+          interval: 'month',
+          trial_period_days: 7,
+        },
+      });
+      logger.info('Plus monthly price created');
+    } else {
+      logger.info('Plus monthly price already exists');
+    }
+
+    if (!plusAnnualPriceExists) {
+      await stripe.prices.create({
+        product: plusProduct.id,
+        unit_amount: 14400, // $144/year in cents (12 * $12)
+        currency: 'usd',
+        recurring: {
+          interval: 'year',
+          trial_period_days: 7,
+        },
+      });
+      logger.info('Plus annual price created');
+    } else {
+      logger.info('Plus annual price already exists');
+    }
+  }
+
+  logger.info('Stripe products and prices check completed');
 }
 
 async function seed() {
@@ -96,28 +196,32 @@ async function seed() {
     logger.info('Initial user already exists, skipping');
   }
 
-  const [org] = await db
-    .insert(organization)
-    .values({
-      id: 'test-org-id',
-      name: 'Test Organization',
-      slug: 'test-organization',
-      createdAt: new Date(),
-    })
-    .onConflictDoNothing()
-    .returning();
-
-  if (org) {
-    await db
-      .insert(member)
+  // Create organization for test user
+  if (createdUser) {
+    const [testOrg] = await db
+      .insert(organization)
       .values({
-        id: 'test-member-id',
-        organizationId: org.id,
-        userId: createdUser?.id || 'test-user-id',
-        role: 'owner',
+        id: 'test-org-id',
+        name: 'Test Organization',
+        slug: 'test-organization',
         createdAt: new Date(),
       })
-      .onConflictDoNothing();
+      .onConflictDoNothing()
+      .returning();
+
+    if (testOrg) {
+      await db
+        .insert(member)
+        .values({
+          id: 'test-member-id',
+          organizationId: testOrg.id,
+          userId: createdUser.id,
+          role: 'owner',
+          createdAt: new Date(),
+        })
+        .onConflictDoNothing();
+      logger.info('Test organization created for test user');
+    }
   }
 
   // Create super-admin user
@@ -152,6 +256,32 @@ async function seed() {
       })
       .onConflictDoNothing();
 
+    // Create organization for super admin
+    const [adminOrg] = await db
+      .insert(organization)
+      .values({
+        id: 'admin-org-id',
+        name: 'Admin Organization',
+        slug: 'admin-organization',
+        createdAt: new Date(),
+      })
+      .onConflictDoNothing()
+      .returning();
+
+    if (adminOrg) {
+      await db
+        .insert(member)
+        .values({
+          id: 'admin-member-id',
+          organizationId: adminOrg.id,
+          userId: superAdminUser.id,
+          role: 'owner',
+          createdAt: new Date(),
+        })
+        .onConflictDoNothing();
+      logger.info('Admin organization created for super admin');
+    }
+
     logger.info('Super admin user created', {
       email: superAdminEmail,
       userId: superAdminUser.id,
@@ -167,7 +297,7 @@ async function seed() {
       totalUsers: 2, // test user + super admin
       activeUsersLast30Days: 0,
       newUsersLast30Days: 2,
-      totalOrganizations: 1,
+      totalOrganizations: 2, // test organization + admin organization
       organizationsWithSubscriptions: 0,
       totalMRR: 0,
       totalActiveSubscriptions: 0,
