@@ -5,17 +5,7 @@ import { withPermission } from '@/lib/auth/permission-middleware';
 import { updateUserRole } from '@/lib/db/queries/admin-user.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
 import { ActivityType } from '@/lib/types/activity-log';
-import { USER_ROLES } from '@/lib/types/admin/user-role.enum';
-
-/**
- * Schema for updating user role
- */
-const updateUserRoleSchema = z.object({
-  userId: z.string().min(1, 'User ID is required'),
-  role: z.enum(USER_ROLES, {
-    errorMap: () => ({ message: 'Invalid role' }),
-  }),
-});
+import { updateUserRoleSchema } from '@/lib/types/admin/update-user-role.schema';
 
 /**
  * Server action to update a user's role.

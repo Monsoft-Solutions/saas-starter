@@ -4,6 +4,7 @@ import {
   getAdminStatistics,
   refreshAdminStatistics,
 } from '@/lib/db/queries/admin-statistics.query';
+import { SuperAdminRequiredError } from '@/lib/auth/super-admin-context';
 import logger from '@/lib/logger/logger.service';
 
 /**
@@ -56,8 +57,11 @@ export async function GET(request: Request) {
 
     return NextResponse.json(stats);
   } catch (error) {
-    logger.error('[api/admin/stats] Failed to get statistics', { error });
+    if (error instanceof SuperAdminRequiredError) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
+    logger.error('[api/admin/stats] Failed to get statistics', { error });
     return NextResponse.json(
       { error: 'Failed to load statistics' },
       { status: 500 }

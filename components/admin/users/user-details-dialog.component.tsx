@@ -19,21 +19,7 @@ import {
   Building2,
   Ban,
 } from 'lucide-react';
-
-/**
- * User data type
- */
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: string | null;
-  emailVerified: boolean;
-  banned: boolean;
-  banReason: string | null;
-  banExpires: Date | null;
-  createdAt: Date;
-};
+import { UserTableData } from '@/lib/types/table';
 
 /**
  * User details dialog component.
@@ -44,7 +30,7 @@ export function UserDetailsDialog({
   open,
   onOpenChange,
 }: {
-  user: User;
+  user: UserTableData;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {

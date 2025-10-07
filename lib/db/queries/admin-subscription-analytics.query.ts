@@ -210,12 +210,26 @@ export async function getRevenueMetrics(): Promise<RevenueMetrics> {
 /**
  * Get plan distribution data for pie chart.
  * Shows count and MRR breakdown by plan.
+ * Now fetches real data from Stripe instead of using local database with hardcoded pricing.
  */
 export async function getPlanDistribution(): Promise<PlanDistribution[]> {
+  const { getPlanDistributionFromStripe } = await import(
+    '@/lib/payments/stripe'
+  );
+
+  // Fetch real data from Stripe
+  const stripeData = await getPlanDistributionFromStripe();
+
+  // If Stripe data is available, use it
+  if (stripeData.length > 0) {
+    return stripeData;
+  }
+
+  // Fallback to local database data if Stripe fails
   const { cacheService, CacheKeys } = await import('@/lib/cache');
 
   return cacheService.getOrSet(
-    CacheKeys.custom('admin', 'plan-distribution'),
+    CacheKeys.custom('admin', 'plan-distribution-fallback'),
     async () => {
       const [distribution] = await db
         .select({

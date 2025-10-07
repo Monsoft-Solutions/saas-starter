@@ -21,7 +21,7 @@
 
 ## Actionable Items
 
-### CRITICAL: Charts Display Sample Data Instead of Real Data
+### CRITICAL: Charts Display Sample Data Instead of Real Data (DONE)
 
 **File**: `app/(admin)/admin/page.tsx:102-111`
 **Issue**: UserGrowthChart and RevenueChart components are missing required data props, causing them to display sample/placeholder data with zero values instead of actual historical data
@@ -122,246 +122,7 @@ export default async function AdminRootLayout({
 
 **Guidelines**: Follow async/await patterns in server components; SWR fallbacks must be synchronous plain objects
 
-### CORRECTION: Next.js App Router searchParams Usage is Correct
-
-**File**: `app/(admin)/admin/users/page.tsx:9-29`
-**Issue**: Code Rabbit incorrectly identified the searchParams usage as wrong, but the current implementation is correct for Next.js 15
-
-**Current Code** (Correct):
-
-```typescript
-export default async function AdminUsersPage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    search?: string;
-    role?: string;
-    limit?: string;
-    offset?: string;
-  }>;
-}) {
-  await requireAdminContext();
-
-  const params = await searchParams;
-
-  // Parse search parameters
-  const filters = {
-    search: params.search,
-    role: params.role,
-    limit: parseInt(params.limit ?? '50', 10),
-    offset: parseInt(params.offset ?? '0', 10),
-  };
-```
-
-**Problem**: Code Rabbit incorrectly stated that searchParams should NOT be awaited in Next.js App Router server pages, but in Next.js 15, searchParams is a Promise that must be awaited
-**Solution**: The current implementation is correct and follows Next.js 15 App Router patterns
-**Code Rabbit's Incorrect Suggestion**:
-
-```typescript
-export default async function AdminUsersPage({
-  searchParams,
-}: {
-  searchParams: {
-    search?: string;
-    role?: string;
-    limit?: string;
-    offset?: string;
-  };
-}) {
-  await requireAdminContext();
-
-  // Parse search parameters
-  const filters = {
-    search: searchParams.search,
-    role: searchParams.role,
-    limit: parseInt(searchParams.limit ?? '50', 10),
-    offset: parseInt(searchParams.offset ?? '0', 10),
-  };
-```
-
-**Guidelines**: In Next.js 15 App Router server pages, searchParams is a Promise that must be awaited. This is a breaking change from Next.js 14 and earlier versions.
-
-### CRITICAL: Organization Delete Leaves Orphaned Records
-
-**File**: `lib/actions/admin/delete-organization.action.ts:32-34`
-**Issue**: Organization deletion doesn't handle cascading deletes for related records in job_execution and session tables
-
-**Current Code**:
-
-```typescript
-// Delete the organization
-await db.delete(organization).where(eq(organization.id, data.organizationId));
-```
-
-**Problem**: Foreign key constraints without CASCADE DELETE leave orphaned records in job_execution.organization_id and session.active_organization_id columns
-**Solution**: Add explicit deletion of dependent records before deleting the organization, or update schema to include CASCADE DELETE
-**Fixed Code**:
-
-```typescript
-// Delete dependent records first
-await db
-  .delete(jobExecution)
-  .where(eq(jobExecution.organizationId, data.organizationId));
-
-await db
-  .delete(session)
-  .where(eq(session.activeOrganizationId, data.organizationId));
-
-// Then delete the organization
-await db.delete(organization).where(eq(organization.id, data.organizationId));
-```
-
-**Guidelines**: Ensure referential integrity by either using CASCADE DELETE in schema or explicit cleanup in delete operations
-
-### MAJOR: Security - Exposed Credentials in Documentation
-
-**File**: `agents/main-agent.rules.md:106-111`
-**Issue**: Live-looking credentials are committed in documentation files, creating security risk
-
-**Current Code**:
-
-```markdown
-**Application Access (Local Dev Only)**
-
-- URL: `/sign-in`
-- Email: `admin@test.com`
-- Password: `admin123`
-```
-
-**Problem**: Exposing real-looking credentials in version control poses security risk and violates credential management best practices
-**Solution**: Replace with placeholder values and clear instructions for developers to obtain real credentials
-**Fixed Code**:
-
-```markdown
-**Application Access (Local Dev Only)**
-
-- URL: `/sign-in`
-- Email: `<dev-admin-email>`
-- Password: `<dev-admin-password>`
-
-Note: These are development-only placeholders. Provision real credentials via environment/secret management; never commit them.
-```
-
-**Guidelines**: Never commit real credentials; use environment variables or secret management systems for sensitive data
-
-### MAJOR: Missing Input Validation Causes NaN Database Queries
-
-**File**: `app/(admin)/admin/users/page.tsx:24-29`
-**Issue**: Pagination parameters are parsed with parseInt but not validated, allowing NaN values to be passed to database queries
-
-**Current Code**:
-
-```typescript
-// Parse search parameters
-const filters = {
-  search: params.search,
-  role: params.role,
-  limit: parseInt(params.limit ?? '50', 10),
-  offset: parseInt(params.offset ?? '0', 10),
-};
-```
-
-**Problem**: Invalid query parameters (non-numeric strings) result in NaN values being passed to database layer, potentially causing query failures
-**Solution**: Add validation to ensure parsed values are valid numbers and within acceptable ranges
-**Fixed Code**:
-
-```typescript
-// Parse search parameters
-const filters = {
-  search: params.search,
-  role: params.role,
-  limit: parseInt(params.limit ?? '50', 10),
-  offset: parseInt(params.offset ?? '0', 10),
-};
-
-// Validate parsed integers
-if (isNaN(filters.limit) || filters.limit < 1 || filters.limit > 100) {
-  filters.limit = 50; // Default to safe value
-}
-if (isNaN(filters.offset) || filters.offset < 0) {
-  filters.offset = 0; // Default to safe value
-}
-```
-
-**Guidelines**: Always validate user input before passing to database operations; provide safe defaults for invalid values
-
-### MAJOR: API Routes Not Using Zod for Parameter Validation
-
-**File**: `app/api/admin/users/route.ts:30-48`
-**Issue**: API route manually parses and validates query parameters instead of using Zod schemas as required by project guidelines
-
-**Current Code**:
-
-```typescript
-const search = searchParams.get('search') ?? undefined;
-const subscriptionStatus = searchParams.get('subscriptionStatus') ?? undefined;
-const hasSubscriptionParam = searchParams.get('hasSubscription');
-const hasSubscription =
-  hasSubscriptionParam !== null ? hasSubscriptionParam === 'true' : undefined;
-const limit = parseInt(searchParams.get('limit') ?? '50', 10);
-const offset = parseInt(searchParams.get('offset') ?? '0', 10);
-
-// Validate pagination parameters
-if (isNaN(limit) || limit < 1 || limit > 100) {
-  return NextResponse.json(
-    { error: 'Invalid limit parameter (must be between 1 and 100)' },
-    { status: 400 }
-  );
-}
-
-if (isNaN(offset) || offset < 0) {
-  return NextResponse.json(
-    { error: 'Invalid offset parameter (must be >= 0)' },
-    { status: 400 }
-  );
-}
-```
-
-**Problem**: Manual validation violates project standards requiring Zod schemas for all data validation in API routes
-**Solution**: Replace manual parsing and validation with a Zod schema
-**Fixed Code**:
-
-```typescript
-import { z } from 'zod';
-
-const querySchema = z.object({
-  search: z.string().optional(),
-  subscriptionStatus: z
-    .enum([
-      'active',
-      'trialing',
-      'canceled',
-      'past_due',
-      'incomplete',
-      'incomplete_expired',
-      'paused',
-      'unpaid',
-    ])
-    .optional(),
-  hasSubscription: z
-    .enum(['true', 'false'])
-    .optional()
-    .transform((val) => val === 'true'),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-  offset: z.coerce.number().int().min(0).default(0),
-});
-
-const parseResult = querySchema.safeParse(Object.fromEntries(searchParams));
-
-if (!parseResult.success) {
-  return NextResponse.json(
-    { error: 'Invalid query parameters', details: parseResult.error.format() },
-    { status: 400 }
-  );
-}
-
-const { search, subscriptionStatus, hasSubscription, limit, offset } =
-  parseResult.data;
-```
-
-**Guidelines**: Use Zod schemas for all data validation in API routes; prefer schema-based validation over manual parsing
-
-### MAJOR: Type Safety Violations Using 'any' Types
+### MAJOR: Type Safety Violations Using 'any' Types (DONE)
 
 **File**: `components/admin/analytics/plan-distribution-chart.component.tsx:45-62`
 **Issue**: CustomTooltip component uses 'any' type for parameters instead of proper Recharts types
@@ -418,7 +179,7 @@ function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
 
 **Guidelines**: Never use 'any' type; use proper TypeScript types and import types from external libraries
 
-### MAJOR: Code Duplication - Redefining User Type
+### MAJOR: Code Duplication - Redefining User Type (DONE)
 
 **File**: `components/admin/users/user-details-dialog.component.tsx:26-36`
 **Issue**: User type is redefined locally instead of importing from the centralized schema
@@ -452,7 +213,7 @@ import type { User } from '@/lib/db/schemas/user.table';
 
 **Guidelines**: All type definitions should be centralized in schema files; import and reuse types instead of redefining them
 
-### MAJOR: Using Hardcoded Colors Instead of Semantic Tokens
+### MAJOR: Using Hardcoded Colors Instead of Semantic Tokens (DONE)
 
 **File**: `components/admin/dashboard/metric-card.component.tsx:36-46`
 **Issue**: Hardcoded Tailwind color classes used instead of semantic design tokens
@@ -493,7 +254,7 @@ import type { User } from '@/lib/db/schemas/user.table';
 
 **Guidelines**: Use design system tokens for colors; ensure semantic tokens are defined in app/globals.css
 
-### MAJOR: Incorrect Error Handling - Returning 500 Instead of Auth Error Codes
+### MAJOR: Incorrect Error Handling - Returning 500 Instead of Auth Error Codes (DONE)
 
 **File**: `app/api/admin/stats/route.ts:43-50`
 **Issue**: API routes return generic 500 errors for authentication failures instead of proper HTTP status codes
@@ -527,7 +288,7 @@ import type { User } from '@/lib/db/schemas/user.table';
 
 **Guidelines**: Use proper HTTP status codes for different error types; allow clients to handle auth failures appropriately
 
-### MAJOR: Using console.error Instead of Logger Service
+### MAJOR: Using console.error Instead of Logger Service (DONE)
 
 **File**: `lib/actions/admin/delete-organization.action.ts:32`
 **Issue**: Direct console.error usage instead of project's structured logging service
@@ -563,7 +324,7 @@ import logger from '@/lib/logger/logger.service';
 
 **Guidelines**: Use centralized logger service for consistent log formatting and management
 
-### MAJOR: Import Schema Instead of Redefining UpdateUserRoleSchema
+### MAJOR: Import Schema Instead of Redefining UpdateUserRoleSchema (DONE)
 
 **File**: `app/actions/admin/update-user-role.action.ts:9-17`
 **Issue**: updateUserRoleSchema is redefined locally instead of importing the shared schema
@@ -592,7 +353,7 @@ import { updateUserRoleSchema } from '@/lib/types/admin/update-user-role.schema'
 
 **Guidelines**: Reuse centralized schemas instead of redefining them locally
 
-### MAJOR: Missing Required planDistribution Prop for RevenueChart
+### MAJOR: Missing Required planDistribution Prop for RevenueChart (DONE)
 
 **File**: `app/(admin)/admin/page.tsx:107-111`
 **Issue**: RevenueChart component missing required planDistribution prop, falling back to placeholder data
@@ -622,65 +383,7 @@ import { updateUserRoleSchema } from '@/lib/types/admin/update-user-role.schema'
 
 **Guidelines**: Ensure all required component props are provided with real data
 
-### MAJOR: Not Using Zod for Query Validation in Users API
-
-**File**: `app/api/admin/users/route.ts:30-48`
-**Issue**: Manual parsing and validation instead of Zod schema as required
-
-**Current Code**:
-
-```typescript
-const search = searchParams.get('search') ?? undefined;
-const role = searchParams.get('role') ?? undefined;
-const limit = parseInt(searchParams.get('limit') ?? '50', 10);
-const offset = parseInt(searchParams.get('offset') ?? '0', 10);
-
-// Validate pagination parameters
-if (isNaN(limit) || limit < 1 || limit > 100) {
-  return NextResponse.json(
-    { error: 'Invalid limit parameter (must be between 1 and 100)' },
-    { status: 400 }
-  );
-}
-
-if (isNaN(offset) || offset < 0) {
-  return NextResponse.json(
-    { error: 'Invalid offset parameter (must be >= 0)' },
-    { status: 400 }
-  );
-}
-```
-
-**Problem**: Manual validation violates API standards requiring Zod schemas
-**Solution**: Replace with Zod schema validation
-**Fixed Code**:
-
-```typescript
-import { z } from 'zod';
-
-const querySchema = z.object({
-  search: z.string().trim().min(1).max(200).optional(),
-  role: z.string().trim().min(1).max(50).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-  offset: z.coerce.number().int().min(0).default(0),
-});
-
-const parsed = querySchema.safeParse(
-  Object.fromEntries(searchParams.entries())
-);
-if (!parsed.success) {
-  return NextResponse.json(
-    { error: 'Invalid query', details: parsed.error.format() },
-    { status: 400 }
-  );
-}
-
-const { search, role, limit, offset } = parsed.data;
-```
-
-**Guidelines**: Use Zod schemas for all API parameter validation
-
-### MAJOR: Duplicate User Type Definition
+### MAJOR: Duplicate User Type Definition (DONE)
 
 **File**: `components/admin/users/update-role-dialog.component.tsx:29-34`
 **Issue**: User type redefined locally instead of imported from schema
@@ -709,7 +412,7 @@ import type { User } from '@/lib/db/schemas/user.table';
 
 **Guidelines**: Import types from centralized schema files instead of redefining them
 
-### MAJOR: Duplicate User Type in Ban Dialog
+### MAJOR: Duplicate User Type in Ban Dialog (DONE)
 
 **File**: `components/admin/users/ban-user-dialog.component.tsx:27-33`
 **Issue**: User type redefined instead of imported from schema
@@ -739,99 +442,7 @@ import type { User } from '@/lib/db/schemas/user.table';
 
 **Guidelines**: Maintain single source of truth for type definitions
 
-### MINOR: Invalid Tailwind Class Usage
-
-**File**: `components/ui/select.tsx:111-113`
-**Issue**: Using invalid 'outline-hidden' class instead of correct 'outline-none'
-
-**Current Code**:
-
-```typescript
-"focus:bg-accent focus:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
-```
-
-**Problem**: 'outline-hidden' is not a valid Tailwind class and will be ignored
-**Solution**: Use correct Tailwind utility class
-**Fixed Code**:
-
-```typescript
-"focus:bg-accent focus:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
-```
-
-**Guidelines**: Use valid Tailwind CSS class names
-
-### MINOR: Missing Error Handling in Async Query
-
-**File**: `components/admin/dashboard/recent-activity.component.tsx:14-16`
-**Issue**: Async query lacks error handling which could cause component crashes
-
-**Current Code**:
-
-```typescript
-export async function RecentActivity() {
-  const { logs } = await listAllActivityLogs({ limit: 5 });
-```
-
-**Problem**: Unhandled promise rejection could crash the component
-**Solution**: Add try/catch error handling
-**Fixed Code**:
-
-```typescript
-export async function RecentActivity() {
-  let logs;
-  try {
-    const result = await listAllActivityLogs({ limit: 5 });
-    logs = result.logs;
-  } catch (error) {
-    console.error('Failed to fetch activity logs:', error);
-    return (
-      <div className="rounded-lg border bg-card p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Activity className="h-5 w-5" />
-          <h2 className="text-lg font-semibold">Recent Activity</h2>
-        </div>
-        <p className="text-sm text-destructive">Failed to load activity logs</p>
-      </div>
-    );
-  }
-```
-
-**Guidelines**: Always handle async errors in server components
-
-### MINOR: Missing Security Attributes for External Links
-
-**File**: `components/admin/organizations/organization-details-dialog.component.tsx:188-192`
-**Issue**: window.open() call lacks security attributes for external navigation
-
-**Current Code**:
-
-```typescript
-const handleViewInApp = () => {
-  if (organization) {
-    window.open(`/app?org=${organization.slug}`, '_blank');
-  }
-};
-```
-
-**Problem**: Opened window can access the opener, creating security risk
-**Solution**: Add noopener and noreferrer security attributes
-**Fixed Code**:
-
-```typescript
-const handleViewInApp = () => {
-  if (organization) {
-    window.open(
-      `/app?org=${organization.slug}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
-  }
-};
-```
-
-**Guidelines**: Always use security attributes when opening external windows
-
-### MINOR: Type Safety Issues in Pie Chart Label
+### MINOR: Type Safety Issues in Pie Chart Label (DONE)
 
 **File**: `components/admin/dashboard/revenue-chart.component.tsx:116-118`
 **Issue**: Pie chart label callback uses 'any' type instead of proper typing

@@ -11,6 +11,16 @@ import {
 } from 'recharts';
 import type { PlanDistribution } from '@/lib/types/analytics/subscription-analytics.type';
 
+type CustomTooltipProps = {
+  active?: boolean;
+  payload?: Array<{
+    payload: PlanDistribution;
+    value: number;
+    name: string;
+  }>;
+  label?: string;
+};
+
 type PlanDistributionChartProps = {
   data: PlanDistribution[];
 };
@@ -42,7 +52,7 @@ function formatCurrency(value: number): string {
 /**
  * Custom tooltip component for the pie chart.
  */
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
@@ -97,8 +107,8 @@ export function PlanDistributionChart({ data }: PlanDistributionChartProps) {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ planName, percentage }: any) =>
-                `${planName} (${percentage.toFixed(0)}%)`
+              label={(entry: any) =>
+                `${entry.planName} (${entry.percentage.toFixed(0)}%)`
               }
               outerRadius={80}
               fill="#8884d8"

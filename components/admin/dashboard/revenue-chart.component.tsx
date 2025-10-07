@@ -16,6 +16,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  PieLabelRenderProps,
 } from 'recharts';
 import { DollarSign, TrendingUp } from 'lucide-react';
 
@@ -113,8 +114,8 @@ export function RevenueChart({
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={(entry: any) =>
-                  `${entry.name}: ${(entry.percent * 100).toFixed(0)}%`
+                label={(entry: PieLabelRenderProps & { percent?: number }) =>
+                  `${entry.name || 'Unknown'}: ${entry.percent ? (entry.percent * 100).toFixed(0) : 0}%`
                 }
                 outerRadius={70}
                 fill="#8884d8"
