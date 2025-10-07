@@ -432,7 +432,7 @@ export async function requireOrganizationContext(): Promise<OrganizationContext>
  * Checks if the current user is an admin (owner) of their organization.
  * TODO: THis logic should be improved to check for the super admin role.
  */
-export async function requireAdminContext(): Promise<OrganizationContext> {
+export async function requireOrganizationAdminContext(): Promise<OrganizationContext> {
   const context = await requireOrganizationContext();
 
   // Check if user is owner of the organization

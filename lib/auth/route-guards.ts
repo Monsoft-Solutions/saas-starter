@@ -7,6 +7,7 @@
  * protected routes across the app and API surfaces.
  */
 import { APP_BASE_PATH, appProtectedRoutePrefixes } from '@/config/navigation';
+import type { AdminPermission } from '@/lib/types/admin/permission.enum';
 
 /**
  * Identifies the domain a guard applies to so we can tailor responses.
@@ -29,6 +30,7 @@ export type RouteGuardRule = {
   pattern: RouteGuardPattern;
   authRequired: boolean;
   organizationRequired?: boolean;
+  requiredPermissions?: readonly AdminPermission[];
 };
 
 /**
@@ -131,6 +133,59 @@ function deriveAppGuards(): RouteGuardRule[] {
 function buildRegistry(): RouteGuardRegistry {
   const guards: RouteGuardRule[] = [
     ...deriveAppGuards(),
+
+    // Super admin routes
+    {
+      id: 'admin:dashboard',
+      scope: 'app',
+      pattern: createPrefixPattern('/admin'),
+      authRequired: true,
+      requiredPermissions: ['analytics:read'],
+    },
+    {
+      id: 'api:admin',
+      scope: 'api',
+      pattern: createPrefixPattern('/api/admin'),
+      authRequired: true,
+      requiredPermissions: ['activity:read'],
+    },
+    {
+      id: 'api:admin-users',
+      scope: 'api',
+      pattern: createPrefixPattern('/api/admin/users'),
+      authRequired: true,
+      requiredPermissions: ['users:read'],
+    },
+    {
+      id: 'api:admin-organizations',
+      scope: 'api',
+      pattern: createPrefixPattern('/api/admin/organizations'),
+      authRequired: true,
+      requiredPermissions: ['organizations:read'],
+    },
+    {
+      id: 'api:admin-activity',
+      scope: 'api',
+      pattern: createPrefixPattern('/api/admin/activity'),
+      authRequired: true,
+      requiredPermissions: ['activity:read'],
+    },
+    {
+      id: 'api:admin-analytics',
+      scope: 'api',
+      pattern: createPrefixPattern('/api/admin/analytics'),
+      authRequired: true,
+      requiredPermissions: ['analytics:read'],
+    },
+    {
+      id: 'api:admin-stats',
+      scope: 'api',
+      pattern: createPrefixPattern('/api/admin/stats'),
+      authRequired: true,
+      requiredPermissions: ['analytics:read'],
+    },
+
+    // Organization routes
     {
       id: 'api:organization',
       scope: 'api',

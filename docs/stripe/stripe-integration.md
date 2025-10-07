@@ -384,7 +384,7 @@ The webhook endpoint processes Stripe events in real-time:
 All webhook events trigger activity logging for audit purposes:
 
 ```typescript
-await logActivity(ownerId, ActivityType.SUBSCRIPTION_CREATED, ipAddress ?? '');
+await logActivity(ActivityType.SUBSCRIPTION_CREATED);
 ```
 
 ## API Routes

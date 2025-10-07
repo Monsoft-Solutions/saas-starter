@@ -1,4 +1,11 @@
-import { pgTable, serial, varchar, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  varchar,
+  text,
+  timestamp,
+  jsonb,
+} from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { user } from './user.table';
 
@@ -10,6 +17,7 @@ export const activityLogs = pgTable('activity_logs', {
   action: text('action').notNull(),
   timestamp: timestamp('timestamp').notNull().defaultNow(),
   ipAddress: varchar('ip_address', { length: 45 }),
+  metadata: jsonb('metadata'),
 });
 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({

@@ -28,6 +28,7 @@ import {
   Loader2,
   LogOut,
   UserRound,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { appNav } from '@/config/navigation';
@@ -78,6 +79,13 @@ function getUserDisplayName(user?: User | null) {
   }
 
   return user.name || user.email || 'Unnamed user';
+}
+
+/**
+ * Check if user has admin or super-admin role.
+ */
+function isUserAdmin(user?: User | null): boolean {
+  return user?.role === 'admin' || user?.role === 'super-admin';
 }
 
 interface SidebarNavProps {
@@ -271,6 +279,20 @@ export function SidebarNav({
                   Account settings
                 </Link>
               </DropdownMenuItem>
+
+              {/* Admin access link - only show for admins */}
+              {isUserAdmin(user) && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Admin Panel
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"

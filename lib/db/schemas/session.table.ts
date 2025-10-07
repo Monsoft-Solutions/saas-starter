@@ -1,5 +1,7 @@
 import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { user } from './user.table';
+import { organization } from './organization.table';
+import { relations } from 'drizzle-orm';
 
 export const session = pgTable('session', {
   id: text('id').primaryKey(),
@@ -14,5 +16,23 @@ export const session = pgTable('session', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  activeOrganizationId: text('active_organization_id'),
+  activeOrganizationId: text('active_organization_id').references(
+    () => organization.id,
+    { onDelete: 'set null' }
+  ),
+  // Better Auth admin plugin field for impersonation
+  impersonatedBy: text('impersonated_by').references(() => user.id, {
+    onDelete: 'set null',
+  }),
 });
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+  organization: one(organization, {
+    fields: [session.activeOrganizationId],
+    references: [organization.id],
+  }),
+}));

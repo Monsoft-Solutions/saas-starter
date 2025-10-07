@@ -13,6 +13,7 @@ export default defineConfig({
       { text: 'Getting Started', link: '/README' },
       { text: 'Configuration', link: '/environment-configuration' },
       { text: 'Authentication', link: '/auth/' },
+      { text: 'Admin Space', link: '/admin-space/overview' },
       { text: 'Payments', link: '/stripe/' },
       { text: 'Cache System', link: '/cache/' },
       { text: 'Background Jobs', link: '/async-job-processing' },
@@ -45,6 +46,20 @@ export default defineConfig({
             link: '/auth/server-actions-and-hooks',
           },
           { text: 'OAuth Setup', link: '/auth/OAUTH_SETUP' },
+        ],
+      },
+      {
+        text: 'Admin Space',
+        items: [
+          { text: 'Overview', link: '/admin-space/overview' },
+          {
+            text: 'Authentication & Authorization',
+            link: '/admin-space/authentication',
+          },
+          { text: 'Features Guide', link: '/admin-space/features' },
+          { text: 'API Reference', link: '/admin-space/api-reference' },
+          { text: 'Security Architecture', link: '/admin-space/security' },
+          { text: 'Development Guide', link: '/admin-space/development' },
         ],
       },
       {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cacheService } from '@/lib/cache';
-import { requireAdminContext } from '@/lib/auth/server-context';
+import { requireOrganizationAdminContext } from '@/lib/auth/server-context';
 import { logError } from '@/lib/logger';
 
 /**
@@ -11,7 +11,7 @@ import { logError } from '@/lib/logger';
 export async function GET() {
   try {
     // Require admin user (owner of organization)
-    await requireAdminContext();
+    await requireOrganizationAdminContext();
 
     const stats = await cacheService.getStats();
 
@@ -36,7 +36,7 @@ export async function GET() {
 export async function DELETE() {
   try {
     // Require admin user (owner of organization)
-    await requireAdminContext();
+    await requireOrganizationAdminContext();
 
     await cacheService.clear();
 

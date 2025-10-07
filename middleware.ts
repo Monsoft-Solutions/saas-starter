@@ -14,6 +14,7 @@ import {
   matchRouteGuard,
   type RouteGuardScope,
 } from '@/lib/auth/route-guards';
+import { getAdminContextFromHeaders } from '@/lib/auth/admin-context';
 import {
   getServerContextFromHeaders,
   getServerSessionFromHeaders,
@@ -87,6 +88,32 @@ function handleMissingOrganization(scope: RouteGuardScope): NextResponse {
   return NextResponse.next();
 }
 
+function handlePermissionDenied(
+  scope: RouteGuardScope,
+  requiredPermissions: readonly string[]
+): NextResponse {
+  if (scope === 'api') {
+    return NextResponse.json(
+      {
+        error: 'Forbidden',
+        details: 'Insufficient permissions to access this endpoint.',
+        requiredPermissions,
+      },
+      { status: 403 }
+    );
+  }
+
+  return new NextResponse(
+    'Forbidden: Your account lacks the required permissions for this area.',
+    {
+      status: 403,
+      headers: {
+        'x-required-permissions': requiredPermissions.join(','),
+      },
+    }
+  );
+}
+
 /**
  * Entry point invoked for every request matched by the middleware config.
  */
@@ -110,6 +137,34 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   const requestHeaders = cloneRequestHeaders(request);
+
+  if (rule.requiredPermissions?.length) {
+    const adminContext = await getAdminContextFromHeaders(requestHeaders);
+
+    if (!adminContext) {
+      const session = await getServerSessionFromHeaders(requestHeaders);
+
+      if (!session) {
+        return handleUnauthorized(rule.scope, request);
+      }
+
+      return handlePermissionDenied(rule.scope, rule.requiredPermissions);
+    }
+
+    const missingPermission = rule.requiredPermissions.find(
+      (permission) => !adminContext.admin.permissions.has(permission)
+    );
+
+    if (missingPermission) {
+      return handlePermissionDenied(rule.scope, rule.requiredPermissions);
+    }
+
+    if (rule.organizationRequired && !adminContext.organization) {
+      return handleMissingOrganization(rule.scope);
+    }
+
+    return NextResponse.next();
+  }
 
   if (rule.organizationRequired) {
     const context = await getServerContextFromHeaders(requestHeaders);

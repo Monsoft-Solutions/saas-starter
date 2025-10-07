@@ -445,6 +445,135 @@ function buildProductsWithPrices(
 }
 
 /**
+ * Fetches plan distribution data from Stripe for analytics dashboard
+ * Returns active subscription counts and revenue by plan
+ */
+export async function getPlanDistributionFromStripe() {
+  const { cacheService, CacheKeys } = await import('@/lib/cache');
+
+  return cacheService.getOrSet(
+    CacheKeys.custom('stripe', 'plan-distribution'),
+    async () => {
+      try {
+        console.log('[Stripe] Fetching subscriptions...');
+        // Fetch all subscriptions (not just active) to debug
+        const subscriptions = await stripe.subscriptions.list({
+          // status: 'active', // Temporarily remove status filter
+          expand: ['data.items.data'],
+          limit: 100, // Increase if you have many subscriptions
+        });
+
+        // Filter to active only for processing
+        const activeSubscriptions = subscriptions.data.filter(
+          (sub) => sub.status === 'active'
+        );
+
+        if (activeSubscriptions.length === 0) {
+          // Test basic API connectivity
+          try {
+            const testProducts = await stripe.products.list({ limit: 1 });
+            console.log(
+              `[Stripe] API test successful, found ${testProducts.data.length} products`
+            );
+          } catch (apiError) {
+            console.error('[Stripe] API test failed:', apiError);
+          }
+        }
+
+        // Group subscriptions by product name
+        const planDistribution = new Map<
+          string,
+          { count: number; revenue: number }
+        >();
+
+        for (const subscription of activeSubscriptions) {
+          for (const item of subscription.items.data) {
+            const price = item.price;
+            const product = price?.product;
+
+            // Get product name
+            let productName = 'Unknown';
+            if (
+              typeof product === 'object' &&
+              product &&
+              'name' in product &&
+              product.name
+            ) {
+              productName = product.name;
+            } else if (typeof product === 'string') {
+              // If product is just an ID, we might need to fetch it
+              try {
+                const productData = await stripe.products.retrieve(product);
+                productName = productData.name;
+              } catch (error) {
+                logger.warn('Failed to fetch product details', {
+                  productId: product,
+                  error,
+                });
+                continue;
+              }
+            }
+
+            // Calculate revenue for this subscription item
+            const unitAmount = price?.unit_amount || 0;
+            const quantity = item.quantity || 1;
+            const revenue = (unitAmount * quantity) / 100; // Convert from cents
+
+            const existing = planDistribution.get(productName) || {
+              count: 0,
+              revenue: 0,
+            };
+            planDistribution.set(productName, {
+              count: existing.count + 1,
+              revenue: existing.revenue + revenue,
+            });
+          }
+        }
+
+        // Convert to array format expected by the chart
+        const result = Array.from(planDistribution.entries()).map(
+          ([plan, data]) => ({
+            planName: plan,
+            count: data.count,
+            mrr: Math.round(data.revenue), // Round to nearest dollar
+            percentage: 0, // Will be calculated later based on total
+          })
+        );
+
+        // Calculate percentages
+        const totalSubscriptions = result.reduce(
+          (sum, plan) => sum + plan.count,
+          0
+        );
+        result.forEach((plan) => {
+          plan.percentage =
+            totalSubscriptions > 0
+              ? (plan.count / totalSubscriptions) * 100
+              : 0;
+        });
+
+        // Sort by count descending
+        result.sort((a, b) => b.count - a.count);
+
+        logger.info('Fetched plan distribution from Stripe', {
+          totalPlans: result.length,
+          totalSubscriptions,
+        });
+
+        return result;
+      } catch (error) {
+        logger.error('Failed to fetch plan distribution from Stripe', {
+          error,
+        });
+        // Return empty array as fallback - UI will show placeholder data
+        return [];
+      }
+    },
+    { ttl: 300 } // Cache for 5 minutes
+  );
+}
+
+/**
  * Invalidate Stripe products cache
  * Call this when Stripe products/prices are updated via webhook
  */

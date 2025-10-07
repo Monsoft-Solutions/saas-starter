@@ -499,7 +499,7 @@ Track these metrics for checkout and portal usage:
 
 ```typescript
 // Example tracking in checkout success
-await logActivity(userId, ActivityType.SUBSCRIPTION_CREATED, ipAddress, {
+await logActivity(ActivityType.SUBSCRIPTION_CREATED, {
   planName: productName,
   amount: session.amount_total,
   currency: session.currency,

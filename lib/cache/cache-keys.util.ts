@@ -15,6 +15,21 @@ import { CacheKey } from '../types/cache/cache-key.type';
  * CacheKeys.organization(456) // "organization:456"
  */
 export class CacheKeys {
+  private static readonly REQUEST_ID_HEADER_CANDIDATES = [
+    'x-request-id',
+    'x-correlation-id',
+    'x-trace-id',
+    'x-traceid',
+    'x-amzn-trace-id',
+    'x-client-request-id',
+    'x-test-id',
+  ] as const;
+
+  private static readonly anonymousHeaderIdentifiers = new WeakMap<
+    RequestHeaders,
+    string
+  >();
+
   /**
    * User cache keys
    */
@@ -103,17 +118,12 @@ export class CacheKeys {
   }
 
   static serverContext(requestHeaders: RequestHeaders): CacheKey {
-    const requestId = requestHeaders.get('x-request-id');
-    const cookie = requestHeaders.get('cookie');
-    // Use a combination of request-id and cookie hash for uniqueness
-    const identifier = requestId || this.hashString(cookie || '');
+    const identifier = this.resolveRequestIdentifier(requestHeaders);
     return createCacheKey(`server:context:${identifier}`);
   }
 
   static serverSession(requestHeaders: RequestHeaders): CacheKey {
-    const requestId = requestHeaders.get('x-request-id');
-    const cookie = requestHeaders.get('cookie');
-    const identifier = requestId || this.hashString(cookie || '');
+    const identifier = this.resolveRequestIdentifier(requestHeaders);
     return createCacheKey(`server:session:${identifier}`);
   }
 
@@ -121,9 +131,7 @@ export class CacheKeys {
     requestHeaders: RequestHeaders,
     userId: string
   ): CacheKey {
-    const requestId = requestHeaders.get('x-request-id');
-    const cookie = requestHeaders.get('cookie');
-    const identifier = requestId || this.hashString(cookie || '');
+    const identifier = this.resolveRequestIdentifier(requestHeaders);
     return createCacheKey(`server:organization:${identifier}:${userId}`);
   }
 
@@ -178,6 +186,70 @@ export class CacheKeys {
 
   static userNotificationPattern(userId: string): CacheKey {
     return createCacheKey(`notifications:user:${userId}:*`);
+  }
+
+  /**
+   * Admin cache keys
+   */
+  static admin(resource: string, identifier?: string): CacheKey {
+    return identifier
+      ? createCacheKey(`admin:${resource}:${identifier}`)
+      : createCacheKey(`admin:${resource}`);
+  }
+
+  /**
+   * Generic custom cache key builder
+   */
+  static custom(namespace: string, key: string): CacheKey {
+    return createCacheKey(`${namespace}:${key}`);
+  }
+
+  private static resolveRequestIdentifier(
+    requestHeaders: RequestHeaders
+  ): string {
+    for (const headerName of this.REQUEST_ID_HEADER_CANDIDATES) {
+      const headerValue = requestHeaders.get(headerName);
+      if (headerValue && headerValue.length > 0) {
+        return headerValue;
+      }
+    }
+
+    const cookie = requestHeaders.get('cookie');
+    if (cookie && cookie.length > 0) {
+      return this.hashString(`cookie:${cookie}`);
+    }
+
+    const serializedHeaders = this.serializeHeaders(requestHeaders);
+    if (serializedHeaders.length > 0) {
+      return this.hashString(serializedHeaders);
+    }
+
+    return this.getAnonymousHeaderIdentifier(requestHeaders);
+  }
+
+  private static serializeHeaders(requestHeaders: RequestHeaders): string {
+    const headerEntries: string[] = [];
+    requestHeaders.forEach((value, key) => {
+      headerEntries.push(`${key}:${value}`);
+    });
+
+    headerEntries.sort();
+    return headerEntries.join('|');
+  }
+
+  private static getAnonymousHeaderIdentifier(
+    requestHeaders: RequestHeaders
+  ): string {
+    let identifier = this.anonymousHeaderIdentifiers.get(requestHeaders);
+    if (!identifier) {
+      const randomSeed = `${Date.now().toString(36)}:${Math.random()
+        .toString(36)
+        .slice(2)}`;
+      identifier = `anon:${this.hashString(randomSeed)}`;
+      this.anonymousHeaderIdentifiers.set(requestHeaders, identifier);
+    }
+
+    return identifier;
   }
 }
 

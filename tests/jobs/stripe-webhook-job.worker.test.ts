@@ -92,6 +92,7 @@ describe('Stripe Webhook Job Worker', () => {
       CacheKeys: {
         organizationSubscription: (id: number) => `org:${id}:subscription`,
         stripeCustomer: (customerId: string) => `stripe:customer:${customerId}`,
+        custom: (namespace: string, key: string) => `${namespace}:${key}`,
       },
     }));
 
@@ -177,11 +178,7 @@ describe('Stripe Webhook Job Worker', () => {
       expect(mockGetOrganizationOwner).toHaveBeenCalledWith(1);
 
       // Verify activity logging
-      expect(mockLogActivity).toHaveBeenCalledWith(
-        10,
-        'SUBSCRIPTION_CREATED',
-        '192.168.1.1'
-      );
+      expect(mockLogActivity).toHaveBeenCalledWith('subscription.created');
 
       // Verify user lookup
       expect(mockGetUserById).toHaveBeenCalledWith(10);
@@ -319,11 +316,7 @@ describe('Stripe Webhook Job Worker', () => {
 
       await capturedHandler(payload, job);
 
-      expect(mockLogActivity).toHaveBeenCalledWith(
-        10,
-        'PAYMENT_FAILED',
-        '192.168.1.1'
-      );
+      expect(mockLogActivity).toHaveBeenCalledWith('payment.failed');
 
       expect(mockSendPaymentFailedEmailAsync).toHaveBeenCalledWith({
         to: 'owner@example.com',
@@ -362,7 +355,7 @@ describe('Stripe Webhook Job Worker', () => {
 
       await capturedHandler(payload, job);
 
-      expect(mockLogActivity).toHaveBeenCalledWith(10, 'PAYMENT_FAILED', '');
+      expect(mockLogActivity).toHaveBeenCalledWith('payment.failed');
     });
   });
 
@@ -409,11 +402,7 @@ describe('Stripe Webhook Job Worker', () => {
       );
 
       // Verify activity logging
-      expect(mockLogActivity).toHaveBeenCalledWith(
-        10,
-        'SUBSCRIPTION_UPDATED',
-        '192.168.1.1'
-      );
+      expect(mockLogActivity).toHaveBeenCalledWith('subscription.updated');
     });
   });
 
@@ -460,11 +449,7 @@ describe('Stripe Webhook Job Worker', () => {
       );
 
       // Verify activity logging
-      expect(mockLogActivity).toHaveBeenCalledWith(
-        10,
-        'SUBSCRIPTION_DELETED',
-        '192.168.1.1'
-      );
+      expect(mockLogActivity).toHaveBeenCalledWith('subscription.deleted');
     });
   });
 

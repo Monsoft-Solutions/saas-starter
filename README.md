@@ -14,6 +14,7 @@ Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-star
 - **Multi-tenant Organizations**: Users can belong to multiple organizations
 - **Role-based Access Control**: Owner/Member roles with granular permissions
 - **Session Management**: Secure session handling with automatic refresh
+- **Super Admin Space**: Complete admin panel for system-wide management and monitoring
 
 ### 🏢 **Multi-tenant Architecture**
 
@@ -31,6 +32,16 @@ Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-star
 - **Responsive Design**: Mobile-first responsive design patterns
 - **Dark/Light Mode**: Built-in theme switching with system preference detection
 - **Advanced Layouts**: Command palette, breadcrumbs, and sophisticated navigation
+
+### 👑 **Super Admin Space**
+
+- **Comprehensive Dashboard**: System-wide metrics, user growth, and revenue analytics
+- **User Management**: View, search, and manage all users with role assignment and banning
+- **Organization Management**: Monitor and manage all organizations and subscriptions
+- **Subscription Analytics**: Track MRR, churn rate, plan distribution, and revenue trends
+- **Activity Logs**: Complete audit trail with filtering, search, and CSV export
+- **Multi-layer Security**: Five-layer defense architecture with Better Auth admin plugin
+- **Impersonation**: Securely impersonate users for support and troubleshooting
 
 ### 💳 **Complete Stripe Integration**
 
@@ -66,6 +77,38 @@ Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-star
 - **Database Management**: PostgreSQL with Drizzle ORM and type-safe queries
 - **Development Tools**: ESLint, Prettier, Husky, and lint-staged
 - **Testing Framework**: Vitest with comprehensive test coverage
+
+### ⚡ **Next.js 15 App Router Patterns**
+
+**Important Breaking Change**: Starting from Next.js 15, `searchParams` and `params` in page components are now asynchronous Promises that must be awaited.
+
+```typescript
+// ✅ Correct in Next.js 15
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams; // Must await
+  // ... rest of component
+}
+
+// ❌ Incorrect - will cause runtime errors
+export default function Page({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  // searchParams is now a Promise, not a plain object
+}
+```
+
+**Key Points:**
+
+- **Always await** `searchParams` and `params` in server components
+- This is a **breaking change** from Next.js 14 and earlier
+- Client components still receive synchronous props (use `useSearchParams()` from `next/navigation`)
+- API routes continue to use synchronous `request.nextUrl.searchParams`
 
 ## 🚀 Tech Stack
 
@@ -156,8 +199,13 @@ pnpm db:seed
 
 **Default test credentials:**
 
-- **Email**: `test@test.com`
-- **Password**: `admin123`
+- **Regular User**:
+  - **Email**: `test@test.com`
+  - **Password**: `admin123`
+
+- **Super Admin** (access to admin panel at `/admin`):
+  - **Email**: `admin@test.com`
+  - **Password**: `admin123`
 
 ### 4. Stripe Configuration
 
@@ -301,6 +349,7 @@ The application is compatible with:
 
 - **[📖 Full Documentation](./docs/README.md)**: Complete system documentation
 - **[🔐 Authentication Guide](./docs/auth/)**: BetterAuth and OAuth setup
+- **[👑 Super Admin Space](./docs/admin-space/overview.md)**: Admin panel documentation and features
 - **[💳 Stripe Integration](./docs/stripe/)**: Payment processing and webhooks
 - **[⚡ Cache System](./docs/cache/)**: Provider-agnostic caching with Upstash Redis
 - **[🌍 Environment Configuration](./docs/environment-configuration.md)**: Multi-environment setup guide
@@ -422,6 +471,8 @@ pnpm preview:emails     # Preview email templates
 - **CSRF Protection**: Built-in Cross-Site Request Forgery protection
 - **SQL Injection Prevention**: Type-safe database queries
 - **Environment Isolation**: Separate development/production configurations
+- **Multi-layer Admin Security**: Five-layer defense architecture for super admin access
+- **Activity Logging**: Complete audit trail for compliance and security monitoring
 
 ### 📊 **Monitoring & Analytics**
 
@@ -429,6 +480,8 @@ pnpm preview:emails     # Preview email templates
 - **Email Tracking**: Email delivery and engagement monitoring
 - **Error Handling**: Structured error logging and reporting
 - **Performance Monitoring**: Built-in performance tracking
+- **Admin Dashboard**: System-wide metrics including user growth, revenue, and subscriptions
+- **Subscription Analytics**: Track MRR, churn rate, LTV, and plan distribution
 
 ### 🔄 **Scalability**
 

@@ -8,6 +8,9 @@ import {
   timestamp,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { organization } from './organization.table';
+import { user } from './user.table';
+import { relations } from 'drizzle-orm';
 
 /**
  * Persists the lifecycle of background jobs so we can power dashboards,
@@ -24,8 +27,10 @@ export const jobExecutions = pgTable(
     result: jsonb('result'),
     error: text('error'),
     retryCount: integer('retry_count').default(0).notNull(),
-    userId: text('user_id'),
-    organizationId: text('organization_id'),
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+    organizationId: text('organization_id').references(() => organization.id, {
+      onDelete: 'cascade',
+    }),
     startedAt: timestamp('started_at'),
     completedAt: timestamp('completed_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -43,6 +48,17 @@ export const jobExecutions = pgTable(
     },
   ]
 );
+
+export const jobExecutionsRelations = relations(jobExecutions, ({ one }) => ({
+  user: one(user, {
+    fields: [jobExecutions.userId],
+    references: [user.id],
+  }),
+  organization: one(organization, {
+    fields: [jobExecutions.organizationId],
+    references: [organization.id],
+  }),
+}));
 
 export type JobExecution = typeof jobExecutions.$inferSelect;
 export type NewJobExecution = typeof jobExecutions.$inferInsert;

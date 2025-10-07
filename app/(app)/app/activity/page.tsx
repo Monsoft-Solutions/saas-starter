@@ -10,6 +10,10 @@ import {
   Mail,
   CheckCircle,
   Wallet,
+  Download,
+  Ban,
+  Trash,
+  BarChart3,
   type LucideIcon,
 } from 'lucide-react';
 import { getActivityLogs } from '@/lib/db/queries';
@@ -30,6 +34,13 @@ const iconMap: Record<ActivityType, LucideIcon> = {
   [ActivityType.CREATE_ORGANIZATION]: UserPlus,
   [ActivityType.REMOVE_ORGANIZATION_MEMBER]: UserMinus,
   [ActivityType.INVITE_ORGANIZATION_MEMBER]: Mail,
+  // Admin activities
+  [ActivityType.ADMIN_ACTIVITY_EXPORTED]: Download,
+  [ActivityType.ADMIN_USER_BANNED]: Ban,
+  [ActivityType.ADMIN_USER_UNBANNED]: CheckCircle,
+  [ActivityType.ADMIN_USER_ROLE_UPDATED]: Settings,
+  [ActivityType.ADMIN_ORGANIZATION_DELETED]: Trash,
+  [ActivityType.ADMIN_STATS_REFRESHED]: BarChart3,
 };
 
 function getRelativeTime(date: Date) {

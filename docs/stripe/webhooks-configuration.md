@@ -93,9 +93,7 @@ case 'checkout.session.completed': {
     if (organization) {
       // Log activity
       await logActivity(
-        ownerId,
         ActivityType.SUBSCRIPTION_CREATED,
-        ipAddress ?? ''
       );
 
       // Send confirmation email
@@ -148,9 +146,7 @@ case 'customer.subscription.updated': {
     const ownerId = await getOrganizationOwner(organization.id);
     if (ownerId) {
       await logActivity(
-        ownerId,
         ActivityType.SUBSCRIPTION_UPDATED,
-        ipAddress ?? ''
       );
     }
   }
@@ -193,9 +189,7 @@ case 'customer.subscription.deleted': {
     const ownerId = await getOrganizationOwner(organization.id);
     if (ownerId) {
       await logActivity(
-        ownerId,
         ActivityType.SUBSCRIPTION_DELETED,
-        ipAddress ?? ''
       );
     }
   }
@@ -233,9 +227,7 @@ case 'invoice.payment_failed': {
     if (organization) {
       // Log payment failure
       await logActivity(
-        ownerId,
         ActivityType.PAYMENT_FAILED,
-        ipAddress ?? ''
       );
 
       // Send payment failure notification
@@ -341,9 +333,7 @@ All webhook events generate activity logs for audit purposes:
 
 ```typescript
 await logActivity(
-  userId,
-  ActivityType.SUBSCRIPTION_CREATED, // or UPDATED, DELETED, PAYMENT_FAILED
-  ipAddress ?? ''
+  ActivityType.SUBSCRIPTION_CREATED // or UPDATED, DELETED, PAYMENT_FAILED
 );
 ```
 
