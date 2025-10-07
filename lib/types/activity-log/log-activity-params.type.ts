@@ -14,6 +14,9 @@ export type LogActivityParams = {
   action: ActivityType;
   /** Optional metadata to attach to the activity log */
   metadata?: Record<string, unknown>;
+
+  /** Optional user ID to attach to the activity log */
+  userId?: string;
 };
 
 /**

@@ -33,8 +33,16 @@ export async function logActivity(params: LogActivityInput): Promise<void> {
   const requestHeaders = await headers();
   const ip = requestHeaders.get('x-forwarded-for') ?? undefined;
 
-  const session = await requireServerSession();
-  const userId = session.user.id;
+  // Attempt to extract userId if present in params and is an object
+  let userId: string | undefined =
+    typeof params === 'object' && 'userId' in params
+      ? (params as { userId?: string }).userId
+      : undefined;
+
+  if (!userId) {
+    const session = await requireServerSession();
+    userId = session.user.id;
+  }
 
   if (!userId) {
     return;

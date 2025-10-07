@@ -16,7 +16,10 @@ export const databaseHooks = {
           dashboardUrl: '/app/general',
         });
 
-        await logActivity(ActivityType.SIGN_UP);
+        await logActivity({
+          action: ActivityType.SIGN_UP,
+          userId: user.id,
+        });
 
         // Create a default organization for the new user
         const organizationName = `${
@@ -34,7 +37,10 @@ export const databaseHooks = {
           });
 
           if (newOrganization) {
-            await logActivity(ActivityType.CREATE_ORGANIZATION);
+            await logActivity({
+              action: ActivityType.CREATE_ORGANIZATION,
+              userId: user.id,
+            });
           }
         } catch (error) {
           logger.error('Failed to create default organization for user', {
