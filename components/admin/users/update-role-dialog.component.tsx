@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { updateUserRoleAction } from '@/app/actions/admin/update-user-role.action';
+import { updateUserRoleAction } from '@/lib/actions/admin/update-user-role.action';
 import { toast } from 'sonner';
 
 /**

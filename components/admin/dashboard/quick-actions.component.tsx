@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { RefreshCw, FileText, ExternalLink } from 'lucide-react';
-import { refreshStatsAction } from '@/app/actions/admin/refresh-stats.action';
+import { refreshStatsAction } from '@/lib/actions/admin/refresh-stats.action';
 import { toast } from 'sonner';
 import { useAdminAccess } from '@/components/admin/shared/admin-access.provider';
 

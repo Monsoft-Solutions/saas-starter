@@ -18,7 +18,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   banUserAction,
   unbanUserAction,
-} from '@/app/actions/admin/ban-user.action';
+} from '@/lib/actions/admin/ban-user.action';
 import { toast } from 'sonner';
 import { UserTableData } from '@/lib/types/table';
 

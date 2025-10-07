@@ -65,6 +65,12 @@ function handlePermissionFailure(
     } satisfies ActionState;
   }
 
+  logger.error('[handlePermissionFailure] Permission denied', {
+    requiredPermissions: required,
+    resource: resource,
+    message: message,
+  });
+
   return {
     error: message,
   } satisfies ActionState;
