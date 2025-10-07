@@ -78,6 +78,38 @@ Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-star
 - **Development Tools**: ESLint, Prettier, Husky, and lint-staged
 - **Testing Framework**: Vitest with comprehensive test coverage
 
+### ⚡ **Next.js 15 App Router Patterns**
+
+**Important Breaking Change**: Starting from Next.js 15, `searchParams` and `params` in page components are now asynchronous Promises that must be awaited.
+
+```typescript
+// ✅ Correct in Next.js 15
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams; // Must await
+  // ... rest of component
+}
+
+// ❌ Incorrect - will cause runtime errors
+export default function Page({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  // searchParams is now a Promise, not a plain object
+}
+```
+
+**Key Points:**
+
+- **Always await** `searchParams` and `params` in server components
+- This is a **breaking change** from Next.js 14 and earlier
+- Client components still receive synchronous props (use `useSearchParams()` from `next/navigation`)
+- API routes continue to use synchronous `request.nextUrl.searchParams`
+
 ## 🚀 Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) with App Router and Turbopack

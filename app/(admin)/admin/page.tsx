@@ -1,4 +1,8 @@
-import { getAdminStatistics } from '@/lib/db/queries/admin-statistics.query';
+import {
+  getAdminStatistics,
+  getUserGrowthData,
+} from '@/lib/db/queries/admin-statistics.query';
+import { getPlanDistribution } from '@/lib/db/queries/admin-subscription-analytics.query';
 import { MetricCard } from '@/components/admin/dashboard/metric-card.component';
 import { QuickActions } from '@/components/admin/dashboard/quick-actions.component';
 import { RecentActivity } from '@/components/admin/dashboard/recent-activity.component';
@@ -15,6 +19,8 @@ import { requireAdminContext } from '@/lib/auth/admin-context';
 export default async function AdminDashboardPage() {
   const context = await requireAdminContext();
   const stats = await getAdminStatistics();
+  const userGrowthData = await getUserGrowthData();
+  const planDistribution = await getPlanDistribution();
 
   return (
     <div className="space-y-6">
@@ -100,6 +106,7 @@ export default async function AdminDashboardPage() {
       {stats && (
         <div className="grid gap-6 md:grid-cols-2">
           <UserGrowthChart
+            data={userGrowthData}
             totalUsers={stats.totalUsers}
             newUsersLast30Days={stats.newUsersLast30Days}
           />
@@ -108,6 +115,11 @@ export default async function AdminDashboardPage() {
             totalMRR={stats.totalMRR}
             totalActiveSubscriptions={stats.totalActiveSubscriptions}
             revenueGrowthRate={stats.revenueGrowthRate}
+            planDistribution={planDistribution.map((plan) => ({
+              plan: plan.planName,
+              count: plan.count,
+              revenue: plan.mrr,
+            }))}
           />
         </div>
       )}

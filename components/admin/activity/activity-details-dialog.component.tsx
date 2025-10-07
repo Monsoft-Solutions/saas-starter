@@ -33,6 +33,7 @@ type ActivityLog = {
   userEmail: string;
   userName: string | null;
   userImage: string | null;
+  metadata?: Record<string, unknown> | null;
 };
 
 // Helper function to format action labels
@@ -90,22 +91,38 @@ export function ActivityDetailsDialog({
         setLoading(true);
         setError(null);
 
-        // For now, we'll create a mock log entry since we don't have a detailed API
-        // In a real implementation, this would call an API to get full log details
-        const mockLog: ActivityLog = {
-          id: logId,
-          userId: 'user-123',
-          action: 'SIGN_IN',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-          ipAddress: '192.168.1.100',
-          userEmail: 'user@example.com',
-          userName: 'John Doe',
-          userImage: null,
+        const response = await fetch(`/api/admin/activity/${logId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Activity log not found');
+          }
+          throw new Error(
+            `Failed to load activity log: ${response.statusText}`
+          );
+        }
+
+        const activityLog = await response.json();
+
+        // Transform API response to component's ActivityLog type
+        const log: ActivityLog = {
+          id: activityLog.id,
+          userId: activityLog.userId,
+          action: activityLog.action,
+          timestamp: new Date(activityLog.timestamp),
+          ipAddress: activityLog.ipAddress,
+          userEmail: activityLog.userEmail,
+          userName: activityLog.userName,
+          userImage: activityLog.userImage,
+          metadata: activityLog.metadata,
         };
 
-        setLog(mockLog);
+        setLog(log);
       } catch (err) {
-        setError('Failed to load activity log details');
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to load activity log details';
+        setError(errorMessage);
         console.error('Error fetching activity log:', err);
       } finally {
         setLoading(false);
@@ -277,15 +294,37 @@ export function ActivityDetailsDialog({
             </div>
           </div>
 
-          {/* Metadata Section - Placeholder for future enhancement */}
-          <Separator />
-          <div className="stack-sm">
-            <h3 className="font-semibold">Additional Metadata</h3>
-            <div className="rounded-lg border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
-              Additional metadata and context will be displayed here when
-              available
-            </div>
-          </div>
+          {/* Metadata Section */}
+          {log.metadata && Object.keys(log.metadata).length > 0 && (
+            <>
+              <Separator />
+              <div className="stack-sm">
+                <h3 className="font-semibold">Additional Metadata</h3>
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <div className="space-y-3">
+                    {Object.entries(log.metadata).map(([key, value]) => (
+                      <div key={key} className="grid grid-cols-3 gap-4">
+                        <div className="text-sm text-muted-foreground capitalize">
+                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </div>
+                        <div className="col-span-2">
+                          {typeof value === 'object' && value !== null ? (
+                            <pre className="text-xs bg-muted p-2 rounded font-mono overflow-x-auto">
+                              {JSON.stringify(value, null, 2)}
+                            </pre>
+                          ) : (
+                            <span className="text-sm font-mono">
+                              {String(value)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

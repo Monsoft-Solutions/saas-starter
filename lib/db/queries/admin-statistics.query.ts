@@ -5,6 +5,7 @@
 import { db } from '../drizzle';
 import { adminStatistics, user, organization, activityLogs } from '../schemas';
 import { sql, gte, count, desc, and, isNotNull, lte } from 'drizzle-orm';
+import { subDays, eachDayOfInterval } from 'date-fns';
 import logger from '@/lib/logger/logger.service';
 
 /**
@@ -188,5 +189,51 @@ export async function getHistoricalStatistics(days: number = 30) {
       return results;
     },
     { ttl: 600 } // Cache for 10 minutes
+  );
+}
+
+/**
+ * Get user growth data for the last 30 days.
+ * Returns daily user registration counts for chart visualization.
+ * Cached for performance.
+ */
+export async function getUserGrowthData(): Promise<
+  Array<{ date: Date; count: number }>
+> {
+  const { cacheService, CacheKeys } = await import('@/lib/cache');
+
+  return cacheService.getOrSet(
+    CacheKeys.custom('admin', 'user-growth-data'),
+    async () => {
+      const thirtyDaysAgo = subDays(new Date(), 30);
+      const dateRange = eachDayOfInterval({
+        start: thirtyDaysAgo,
+        end: new Date(),
+      });
+
+      const growthData = await Promise.all(
+        dateRange.map(async (date) => {
+          const startOfDay = new Date(date);
+          startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(date);
+          endOfDay.setHours(23, 59, 59, 999);
+
+          const [result] = await db
+            .select({ count: sql<number>`count(*)::int` })
+            .from(user)
+            .where(
+              sql`${user.createdAt} >= ${startOfDay.toISOString()} AND ${user.createdAt} <= ${endOfDay.toISOString()}`
+            );
+
+          return {
+            date,
+            count: result.count,
+          };
+        })
+      );
+
+      return growthData;
+    },
+    { ttl: 300 } // Cache for 5 minutes, same as other admin stats
   );
 }

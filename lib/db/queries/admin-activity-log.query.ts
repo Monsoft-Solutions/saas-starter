@@ -154,6 +154,31 @@ export async function getActivityBreakdown(days: number = 30) {
 }
 
 /**
+ * Get a single activity log by ID with full user details.
+ * Returns null if not found.
+ */
+export async function getActivityLogById(id: number) {
+  const [log] = await db
+    .select({
+      id: activityLogs.id,
+      userId: activityLogs.userId,
+      action: activityLogs.action,
+      timestamp: activityLogs.timestamp,
+      ipAddress: activityLogs.ipAddress,
+      metadata: activityLogs.metadata,
+      userEmail: user.email,
+      userName: user.name,
+      userImage: user.image,
+    })
+    .from(activityLogs)
+    .innerJoin(user, eq(activityLogs.userId, user.id))
+    .where(eq(activityLogs.id, id))
+    .limit(1);
+
+  return log || null;
+}
+
+/**
  * Export activity logs to CSV format.
  * Returns CSV string with all activity log data.
  */
