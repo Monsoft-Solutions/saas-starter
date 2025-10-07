@@ -25,7 +25,7 @@ const PLAN_PRICING = {
 
 /**
  * Get subscription table data with filters and pagination.
- * Returns enriched organization data for the subscription table.
+ * Returns enriched organization data for the subscription table with real Stripe data.
  */
 export async function getSubscriptionTableData(
   filters: SubscriptionTableFilters = {}
@@ -95,21 +95,42 @@ export async function getSubscriptionTableData(
           .where(whereClause),
       ]);
 
-      // Enrich data with calculated fields
+      // Enrich data with real Stripe data
+      const { batchEnrichSubscriptions } = await import(
+        '@/lib/payments/stripe-analytics.service'
+      );
+
+      const subscriptionIds = subscriptions
+        .map((sub) => sub.stripeSubscriptionId)
+        .filter((id): id is string => id !== null);
+
+      const stripeData = await batchEnrichSubscriptions(subscriptionIds);
+
       const enrichedSubscriptions: SubscriptionTableData[] = subscriptions.map(
         (sub) => {
-          const planName = sub.planName || 'Basic';
-          const mrr = PLAN_PRICING[planName as keyof typeof PLAN_PRICING] || 0;
+          // Get real Stripe data if available
+          const stripeInfo = sub.stripeSubscriptionId
+            ? stripeData.get(sub.stripeSubscriptionId)
+            : null;
 
-          // Estimate customer lifetime value (simple calculation: MRR * 12 months)
-          const customerLifetimeValue = mrr * 12;
+          // Fallback to hardcoded pricing if Stripe data unavailable
+          const fallbackMRR =
+            PLAN_PRICING[
+              (sub.planName as keyof typeof PLAN_PRICING) || 'Basic'
+            ] || 0;
+
+          const mrr = stripeInfo?.mrr ?? fallbackMRR;
+          const renewalDate = stripeInfo?.renewalDate ?? null;
+          const trialEndDate = stripeInfo?.trialEndDate ?? null;
+          const customerLifetimeValue =
+            stripeInfo?.customerLifetimeValue ?? mrr * 12;
 
           return {
             ...sub,
             startDate: sub.startDate ? sub.startDate.toISOString() : null,
             mrr,
-            renewalDate: null, // Could be calculated from Stripe subscription data
-            trialEndDate: null, // Could be fetched from Stripe
+            renewalDate,
+            trialEndDate,
             customerLifetimeValue,
           };
         }
@@ -145,6 +166,7 @@ export async function getSubscriptionTableData(
 /**
  * Get revenue metrics for dashboard cards.
  * Includes MRR, ARR, ARPU, churn rate, etc.
+ * Now uses real Stripe data with database fallback.
  */
 export async function getRevenueMetrics(): Promise<RevenueMetrics> {
   const { cacheService, CacheKeys } = await import('@/lib/cache');
@@ -152,6 +174,19 @@ export async function getRevenueMetrics(): Promise<RevenueMetrics> {
   return cacheService.getOrSet(
     CacheKeys.custom('admin', 'revenue-metrics'),
     async () => {
+      // Try to get real data from Stripe first
+      const { getRevenueMetricsFromStripe } = await import(
+        '@/lib/payments/stripe-analytics.service'
+      );
+
+      const stripeMetrics = await getRevenueMetricsFromStripe();
+
+      // If Stripe data is available, use it
+      if (stripeMetrics) {
+        return stripeMetrics;
+      }
+
+      // Fallback to database calculation with hardcoded pricing
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const thirtyDaysAgoISOString = thirtyDaysAgo.toISOString();
 
@@ -275,7 +310,7 @@ export async function getPlanDistribution(): Promise<PlanDistribution[]> {
 
 /**
  * Get revenue trend data for line chart.
- * Returns last 30 days of MRR and active subscription data.
+ * Returns last 30 days of MRR and active subscription data from Stripe.
  */
 export async function getRevenueTrend(): Promise<RevenueTrendDataPoint[]> {
   const { cacheService, CacheKeys } = await import('@/lib/cache');
@@ -283,8 +318,19 @@ export async function getRevenueTrend(): Promise<RevenueTrendDataPoint[]> {
   return cacheService.getOrSet(
     CacheKeys.custom('admin', 'revenue-trend'),
     async () => {
-      // For now, return placeholder data
-      // In a real implementation, this would query historical subscription data
+      // Try to get real data from Stripe first
+      const { getRevenueTrendFromStripe } = await import(
+        '@/lib/payments/stripe-analytics.service'
+      );
+
+      const stripeTrend = await getRevenueTrendFromStripe(30);
+
+      // If Stripe data is available, use it
+      if (stripeTrend.length > 0) {
+        return stripeTrend;
+      }
+
+      // Fallback to placeholder data if Stripe fails
       const today = new Date();
       const dataPoints: RevenueTrendDataPoint[] = [];
 
@@ -295,8 +341,8 @@ export async function getRevenueTrend(): Promise<RevenueTrendDataPoint[]> {
 
         dataPoints.push({
           date: date.toISOString().split('T')[0],
-          mrr: 0, // Would calculate from historical data
-          activeSubscriptions: 0, // Would calculate from historical data
+          mrr: 0, // Placeholder when Stripe data unavailable
+          activeSubscriptions: 0, // Placeholder when Stripe data unavailable
         });
       }
 

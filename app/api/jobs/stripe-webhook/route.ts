@@ -61,6 +61,20 @@ const stripeWebhookJobHandler = async (
           session.customer as string
         );
         if (organization) {
+          // Invalidate analytics caches for new subscriptions
+          const { cacheService, CacheKeys } = await import('@/lib/cache');
+          await Promise.all([
+            cacheService.delete(CacheKeys.custom('admin', 'revenue-metrics')),
+            cacheService.delete(CacheKeys.custom('admin', 'revenue-trend')),
+            cacheService.delete(
+              CacheKeys.custom('stripe', 'plan-distribution')
+            ),
+          ]).catch((err) =>
+            logger.warn('[stripe] Failed to invalidate analytics caches', {
+              error: err.message,
+            })
+          );
+
           const ownerId = await getOrganizationOwner(organization.id);
           if (ownerId) {
             await logActivity(ActivityType.SUBSCRIPTION_CREATED);
@@ -170,14 +184,20 @@ const stripeWebhookJobHandler = async (
         subscription.customer as string
       );
       if (organization) {
-        // Invalidate caches
+        // Invalidate caches (including analytics caches)
         const { cacheService, CacheKeys } = await import('@/lib/cache');
-        await cacheService.delete(
-          CacheKeys.organizationSubscription(organization.id)
-        );
-        await cacheService.delete(
-          CacheKeys.stripeCustomer(subscription.customer as string)
-        );
+        await Promise.all([
+          cacheService.delete(
+            CacheKeys.organizationSubscription(organization.id)
+          ),
+          cacheService.delete(
+            CacheKeys.stripeCustomer(subscription.customer as string)
+          ),
+          // Invalidate analytics caches
+          cacheService.delete(CacheKeys.custom('admin', 'revenue-metrics')),
+          cacheService.delete(CacheKeys.custom('admin', 'revenue-trend')),
+          cacheService.delete(CacheKeys.custom('stripe', 'plan-distribution')),
+        ]);
 
         const ownerId = await getOrganizationOwner(organization.id);
         if (ownerId) {
@@ -195,14 +215,20 @@ const stripeWebhookJobHandler = async (
         subscription.customer as string
       );
       if (organization) {
-        // Invalidate caches
+        // Invalidate caches (including analytics caches)
         const { cacheService, CacheKeys } = await import('@/lib/cache');
-        await cacheService.delete(
-          CacheKeys.organizationSubscription(organization.id)
-        );
-        await cacheService.delete(
-          CacheKeys.stripeCustomer(subscription.customer as string)
-        );
+        await Promise.all([
+          cacheService.delete(
+            CacheKeys.organizationSubscription(organization.id)
+          ),
+          cacheService.delete(
+            CacheKeys.stripeCustomer(subscription.customer as string)
+          ),
+          // Invalidate analytics caches
+          cacheService.delete(CacheKeys.custom('admin', 'revenue-metrics')),
+          cacheService.delete(CacheKeys.custom('admin', 'revenue-trend')),
+          cacheService.delete(CacheKeys.custom('stripe', 'plan-distribution')),
+        ]);
 
         const ownerId = await getOrganizationOwner(organization.id);
         if (ownerId) {
