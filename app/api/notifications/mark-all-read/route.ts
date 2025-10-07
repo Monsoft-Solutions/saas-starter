@@ -1,38 +1,33 @@
 /**
- * POST /api/notifications/mark-all-read
+ * Mark All Notifications as Read API Route
  *
- * Mark all unread notifications as read for the authenticated user
+ * Mark all unread notifications as read for the authenticated user.
+ *
+ * @route POST /api/notifications/mark-all-read
  */
 
-import { NextResponse } from 'next/server';
-import { requireServerContext } from '@/lib/auth/server-context';
+import { withApiAuth } from '@/lib/server/api-handler';
 import { markAllNotificationsAsRead } from '@/lib/notifications/notification.service';
-import logger from '@/lib/logger/logger.service';
+import {
+  simpleSuccessResponseSchema,
+  type SimpleSuccessResponse,
+} from '@/lib/types/common/simple-success-response.schema';
 
-export async function POST() {
-  try {
-    // Authenticate user
-    const { user } = await requireServerContext();
+/**
+ * POST /api/notifications/mark-all-read
+ *
+ * Mark all unread notifications as read
+ */
+export const POST = withApiAuth<SimpleSuccessResponse>(
+  async ({ context }) => {
+    await markAllNotificationsAsRead(context.user.id);
 
-    // Mark all as read
-    await markAllNotificationsAsRead(user.id);
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    // Handle authentication errors with 401
-    if (error instanceof Error && error.name === 'UnauthorizedError') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Handle other errors with 500
-    logger.error(
-      '[api/notifications/mark-all-read] Failed to mark all as read',
-      { error }
-    );
-
-    return NextResponse.json(
-      { error: 'Failed to mark all notifications as read' },
-      { status: 500 }
-    );
+    return {
+      success: true,
+    };
+  },
+  {
+    logName: 'POST /api/notifications/mark-all-read',
+    outputSchema: simpleSuccessResponseSchema,
   }
-}
+);

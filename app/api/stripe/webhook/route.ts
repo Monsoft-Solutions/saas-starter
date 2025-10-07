@@ -1,3 +1,18 @@
+/**
+ * Stripe Webhook Handler
+ *
+ * External webhook endpoint for receiving Stripe webhook events.
+ * This endpoint is called directly by Stripe and uses signature verification
+ * for authentication instead of user sessions.
+ *
+ * NOTE: This is an external webhook and does not follow the standard validated
+ * handler pattern. Validation is handled by Stripe's signature verification.
+ * Events are queued for async processing to ensure fast webhook responses.
+ *
+ * @route POST /api/stripe/webhook
+ * @external Stripe Webhook
+ */
+
 import Stripe from 'stripe';
 import { stripe } from '@/lib/payments/stripe';
 import { env } from '@/lib/env';

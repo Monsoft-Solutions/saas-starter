@@ -1,3 +1,18 @@
+/**
+ * Resend Webhook Handler
+ *
+ * External webhook endpoint for receiving Resend email delivery events.
+ * This endpoint is called directly by Resend and uses Svix signature verification
+ * for authentication instead of user sessions.
+ *
+ * NOTE: This is an external webhook and does not follow the standard validated
+ * handler pattern. Validation is handled by Svix signature verification and
+ * Zod schema validation of the webhook payload.
+ *
+ * @route POST /api/webhooks/resend
+ * @external Resend Webhook
+ */
+
 import { NextResponse } from 'next/server';
 import { resendWebhookEventSchema } from '@/lib/types';
 import { updateEmailLogStatus } from '@/lib/db/queries';

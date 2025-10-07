@@ -1,3 +1,14 @@
+/**
+ * Stripe Checkout Completion API Route
+ *
+ * Handles the redirect from Stripe checkout after successful payment.
+ * Retrieves the checkout session, updates the organization with subscription details,
+ * and redirects the user to the app.
+ *
+ * @route GET /api/stripe/checkout?session_id=xxx
+ */
+
+import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import { organization, member, user as User } from '@/lib/db/schemas';
@@ -8,12 +19,31 @@ import { withApiAuth } from '@/lib/server/api-handler';
 import logger from '@/lib/logger/logger.service';
 import { cacheService, CacheKeys } from '@/lib/cache';
 
-export const GET = withApiAuth(async ({ request }) => {
-  const sessionId = request.nextUrl.searchParams.get('session_id');
+/**
+ * Query parameter validation schema
+ */
+const checkoutQuerySchema = z.object({
+  session_id: z.string().min(1, 'Session ID is required'),
+});
 
-  if (!sessionId) {
+/**
+ * GET /api/stripe/checkout
+ *
+ * Process Stripe checkout completion
+ */
+export const GET = withApiAuth(async ({ request }) => {
+  // Validate query parameters
+  const queryParams = Object.fromEntries(request.nextUrl.searchParams);
+  const validation = checkoutQuerySchema.safeParse(queryParams);
+
+  if (!validation.success) {
+    logger.warn('[stripe/checkout] Missing or invalid session_id', {
+      queryParams,
+    });
     return NextResponse.redirect(new URL('/pricing', request.url));
   }
+
+  const { session_id: sessionId } = validation.data;
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {

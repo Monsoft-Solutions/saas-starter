@@ -1,38 +1,31 @@
 /**
- * GET /api/notifications/unread-count
+ * Unread Notification Count API Route
  *
- * Get unread notification count for the authenticated user
- * Cached for 30 seconds to optimize frequent polling
+ * Get unread notification count for the authenticated user.
+ * Cached for 30 seconds to optimize frequent polling.
+ *
+ * @route GET /api/notifications/unread-count
  */
 
-import { NextResponse } from 'next/server';
-import { requireServerContext } from '@/lib/auth/server-context';
 import { getUnreadNotificationCount } from '@/lib/notifications/notification.service';
-import logger from '@/lib/logger/logger.service';
+import { unreadCountResponseSchema } from '@/lib/types/notifications/unread-count-response.schema';
+import { createValidatedAuthenticatedHandler } from '@/lib/server/validated-api-handler';
+import z from 'zod';
 
-export async function GET() {
-  try {
-    // Authenticate user
-    const { user } = await requireServerContext();
+/**
+ * GET /api/notifications/unread-count
+ *
+ * Get unread notification count
+ */
+export const GET = createValidatedAuthenticatedHandler(
+  z.object({}),
+  unreadCountResponseSchema,
+  async ({ context }) => {
+    // Fetch unread count (cached internally for 30 seconds)
+    const unreadCount = await getUnreadNotificationCount(context.user.id);
 
-    // Fetch unread count (cached internally)
-    const unreadCount = await getUnreadNotificationCount(user.id);
-
-    return NextResponse.json({ unreadCount });
-  } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.name === 'UnauthorizedError') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Handle other errors
-    logger.error('[api/notifications/unread-count] Failed to fetch count', {
-      error,
-    });
-
-    return NextResponse.json(
-      { error: 'Failed to fetch unread count' },
-      { status: 500 }
-    );
+    return {
+      unreadCount,
+    };
   }
-}
+);
