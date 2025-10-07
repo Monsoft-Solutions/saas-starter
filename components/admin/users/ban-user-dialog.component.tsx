@@ -20,17 +20,7 @@ import {
   unbanUserAction,
 } from '@/app/actions/admin/ban-user.action';
 import { toast } from 'sonner';
-
-/**
- * User data type
- */
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  banned: boolean;
-  banReason: string | null;
-};
+import { UserTableData } from '@/lib/types/table';
 
 /**
  * Ban user dialog component.
@@ -41,7 +31,7 @@ export function BanUserDialog({
   open,
   onOpenChange,
 }: {
-  user: User;
+  user: UserTableData;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {

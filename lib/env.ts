@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+require('dotenv').config({ path: '.env.local' });
 require('dotenv').config();
 
 /**

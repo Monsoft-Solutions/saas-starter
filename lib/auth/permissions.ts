@@ -8,6 +8,7 @@ import {
   FALLBACK_PERMISSIONS,
 } from '@/lib/types/admin/role-permission.map';
 import { USER_ROLES, type UserRole } from '@/lib/types/admin/user-role.enum';
+import { logger } from '@/lib/logger';
 
 const EMPTY_PERMISSION_SET: AdminPermissionSet = new Set();
 const ROLE_PERMISSION_SET_CACHE = new Map<UserRole, AdminPermissionSet>();
@@ -89,4 +90,51 @@ export function hasAnyPermission(
  */
 export function isKnownPermission(value: string): value is AdminPermission {
   return ADMIN_PERMISSIONS.includes(value as AdminPermission);
+}
+
+/**
+ * Validate permission configuration and log warnings for potential misconfigurations.
+ * This helps detect when required permissions are not properly mapped to roles.
+ */
+export function validatePermissionConfiguration(
+  requiredPermission: AdminPermission,
+  role: UserRole
+): void {
+  if (!isKnownPermission(requiredPermission)) {
+    logger.warn('Unknown permission referenced in configuration', {
+      permission: requiredPermission,
+      role,
+      context: 'permission-validation',
+    });
+    return;
+  }
+
+  const rolePermissions = ROLE_PERMISSIONS[role];
+  if (!rolePermissions || !rolePermissions.includes(requiredPermission)) {
+    logger.warn('Required permission not found in role mapping', {
+      permission: requiredPermission,
+      role,
+      rolePermissions: rolePermissions || [],
+      context: 'permission-validation',
+    });
+  }
+}
+
+/**
+ * Enhanced permission checking with configuration validation.
+ * Logs warnings when permissions are not properly configured.
+ */
+export function hasPermissionWithValidation(
+  permissions: PermissionSource,
+  required: AdminPermission,
+  role?: UserRole
+): boolean {
+  const hasPerm = hasPermission(permissions, required);
+
+  // Log configuration warnings if role is provided
+  if (role && !hasPerm) {
+    validatePermissionConfiguration(required, role);
+  }
+
+  return hasPerm;
 }
