@@ -9,14 +9,13 @@ import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import {
-  User,
   user as userTable,
   organization as organizationTable,
 } from '@/lib/db/schemas';
 // BetterAuth handles password hashing and session management internally
 import { redirect } from 'next/navigation';
 import { createCheckoutSession } from '@/lib/payments/stripe';
-import { getUser, invalidateUserCache } from '@/lib/db/queries';
+import { invalidateUserCache } from '@/lib/db/queries';
 import { logActivity } from '@/lib/db/queries';
 import {
   validatedAction,
@@ -24,7 +23,6 @@ import {
 } from '@/lib/auth/middleware';
 import { authClient } from '@/lib/auth/auth-client';
 import { auth } from '@/lib/auth';
-import { requireServerSession } from '@/lib/auth/server-context';
 import { headers } from 'next/headers';
 import { APP_BASE_PATH } from '@/config/navigation';
 import {
@@ -73,7 +71,7 @@ export const signIn = validatedAction(
 
     const user = result.user;
 
-    await logActivity(user.id, ActivityType.SIGN_IN);
+    await logActivity(ActivityType.SIGN_IN);
 
     // TODO: add the activity log
 
@@ -176,8 +174,7 @@ export const signUp = validatedAction(
  * Ends the current BetterAuth session and records the sign-out activity.
  */
 export async function signOut() {
-  const user = (await getUser()) as User;
-  await logActivity(user.id, ActivityType.SIGN_OUT);
+  await logActivity(ActivityType.SIGN_OUT);
   await auth.api.signOut({
     headers: await headers(),
   });
@@ -215,7 +212,7 @@ export const updatePassword = validatedActionWithUser(
       };
     }
 
-    await logActivity(user.id, ActivityType.UPDATE_PASSWORD);
+    await logActivity(ActivityType.UPDATE_PASSWORD);
 
     // Invalidate user cache after password update
     await invalidateUserCache(user.id);
@@ -268,7 +265,7 @@ export const deleteAccount = validatedActionWithUser(
       password,
     });
 
-    await logActivity(user.id, ActivityType.DELETE_ACCOUNT);
+    await logActivity(ActivityType.DELETE_ACCOUNT);
 
     await invalidateUserCache(user.id);
 
@@ -336,7 +333,7 @@ export const updateAccount = validatedActionWithUser(
         },
         headers: requestHeaders,
       }),
-      logActivity(user.id, ActivityType.UPDATE_ACCOUNT),
+      logActivity(ActivityType.UPDATE_ACCOUNT),
       invalidateUserCache(user.id), // Invalidate user cache after account update
       cacheService.invalidatePattern(CacheKeys.serverContext(requestHeaders)),
       cacheService.invalidatePattern(CacheKeys.serverSession(requestHeaders)),
@@ -406,7 +403,7 @@ const removeOrganizationMemberSchema = z.object({
  */
 export const removeOrganizationMember = validatedActionWithUser(
   removeOrganizationMemberSchema,
-  async (data, _, user) => {
+  async (data) => {
     const { memberId } = data;
     const requestHeaders = await headers();
 
@@ -440,7 +437,7 @@ export const removeOrganizationMember = validatedActionWithUser(
       };
     }
 
-    await logActivity(user.id, ActivityType.REMOVE_ORGANIZATION_MEMBER);
+    await logActivity(ActivityType.REMOVE_ORGANIZATION_MEMBER);
 
     // Create in-app notification for removed member
     if (removedMember) {
@@ -591,9 +588,7 @@ export const inviteOrganizationMember = validatedActionWithUser(
  * Utility to append an organization-level activity entry for the authenticated user.
  */
 export async function logOrganizationActivity(action: ActivityType) {
-  const { user } = await requireServerSession();
-
-  await logActivity(user.id, action);
+  await logActivity(action);
 
   return { success: 'Activity logged' };
 }

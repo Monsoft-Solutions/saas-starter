@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
             body: { invitationId },
           });
 
-          await logActivity(session.user.id, ActivityType.ACCEPT_INVITATION);
+          await logActivity(ActivityType.ACCEPT_INVITATION);
 
           logger.info('[social-login] Invitation accepted successfully', {
             userId: session.user.id,

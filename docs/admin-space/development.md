@@ -272,7 +272,6 @@ export async function updateSettingAction(
 
     // Log activity
     await logActivity({
-      userId: adminContext.user.id,
       action: 'admin.setting.updated',
       metadata: {
         settingKey: validated.key,
@@ -636,7 +635,6 @@ export async function adminAction(input: ActionInput) {
     await performOperation(validated);
 
     await logActivity({
-      userId: adminContext.user.id,
       action: 'action.performed',
       metadata: validated,
     });

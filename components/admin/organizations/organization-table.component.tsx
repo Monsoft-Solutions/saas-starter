@@ -43,9 +43,9 @@ export function OrganizationTable({
     }
 
     startTransition(async () => {
-      const result = await deleteOrganization(row.id);
+      const result = await deleteOrganization({ organizationId: row.id });
 
-      if (result.success) {
+      if ('success' in result) {
         toast.success('Organization deleted', {
           description: `"${row.name}" has been successfully deleted.`,
         });

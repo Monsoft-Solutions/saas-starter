@@ -564,7 +564,6 @@ export async function updateUserRoleAction(input: UpdateUserRoleInput) {
 
   // Log activity
   await logActivity({
-    userId: adminContext.user.id,
     action: 'user.role.updated',
     metadata: {
       targetUserId: validated.userId,
@@ -632,7 +631,6 @@ export async function banUserAction(input: BanUserInput) {
 
   // Log activity
   await logActivity({
-    userId: adminContext.user.id,
     action: 'user.banned',
     metadata: {
       targetUserId: validated.userId,

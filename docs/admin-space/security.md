@@ -221,7 +221,6 @@ export async function updateUserRoleAction(
 
     // 4. Log activity
     await logActivity({
-      userId: adminContext.user.id,
       action: 'user.role.updated',
       metadata: {
         targetUserId: validated.userId,
@@ -265,7 +264,7 @@ const validated = schema.parse(input);
 ✅ **Log all operations**
 
 ```typescript
-await logActivity({ userId, action, metadata });
+await logActivity({ action, metadata });
 ```
 
 ✅ **Handle errors gracefully**
@@ -444,7 +443,6 @@ import { logActivity } from '@/lib/db/queries';
 
 // In server action
 await logActivity({
-  userId: adminContext.user.id,
   action: 'user.role.updated',
   metadata: {
     targetUserId: userId,
@@ -570,7 +568,7 @@ const validated = schema.parse(input);
 ✅ **Log all admin operations**
 
 ```typescript
-await logActivity({ userId, action, metadata });
+await logActivity({ action, metadata });
 ```
 
 ✅ **Use TypeScript strictly**

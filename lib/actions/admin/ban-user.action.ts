@@ -33,7 +33,7 @@ const unbanUserSchema = z.object({
  */
 export const banUserAction = withPermission(
   'users:write',
-  async (formData, context) => {
+  async (formData) => {
     try {
       const data = banUserSchema.parse({
         userId: formData.get('userId'),
@@ -46,7 +46,6 @@ export const banUserAction = withPermission(
 
       // Log admin action
       await logActivity({
-        userId: context.user.id,
         action: 'admin.user.banned',
         metadata: {
           targetUserId: data.userId,
@@ -73,7 +72,7 @@ export const banUserAction = withPermission(
  */
 export const unbanUserAction = withPermission(
   'users:write',
-  async (formData, context) => {
+  async (formData) => {
     try {
       const data = unbanUserSchema.parse({
         userId: formData.get('userId'),
@@ -84,7 +83,6 @@ export const unbanUserAction = withPermission(
 
       // Log admin action
       await logActivity({
-        userId: context.user.id,
         action: 'admin.user.unbanned',
         metadata: {
           targetUserId: data.userId,

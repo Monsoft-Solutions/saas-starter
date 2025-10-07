@@ -80,11 +80,7 @@ export async function GET(request: Request) {
     });
 
     // Log admin action
-    await logActivity(
-      context.user.id,
-      'admin.activity.exported' as any,
-      request.headers.get('x-forwarded-for') ?? undefined
-    );
+    await logActivity('admin.activity.exported');
 
     logger.info('[api/admin/activity/export] Activity logs exported', {
       adminUserId: context.user.id,

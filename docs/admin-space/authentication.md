@@ -255,7 +255,6 @@ export async function updateUserRoleAction(input: UpdateUserRoleInput) {
 
   // Log activity
   await logActivity({
-    userId: adminContext.user.id,
     action: 'user.role.updated',
     metadata: { targetUserId: validated.userId, newRole: validated.role },
   });
@@ -358,7 +357,6 @@ All admin actions are automatically logged to the `activity_logs` table:
 import { logActivity } from '@/lib/db/queries';
 
 await logActivity({
-  userId: adminContext.user.id,
   action: 'user.role.updated',
   metadata: {
     targetUserId: userId,

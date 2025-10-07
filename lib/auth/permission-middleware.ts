@@ -19,14 +19,14 @@ export class PermissionDeniedError extends Error {
   }
 }
 
-type PermissionActionFunction<T> = (
-  formData: FormData,
+type PermissionActionFunction<T, P = FormData> = (
+  params: P,
   context: AdminContext
 ) => Promise<T> | T;
 
-type PermissionActionWrapper<T> = {
-  (formData: FormData): Promise<T>;
-  (prevState: ActionState, formData: FormData): Promise<ActionState>;
+type PermissionActionWrapper<T, P = FormData> = {
+  (params: P): Promise<T>;
+  (prevState: ActionState, params: P): Promise<ActionState>;
 };
 
 function ensurePermissions(
@@ -76,16 +76,16 @@ function handlePermissionFailure(
   } satisfies ActionState;
 }
 
-function withPermissionsInternal<T>(
+function withPermissionsInternal<T, P = FormData>(
   required: readonly AdminPermission[],
-  action: PermissionActionFunction<T>,
+  action: PermissionActionFunction<T, P>,
   resource?: string
-): PermissionActionWrapper<T> {
+): PermissionActionWrapper<T, P> {
   const handler = async (
-    ...args: [FormData] | [ActionState, FormData]
+    ...args: [P] | [ActionState, P]
   ): Promise<T | ActionState> => {
     const isStatefulCall = args.length === 2;
-    const formData = (isStatefulCall ? args[1] : args[0]) as FormData;
+    const params = (isStatefulCall ? args[1] : args[0]) as P;
     const prevState = (isStatefulCall ? args[0] : undefined) as
       | ActionState
       | undefined;
@@ -94,7 +94,7 @@ function withPermissionsInternal<T>(
       const context = await requireAdminContext();
       ensurePermissions(context, required, resource);
 
-      const result = await action(formData, context);
+      const result = await action(params, context);
 
       if (isStatefulCall) {
         return (result ?? {}) as ActionState;
@@ -137,28 +137,28 @@ function withPermissionsInternal<T>(
     }
   };
 
-  return handler as PermissionActionWrapper<T>;
+  return handler as PermissionActionWrapper<T, P>;
 }
 
-export function withPermissions<T>(
+export function withPermissions<T, P = FormData>(
   required: readonly AdminPermission[],
-  action: PermissionActionFunction<T>,
+  action: PermissionActionFunction<T, P>,
   resource?: string
-): PermissionActionWrapper<T> {
+): PermissionActionWrapper<T, P> {
   return withPermissionsInternal(required, action, resource);
 }
 
-export function withPermission<T>(
+export function withPermission<T, P = FormData>(
   required: AdminPermission,
-  action: PermissionActionFunction<T>,
+  action: PermissionActionFunction<T, P>,
   resource?: string
-): PermissionActionWrapper<T> {
+): PermissionActionWrapper<T, P> {
   return withPermissionsInternal([required], action, resource);
 }
 
-export function withSuperAdminPermission<T>(
-  action: PermissionActionFunction<T>,
+export function withSuperAdminPermission<T, P = FormData>(
+  action: PermissionActionFunction<T, P>,
   resource?: string
-): PermissionActionWrapper<T> {
+): PermissionActionWrapper<T, P> {
   return withPermissionsInternal(['users:write'], action, resource);
 }

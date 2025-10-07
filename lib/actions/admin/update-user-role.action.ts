@@ -22,7 +22,7 @@ const updateUserRoleSchema = z.object({
  */
 export const updateUserRoleAction = withPermission(
   'users:write',
-  async (formData, context) => {
+  async (formData) => {
     try {
       const data = updateUserRoleSchema.parse({
         userId: formData.get('userId'),
@@ -34,7 +34,6 @@ export const updateUserRoleAction = withPermission(
 
       // Log admin action
       await logActivity({
-        userId: context.user.id,
         action: 'admin.user.role_updated',
         metadata: {
           targetUserId: data.userId,

@@ -18,7 +18,6 @@ export const refreshStatsAction = withPermission(
 
       // Log admin action
       await logActivity({
-        userId: context.user.id,
         action: 'admin.stats.refreshed',
         metadata: {
           calculationDurationMs: stats.calculationDurationMs,

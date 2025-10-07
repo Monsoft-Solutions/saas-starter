@@ -46,7 +46,7 @@ const stripeWebhookJobHandler = async (
   payload: StripeWebhookJobPayload,
   job: BaseJob
 ) => {
-  const { eventType, eventData, ipAddress } = payload;
+  const { eventType, eventData } = payload;
 
   logger.info('[jobs] Processing Stripe webhook job', {
     jobId: job.jobId,
@@ -63,11 +63,7 @@ const stripeWebhookJobHandler = async (
         if (organization) {
           const ownerId = await getOrganizationOwner(organization.id);
           if (ownerId) {
-            await logActivity(
-              ownerId,
-              ActivityType.SUBSCRIPTION_CREATED,
-              ipAddress ?? ''
-            );
+            await logActivity(ActivityType.SUBSCRIPTION_CREATED);
             const owner = await getUserById(ownerId);
             if (owner) {
               await sendSubscriptionCreatedEmailAsync({
@@ -109,11 +105,7 @@ const stripeWebhookJobHandler = async (
         if (organization) {
           const ownerId = await getOrganizationOwner(organization.id);
           if (ownerId) {
-            await logActivity(
-              ownerId,
-              ActivityType.PAYMENT_FAILED,
-              ipAddress ?? ''
-            );
+            await logActivity(ActivityType.PAYMENT_FAILED);
             const owner = await getUserById(ownerId);
             if (owner) {
               await sendPaymentFailedEmailAsync({
@@ -189,11 +181,7 @@ const stripeWebhookJobHandler = async (
 
         const ownerId = await getOrganizationOwner(organization.id);
         if (ownerId) {
-          await logActivity(
-            ownerId,
-            ActivityType.SUBSCRIPTION_UPDATED,
-            ipAddress ?? ''
-          );
+          await logActivity(ActivityType.SUBSCRIPTION_UPDATED);
         }
         // TODO: Send subscription updated email
       }
@@ -218,11 +206,7 @@ const stripeWebhookJobHandler = async (
 
         const ownerId = await getOrganizationOwner(organization.id);
         if (ownerId) {
-          await logActivity(
-            ownerId,
-            ActivityType.SUBSCRIPTION_DELETED,
-            ipAddress ?? ''
-          );
+          await logActivity(ActivityType.SUBSCRIPTION_DELETED);
 
           // Create in-app notification
           const subAny = subscription as Stripe.Subscription & {

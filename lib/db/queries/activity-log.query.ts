@@ -5,6 +5,7 @@ import { ActivityType } from '@/lib/types';
 import { requireServerSession } from '@/lib/auth/server-context';
 import type { AdminRole } from '@/lib/auth/admin-context';
 import type { AdminPermission } from '@/lib/types/admin/permission.enum';
+import { headers } from 'next/headers';
 
 export async function getActivityLogs() {
   const session = await requireServerSession();
@@ -31,28 +32,26 @@ export async function logActivity(
   userIdOrParams:
     | string
     | {
-        userId: string;
         action: string;
         metadata?: Record<string, unknown>;
-        ipAddress?: string;
       },
-  type?: ActivityType,
-  ipAddress?: string
+  type?: ActivityType
 ) {
-  let userId: string;
   let action: string;
-  let ip: string;
+
+  // Get IP address for logging
+  const requestHeaders = await headers();
+  const ip = requestHeaders.get('x-forwarded-for') ?? undefined;
+
+  const session = await requireServerSession();
+  const userId = session.user.id;
 
   // Handle object parameter
   if (typeof userIdOrParams === 'object') {
-    userId = userIdOrParams.userId;
     action = userIdOrParams.action;
-    ip = userIdOrParams.ipAddress || '';
   } else {
     // Handle individual parameters
-    userId = userIdOrParams;
     action = type || '';
-    ip = ipAddress || '';
   }
 
   if (!userId) {

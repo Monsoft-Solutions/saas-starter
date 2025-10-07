@@ -376,9 +376,7 @@ case 'invoice.payment_succeeded': {
       const ownerId = await getOrganizationOwner(organization.id);
       if (ownerId) {
         await logActivity(
-          ownerId,
           ActivityType.PAYMENT_SUCCEEDED,
-          ipAddress ?? ''
         );
 
         const owner = await getUserById(ownerId);
@@ -458,9 +456,7 @@ case 'invoice.payment_action_required': {
       const ownerId = await getOrganizationOwner(organization.id);
       if (ownerId) {
         await logActivity(
-          ownerId,
           ActivityType.PAYMENT_ACTION_REQUIRED,
-          ipAddress ?? ''
         );
 
         const owner = await getUserById(ownerId);

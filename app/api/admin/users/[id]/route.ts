@@ -123,7 +123,6 @@ export async function PATCH(
 
         // Log admin action
         await logActivity({
-          userId: context.user.id,
           action: 'admin.user.role_updated',
           metadata: {
             targetUserId: validated.userId,
@@ -160,7 +159,6 @@ export async function PATCH(
 
         // Log admin action
         await logActivity({
-          userId: context.user.id,
           action: 'admin.user.banned',
           metadata: {
             targetUserId: validated.userId,
@@ -187,7 +185,6 @@ export async function PATCH(
 
         // Log admin action
         await logActivity({
-          userId: context.user.id,
           action: 'admin.user.unbanned',
           metadata: {
             targetUserId: userId,

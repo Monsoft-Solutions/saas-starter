@@ -110,7 +110,6 @@ export async function DELETE(
 
     // Log admin action
     await logActivity({
-      userId: context.user.id,
       action: 'admin.organization.deleted',
       metadata: {
         organizationId,
