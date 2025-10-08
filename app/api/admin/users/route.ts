@@ -37,7 +37,7 @@ export const GET = createValidatedAdminHandler(
 
     // Convert to response format expected by the client
     return {
-      data: result.users,
+      data: result.data,
       total: result.total,
       limit: result.limit,
       offset: result.offset,

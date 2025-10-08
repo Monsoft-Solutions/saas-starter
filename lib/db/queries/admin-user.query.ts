@@ -83,7 +83,7 @@ export async function listAllUsers(filters: UserListFilters = {}) {
       const userOutput = users.map((user) => userTableDataSchema.parse(user));
 
       return {
-        users: userOutput,
+        data: userOutput,
         total: Number(totalCount),
         limit,
         offset,

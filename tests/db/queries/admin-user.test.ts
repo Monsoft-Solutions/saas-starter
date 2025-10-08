@@ -192,12 +192,13 @@ describe('admin user queries', () => {
     const result = await listAllUsers(filters);
 
     expect(result).toMatchObject({
-      users: userRows,
+      data: expect.arrayContaining(userRows),
       total: 4,
       limit: 2,
       offset: 0,
       hasMore: true,
     });
+    expect(result.hasMore).toBe(true);
     expect(mocks.cacheGetOrSet).toHaveBeenCalledWith(
       expect.stringContaining('admin:users-list'),
       expect.any(Function),

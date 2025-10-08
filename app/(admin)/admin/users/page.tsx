@@ -33,25 +33,7 @@ export default async function AdminUsersPage({
   const usersData = await listAllUsersAction(filters);
 
   // Convert to the format expected by the generic table (TableDataResponse)
-  const tableData = usersData.users.map((user) => ({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    emailVerified: user.emailVerified,
-    banned: user.banned,
-    banReason: user.banReason,
-    banExpires: user.banExpires,
-    createdAt: user.createdAt,
-    image: user.image,
-  }));
-
-  const initialData = {
-    data: tableData,
-    total: usersData.total,
-    limit: filters.limit,
-    offset: filters.offset,
-  };
+  const initialData = usersData;
 
   return (
     <div className="space-y-6">
