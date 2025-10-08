@@ -77,7 +77,10 @@ const stripeWebhookJobHandler = async (
 
           const ownerId = await getOrganizationOwner(organization.id);
           if (ownerId) {
-            await logActivity(ActivityType.SUBSCRIPTION_CREATED);
+            await logActivity({
+              userId: ownerId,
+              action: ActivityType.SUBSCRIPTION_CREATED,
+            });
             const owner = await getUserById(ownerId);
             if (owner) {
               await sendSubscriptionCreatedEmailAsync({
@@ -119,7 +122,10 @@ const stripeWebhookJobHandler = async (
         if (organization) {
           const ownerId = await getOrganizationOwner(organization.id);
           if (ownerId) {
-            await logActivity(ActivityType.PAYMENT_FAILED);
+            await logActivity({
+              userId: ownerId,
+              action: ActivityType.PAYMENT_FAILED,
+            });
             const owner = await getUserById(ownerId);
             if (owner) {
               await sendPaymentFailedEmailAsync({
@@ -157,7 +163,12 @@ const stripeWebhookJobHandler = async (
         );
         if (organization) {
           const ownerId = await getOrganizationOwner(organization.id);
+
           if (ownerId) {
+            await logActivity({
+              userId: ownerId,
+              action: ActivityType.PAYMENT_SUCCEEDED,
+            });
             // Create in-app notification (no email for success to avoid noise)
             await createPaymentSuccessNotification(
               ownerId,
@@ -201,7 +212,10 @@ const stripeWebhookJobHandler = async (
 
         const ownerId = await getOrganizationOwner(organization.id);
         if (ownerId) {
-          await logActivity(ActivityType.SUBSCRIPTION_UPDATED);
+          await logActivity({
+            userId: ownerId,
+            action: ActivityType.SUBSCRIPTION_UPDATED,
+          });
         }
         // TODO: Send subscription updated email
       }
@@ -232,7 +246,10 @@ const stripeWebhookJobHandler = async (
 
         const ownerId = await getOrganizationOwner(organization.id);
         if (ownerId) {
-          await logActivity(ActivityType.SUBSCRIPTION_DELETED);
+          await logActivity({
+            userId: ownerId,
+            action: ActivityType.SUBSCRIPTION_DELETED,
+          });
 
           // Create in-app notification
           const subAny = subscription as Stripe.Subscription & {

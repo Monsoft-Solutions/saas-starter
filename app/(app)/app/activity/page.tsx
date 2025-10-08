@@ -31,6 +31,7 @@ const iconMap: Record<ActivityType, LucideIcon> = {
   [ActivityType.SUBSCRIPTION_UPDATED]: Wallet,
   [ActivityType.SUBSCRIPTION_DELETED]: Wallet,
   [ActivityType.PAYMENT_FAILED]: Wallet,
+  [ActivityType.PAYMENT_SUCCEEDED]: Wallet,
   [ActivityType.CREATE_ORGANIZATION]: UserPlus,
   [ActivityType.REMOVE_ORGANIZATION_MEMBER]: UserMinus,
   [ActivityType.INVITE_ORGANIZATION_MEMBER]: Mail,
