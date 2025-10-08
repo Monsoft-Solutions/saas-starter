@@ -78,7 +78,7 @@ export function AdminTableFilters<
    */
   const handleBooleanChange = useCallback(
     (key: keyof TFilters, value: string) => {
-      const parsedValue = value === 'all' ? undefined : value;
+      const parsedValue = value === 'all' ? undefined : value === 'true';
       onFiltersChange({ [key]: parsedValue } as Partial<TFilters>);
     },
     [onFiltersChange]

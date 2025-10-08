@@ -78,35 +78,37 @@ describe('Create Typed Action', () => {
     it('should validate output in development mode', async () => {
       vi.stubEnv('NODE_ENV', 'development');
 
-      // Use strict schema that won't allow extra fields
-      const strictOutputSchema = createActionStateSchema({
-        email: z.string().optional(),
-        redirectUrl: z.string().optional(),
-      }).strict();
+      try {
+        // Use strict schema that won't allow extra fields
+        const strictOutputSchema = createActionStateSchema({
+          email: z.string().optional(),
+          redirectUrl: z.string().optional(),
+        }).strict();
 
-      const handler = vi.fn(async () => ({
-        // Invalid output - has field not in schema
-        invalidField: 'value',
-        error: 'test',
-      }));
+        const handler = vi.fn(async () => ({
+          // Invalid output - has field not in schema
+          invalidField: 'value',
+          error: 'test',
+        }));
 
-      const action = createTypedAction(
-        inputSchema,
-        strictOutputSchema,
-        handler
-      );
+        const action = createTypedAction(
+          inputSchema,
+          strictOutputSchema,
+          handler
+        );
 
-      const formData = new FormData();
-      formData.append('email', 'user@example.com');
-      formData.append('password', 'password123');
+        const formData = new FormData();
+        formData.append('email', 'user@example.com');
+        formData.append('password', 'password123');
 
-      const prevState = {};
-      const result = await action(prevState, formData);
+        const prevState = {};
+        const result = await action(prevState, formData);
 
-      expect(result).toHaveProperty('error');
-      expect(result.error).toContain('Internal error');
-
-      vi.unstubAllEnvs();
+        expect(result).toHaveProperty('error');
+        expect(result.error).toContain('Internal error');
+      } finally {
+        vi.unstubAllEnvs();
+      }
     });
 
     it('should skip output validation in production mode', async () => {
@@ -248,39 +250,41 @@ describe('Create Typed Action', () => {
     it('should validate output in development mode', async () => {
       vi.stubEnv('NODE_ENV', 'development');
 
-      // Use strict schema that won't allow extra fields
-      const strictOutputSchema = createActionStateSchema({
-        userId: z.string().optional(),
-      }).strict();
+      try {
+        // Use strict schema that won't allow extra fields
+        const strictOutputSchema = createActionStateSchema({
+          userId: z.string().optional(),
+        }).strict();
 
-      const mockUser: TestUser = {
-        id: '123',
-        email: 'user@example.com',
-      };
+        const mockUser: TestUser = {
+          id: '123',
+          email: 'user@example.com',
+        };
 
-      const getUserContext = vi.fn(async () => mockUser);
-      const handler = vi.fn(async () => ({
-        // Invalid output - has field not in schema
-        invalidField: 'value',
-        error: 'test',
-      }));
+        const getUserContext = vi.fn(async () => mockUser);
+        const handler = vi.fn(async () => ({
+          // Invalid output - has field not in schema
+          invalidField: 'value',
+          error: 'test',
+        }));
 
-      const action = createTypedActionWithUser(
-        inputSchema,
-        strictOutputSchema,
-        handler,
-        getUserContext
-      );
+        const action = createTypedActionWithUser(
+          inputSchema,
+          strictOutputSchema,
+          handler,
+          getUserContext
+        );
 
-      const formData = new FormData();
-      formData.append('name', 'John Doe');
+        const formData = new FormData();
+        formData.append('name', 'John Doe');
 
-      const prevState = {};
-      const result = await action(prevState, formData);
+        const prevState = {};
+        const result = await action(prevState, formData);
 
-      expect(result).toHaveProperty('error');
-
-      vi.unstubAllEnvs();
+        expect(result).toHaveProperty('error');
+      } finally {
+        vi.unstubAllEnvs();
+      }
     });
   });
 });

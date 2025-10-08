@@ -91,7 +91,7 @@ export function validateQueryParams<T extends z.ZodTypeAny>(
 }
 ```
 
-#### 4. **Remove duplicate schema definitions**
+#### 4. **Remove duplicate schema definitions** (DONE)
 
 - **File**: `lib/actions/admin/ban-user.action.ts:16-33`
 - **Issue**: Local schema definitions duplicate schemas already defined in `lib/types/admin/ban-user.schema.ts`

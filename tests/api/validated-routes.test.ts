@@ -54,35 +54,41 @@ vi.mock('@/lib/notifications/notification.service', () => ({
   getNotification: vi.fn(),
 }));
 
+// Mock the notification service - this is what the API route actually calls
+vi.mock('@/lib/notifications/notification.service', () => ({
+  getNotification: vi.fn(),
+  getNotifications: vi.fn(),
+  getUnreadNotificationCount: vi.fn(),
+  markNotificationAsRead: vi.fn(),
+  toggleNotificationRead: vi.fn(),
+  dismissNotification: vi.fn(),
+}));
+
+// Mock the entire db module to avoid complex query chain mocking
 vi.mock('@/lib/db/drizzle', () => ({
   db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          limit: vi.fn().mockResolvedValue([
-            {
-              id: 'user-123',
-              name: 'Test User',
-              email: 'test@example.com',
-              emailVerified: true,
-              image: null,
-              role: 'user',
-              createdAt: new Date('2024-01-01').toISOString(),
-              updatedAt: new Date('2024-01-01').toISOString(),
-              banned: null,
-              banReason: null,
-              banExpires: null,
-            },
-          ]),
-        })),
-      })),
-    })),
+    select: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
+// Mock the database schemas
 vi.mock('@/lib/db/schemas', () => ({
-  user: {},
+  user: {
+    id: 'id',
+    name: 'name',
+    email: 'email',
+    emailVerified: 'emailVerified',
+    image: 'image',
+    role: 'role',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    banned: 'banned',
+    banReason: 'banReason',
+    banExpires: 'banExpires',
+  },
 }));
+
 
 import { GET as getNotifications } from '@/app/api/notifications/route';
 import { PATCH as updateNotification } from '@/app/api/notifications/[id]/route';
@@ -112,8 +118,11 @@ function createMockRequest(
     });
   }
 
+  const bodyText = options.body ? JSON.stringify(options.body) : '';
+
   const request = {
     json: vi.fn().mockResolvedValue(options.body ?? {}),
+    text: vi.fn().mockResolvedValue(bodyText),
     nextUrl: fullUrl,
     headers: new Headers(),
     method: options.method ?? 'GET',
@@ -218,6 +227,11 @@ describe('Validated API Routes', () => {
   });
 
   describe('PATCH /api/notifications/[id]', () => {
+    beforeEach(() => {
+      // Reset all mocks before each test
+      vi.clearAllMocks();
+    });
+
     it('should successfully update notification with valid action', async () => {
       const mockNotification = {
         id: 1,
@@ -235,6 +249,7 @@ describe('Validated API Routes', () => {
         expiresAt: null,
       };
 
+      // Mock the service function to return our test notification
       vi.mocked(getNotification).mockResolvedValue(mockNotification);
       vi.mocked(markNotificationAsRead).mockResolvedValue();
 
@@ -287,6 +302,7 @@ describe('Validated API Routes', () => {
     });
 
     it('should return 404 when notification not found', async () => {
+      // Mock the service function to return null (notification not found)
       vi.mocked(getNotification).mockResolvedValue(null);
 
       const request = createMockRequest('/api/notifications/999', {
@@ -321,6 +337,7 @@ describe('Validated API Routes', () => {
         expiresAt: null,
       };
 
+      // Mock the service function to return a notification owned by a different user
       vi.mocked(getNotification).mockResolvedValue(mockNotification);
 
       const request = createMockRequest('/api/notifications/1', {
@@ -386,6 +403,30 @@ describe('Validated API Routes', () => {
 
   describe('GET /api/user', () => {
     it('should return validated user profile', async () => {
+      // Set up database mock for normal user
+      const { db } = vi.mocked(await import('@/lib/db/drizzle'));
+      vi.mocked(db.select).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([
+              {
+                id: 'user-123',
+                name: 'Test User',
+                email: 'test@example.com',
+                emailVerified: true,
+                image: null,
+                role: 'user',
+                createdAt: new Date('2024-01-01').toISOString(),
+                updatedAt: new Date('2024-01-01').toISOString(),
+                banned: null,
+                banReason: null,
+                banExpires: null,
+              },
+            ]),
+          }),
+        }),
+      } as any);
+
       const request = createMockRequest('/api/user');
 
       const response = await getUser(request, createMockRouteContext());
@@ -410,10 +451,11 @@ describe('Validated API Routes', () => {
     });
 
     it('should include admin fields when user is banned', async () => {
-      const { db } = await import('@/lib/db/drizzle');
+      // Set up database mock for banned user
+      const { db } = vi.mocked(await import('@/lib/db/drizzle'));
       vi.mocked(db.select).mockReturnValue({
-        from: vi.fn(() => ({
-          where: vi.fn(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
             limit: vi.fn().mockResolvedValue([
               {
                 id: 'user-123',
@@ -429,8 +471,8 @@ describe('Validated API Routes', () => {
                 banExpires: new Date('2024-12-31').toISOString(),
               },
             ]),
-          })),
-        })),
+          }),
+        }),
       } as any);
 
       const request = createMockRequest('/api/user');
