@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { paginationResponseSchema } from '../common';
 
 /**
  * Activity log table data schema for admin activity list responses.
@@ -7,7 +8,7 @@ import { z } from 'zod';
 export const activityLogTableDataSchema = z.object({
   id: z.number().int(),
   userId: z.string(),
-  userEmail: z.string(),
+  userEmail: z.string().email(),
   userName: z.string(),
   userImage: z.string().nullable(),
   action: z.string(),
@@ -45,14 +46,11 @@ export const activityBreakdownSchema = z.array(activityBreakdownItemSchema);
  * Admin activity list response schema.
  * Returns paginated list of activity logs with optional statistics and breakdown.
  */
-export const adminActivityListResponseSchema = z.object({
+export const adminActivityListResponseSchema = paginationResponseSchema.extend({
   data: z.array(activityLogTableDataSchema),
   total: z.number().int().min(0),
-  limit: z.number().int().min(1).max(1000),
-  offset: z.number().int().min(0),
-  hasMore: z.boolean(),
   statistics: activityStatisticsSchema.optional(),
-  breakdown: z.array(activityBreakdownItemSchema).optional(),
+  breakdown: activityBreakdownSchema.optional(),
 });
 
 /**

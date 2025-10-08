@@ -141,13 +141,26 @@ export function createValidatedRouteParamHandler<
 
       // Parse and validate request body
       let bodyData: unknown;
-      try {
-        bodyData = await request.json();
-      } catch (parseError) {
-        return error('Invalid JSON in request body', {
-          status: 400,
-          details: parseError instanceof Error ? parseError.message : undefined,
-        });
+      const method = request.method.toUpperCase();
+      const hasBody = ['POST', 'PUT', 'PATCH'].includes(method);
+
+      if (hasBody) {
+        try {
+          const bodyText = await request.text();
+          if (bodyText) {
+            bodyData = JSON.parse(bodyText);
+          } else {
+            bodyData = {};
+          }
+        } catch (parseError) {
+          return error('Invalid JSON in request body', {
+            status: 400,
+            details:
+              parseError instanceof Error ? parseError.message : undefined,
+          });
+        }
+      } else {
+        bodyData = {};
       }
 
       const bodyValidation = validateRequest(bodyData, inputSchema);
@@ -156,7 +169,7 @@ export function createValidatedRouteParamHandler<
         return error(bodyValidation.error, {
           status: 400,
           details: bodyValidation.details
-            ? String(bodyValidation.details)
+            ? JSON.stringify(bodyValidation.details)
             : undefined,
         });
       }
@@ -178,7 +191,7 @@ export function createValidatedRouteParamHandler<
       if (err instanceof HandlerError) {
         return error(err.message, {
           status: err.status,
-          details: err.details ? String(err.details) : undefined,
+          details: err.details ? JSON.stringify(err.details) : undefined,
         });
       }
 

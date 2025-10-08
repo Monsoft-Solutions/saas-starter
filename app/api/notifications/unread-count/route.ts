@@ -27,5 +27,8 @@ export const GET = createValidatedAuthenticatedHandler(
     return {
       unreadCount,
     };
+  },
+  {
+    inputSource: 'query',
   }
 );

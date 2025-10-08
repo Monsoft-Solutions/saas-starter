@@ -87,11 +87,12 @@ type UseApiMutationConfig<
   /**
    * Enable optimistic updates
    * Provide a function that returns the optimistic data to update
+   * Uses the response type for better type safety
    */
-  optimisticData?: (
-    currentData: unknown,
+  optimisticData?: <TCacheData = z.infer<TResponse>>(
+    currentData: TCacheData,
     newData: TRequest extends z.ZodTypeAny ? z.infer<TRequest> : never
-  ) => unknown;
+  ) => TCacheData;
 
   /**
    * Keys to optimistically update before mutation
@@ -332,7 +333,7 @@ export function useApiMutation<
     },
     {
       // Revalidate specified keys after successful mutation
-      onSuccess: async (data, key, config) => {
+      onSuccess: async (data, key, swrMutationConfig) => {
         const { mutate } = await import('swr');
 
         // Revalidate specified keys
@@ -342,7 +343,7 @@ export function useApiMutation<
 
         // Call user's onSuccess if provided
         if (swrConfig?.onSuccess) {
-          swrConfig.onSuccess(data, key, config);
+          swrConfig.onSuccess(data, key, swrMutationConfig);
         }
       },
       // Pass through user config

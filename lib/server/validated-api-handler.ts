@@ -5,7 +5,6 @@ import { NextRequest } from 'next/server';
 import {
   validateRequest,
   validateQueryParams,
-  ValidationResult,
 } from '@/lib/validation/request-validator.util';
 import { validatedOk } from '@/lib/validation/validated-response.util';
 import { error } from '@/lib/http/response';
@@ -128,7 +127,9 @@ export function createValidatedApiHandler<
     if (!validation.success) {
       return error(validation.error, {
         status: 400,
-        details: validation.details ? String(validation.details) : undefined,
+        details: validation.details
+          ? JSON.stringify(validation.details)
+          : undefined,
       });
     }
 
@@ -203,7 +204,9 @@ export function createValidatedAuthenticatedHandler<
     if (!validation.success) {
       return error(validation.error, {
         status: 400,
-        details: validation.details ? String(validation.details) : undefined,
+        details: validation.details
+          ? JSON.stringify(validation.details)
+          : undefined,
       });
     }
 
@@ -255,41 +258,33 @@ export function createValidatedOrganizationHandler<
     async ({ request, route, context }) => {
       // Parse and validate input based on source
       let inputData: unknown;
-      let validation: ValidationResult<z.infer<TInput>> = {
-        success: true,
-        data: {} as z.infer<TInput>,
-      };
 
-      if (inputSource) {
-        if (inputSource === 'query') {
-          inputData = Object.fromEntries(
-            request.nextUrl.searchParams.entries()
-          );
-        } else {
-          try {
-            inputData = await request.json();
-          } catch (parseError) {
-            return error('Invalid JSON in request body', {
-              status: 400,
-              details:
-                parseError instanceof Error ? parseError.message : undefined,
-            });
-          }
-        }
-
-        validation =
-          inputSource === 'query'
-            ? validateQueryParams(request.nextUrl.searchParams, inputSchema)
-            : validateRequest(inputData, inputSchema);
-
-        if (!validation.success) {
-          return error(validation.error, {
+      if (inputSource === 'query') {
+        inputData = Object.fromEntries(request.nextUrl.searchParams.entries());
+      } else {
+        try {
+          inputData = await request.json();
+        } catch (parseError) {
+          return error('Invalid JSON in request body', {
             status: 400,
-            details: validation.details
-              ? String(validation.details)
-              : undefined,
+            details:
+              parseError instanceof Error ? parseError.message : undefined,
           });
         }
+      }
+
+      const validation =
+        inputSource === 'query'
+          ? validateQueryParams(request.nextUrl.searchParams, inputSchema)
+          : validateRequest(inputData, inputSchema);
+
+      if (!validation.success) {
+        return error(validation.error, {
+          status: 400,
+          details: validation.details
+            ? JSON.stringify(validation.details)
+            : undefined,
+        });
       }
 
       // Execute handler with validated data and organization context

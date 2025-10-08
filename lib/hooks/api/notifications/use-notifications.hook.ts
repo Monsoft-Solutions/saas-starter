@@ -166,7 +166,7 @@ export function useNotificationOperations(params?: {
       const newReadStatus = !notification.isRead;
       const unreadChange = newReadStatus ? -1 : 1;
 
-      // Optimistic update
+      // Optimistic update - deep clone to avoid cache mutation
       await mutate(
         {
           ...data,
@@ -177,7 +177,7 @@ export function useNotificationOperations(params?: {
                   isRead: newReadStatus,
                   readAt: newReadStatus ? new Date() : null,
                 }
-              : n
+              : { ...n }
           ),
           unreadCount: Math.max(0, data.unreadCount + unreadChange),
         },
@@ -208,7 +208,7 @@ export function useNotificationOperations(params?: {
   const markAllAsRead = useCallback(async () => {
     if (!data) return;
 
-    // Optimistic update
+    // Optimistic update - deep clone to avoid cache mutation
     await mutate(
       {
         ...data,
@@ -249,13 +249,13 @@ export function useNotificationOperations(params?: {
       );
       const wasUnread = notification && !notification.isRead;
 
-      // Optimistic update - remove from list
+      // Optimistic update - deep clone and remove from list
       await mutate(
         {
           ...data,
-          notifications: data.notifications.filter(
-            (n) => n.id !== notificationId
-          ),
+          notifications: data.notifications
+            .filter((n) => n.id !== notificationId)
+            .map((n) => ({ ...n })),
           unreadCount: wasUnread
             ? Math.max(0, data.unreadCount - 1)
             : data.unreadCount,
