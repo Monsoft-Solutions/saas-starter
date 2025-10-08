@@ -81,6 +81,28 @@ function formatAction(action: ActivityType): string {
       return 'You removed an organization member';
     case ActivityType.INVITE_ORGANIZATION_MEMBER:
       return 'You invited an organization member';
+    case ActivityType.PAYMENT_SUCCEEDED:
+      return 'Your payment was successful';
+    case ActivityType.PAYMENT_FAILED:
+      return 'Your payment failed';
+    case ActivityType.SUBSCRIPTION_CREATED:
+      return 'You created a new subscription';
+    case ActivityType.SUBSCRIPTION_UPDATED:
+      return 'You updated your subscription';
+    case ActivityType.SUBSCRIPTION_DELETED:
+      return 'You deleted your subscription';
+    case ActivityType.ADMIN_ACTIVITY_EXPORTED:
+      return 'You exported the activity logs';
+    case ActivityType.ADMIN_USER_BANNED:
+      return 'You banned a user';
+    case ActivityType.ADMIN_USER_UNBANNED:
+      return 'You unbanned a user';
+    case ActivityType.ADMIN_USER_ROLE_UPDATED:
+      return 'You updated a user role';
+    case ActivityType.ADMIN_ORGANIZATION_DELETED:
+      return 'You deleted an organization';
+    case ActivityType.ADMIN_STATS_REFRESHED:
+      return 'You refreshed the statistics';
     default:
       return 'Unknown action occurred';
   }
