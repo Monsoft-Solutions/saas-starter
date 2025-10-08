@@ -5,7 +5,10 @@ import { withPermission } from '@/lib/auth/permission-middleware';
 import { updateUserRole } from '@/lib/db/queries/admin-user.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
 import { ActivityType } from '@/lib/types/activity-log';
-import { updateUserRoleSchema } from '@/lib/types/admin/update-user-role.schema';
+import {
+  UpdateUserRoleInput,
+  updateUserRoleSchema,
+} from '@/lib/types/admin/update-user-role.schema';
 
 /**
  * Server action to update a user's role.
@@ -13,12 +16,9 @@ import { updateUserRoleSchema } from '@/lib/types/admin/update-user-role.schema'
  */
 export const updateUserRoleAction = withPermission(
   'users:write',
-  async (formData) => {
+  async (params: UpdateUserRoleInput) => {
     try {
-      const data = updateUserRoleSchema.parse({
-        userId: formData.get('userId'),
-        role: formData.get('role'),
-      });
+      const data = updateUserRoleSchema.parse(params);
 
       // Update role via Better Auth
       await updateUserRole(data.userId, data.role);

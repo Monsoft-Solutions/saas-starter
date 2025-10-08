@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { AdminTable } from './admin-table.component';
 import { AdminTableFilters } from './admin-table-filters.component';
 import { useTableUrlSync } from '@/lib/hooks/table/use-table-url-sync.hook';
+import { apiRequest } from '@/lib/api/client.util';
+import { ApiError } from '@/lib/types/api/api-error.type';
 import type { TableConfig, TableDataResponse } from '@/lib/types/table';
 
 /**
@@ -68,37 +70,30 @@ export function AdminTableWrapper<
       updateUrlParams(updatedFilters);
 
       try {
-        // Build query string for API
-        const queryParams = new URLSearchParams();
-
-        Object.entries(updatedFilters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            queryParams.set(key, String(value));
-          }
+        // Use type-safe API client with route definition
+        const newData = await apiRequest(config.route, {
+          queryParams: updatedFilters as Record<
+            string,
+            string | number | boolean | undefined
+          >,
         });
 
-        const response = await fetch(
-          `${config.apiEndpoint}?${queryParams.toString()}`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch ${config.tableId} data`);
-        }
-
-        const newData = await response.json();
-
-        // Only update data if we have a valid response structure
-        if (newData && typeof newData === 'object' && 'data' in newData) {
-          setData(newData);
-        } else {
-          throw new Error(`Invalid response format for ${config.tableId}`);
-        }
+        // Update data with validated response
+        setData(newData as TableDataResponse<TData>);
       } catch (error) {
         console.error(`Failed to fetch ${config.tableId}:`, error);
-        toast.error(`Failed to load ${config.tableId}`, {
-          description:
-            error instanceof Error ? error.message : 'Please try again',
-        });
+
+        // Handle ApiError with detailed message
+        if (error instanceof ApiError) {
+          toast.error(`Failed to load ${config.tableId}`, {
+            description: error.message,
+          });
+        } else {
+          toast.error(`Failed to load ${config.tableId}`, {
+            description:
+              error instanceof Error ? error.message : 'Please try again',
+          });
+        }
       } finally {
         setIsLoading(false);
       }

@@ -5,8 +5,6 @@ export * from './filter-field-type.enum';
 export * from './action-definition.type';
 export * from './table-data-response.type';
 export * from './pagination-config.type';
-export * from './user-table-data.type';
-export * from './organization-table-data.type';
 
 // Analytics types
 export type {

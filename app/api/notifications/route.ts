@@ -3,38 +3,27 @@
  *
  * Fetch paginated notifications for the authenticated user
  * Supports pagination via query parameters
+ *
+ * Uses validated API handler with:
+ * - Input validation: Query parameters (limit, offset)
+ * - Output validation: Notification list response schema
+ * - Authentication: Required (withApiAuth)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { requireServerContext } from '@/lib/auth/server-context';
+import { createValidatedAuthenticatedHandler } from '@/lib/server/validated-api-handler';
 import {
   getNotifications,
   getUnreadNotificationCount,
 } from '@/lib/notifications/notification.service';
-import logger from '@/lib/logger/logger.service';
 import { paginationSchema } from '@/lib/types/notifications/pagination.type';
+import { notificationListResponseSchema } from '@/lib/types/notifications/notification-list-response.schema';
 
-export async function GET(request: NextRequest) {
-  try {
-    // Authenticate user
-    const { user } = await requireServerContext();
-
-    // Parse and validate query parameters
-    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const validationResult = paginationSchema.safeParse(searchParams);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid pagination parameters',
-          details: validationResult.error.format(),
-        },
-        { status: 400 }
-      );
-    }
-
-    const { limit, offset } = validationResult.data;
+export const GET = createValidatedAuthenticatedHandler(
+  paginationSchema,
+  notificationListResponseSchema,
+  async ({ data, context }) => {
+    const { limit, offset } = data;
+    const { user } = context;
 
     // Fetch notifications and unread count in parallel
     const [notifications, unreadCount] = await Promise.all([
@@ -42,7 +31,8 @@ export async function GET(request: NextRequest) {
       getUnreadNotificationCount(user.id),
     ]);
 
-    return NextResponse.json({
+    // Response is automatically validated against notificationListResponseSchema
+    return {
       notifications,
       unreadCount,
       pagination: {
@@ -50,29 +40,10 @@ export async function GET(request: NextRequest) {
         offset,
         hasMore: notifications.length === limit,
       },
-    });
-  } catch (error) {
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request parameters', details: error.format() },
-        { status: 400 }
-      );
-    }
-
-    // Handle authentication errors
-    if (error instanceof Error && error.name === 'UnauthorizedError') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Handle unexpected errors
-    logger.error('[api/notifications] Failed to fetch notifications', {
-      error,
-    });
-
-    return NextResponse.json(
-      { error: 'Failed to fetch notifications' },
-      { status: 500 }
-    );
+    };
+  },
+  {
+    inputSource: 'query', // Parse from query parameters
+    logName: 'Fetch notifications',
   }
-}
+);

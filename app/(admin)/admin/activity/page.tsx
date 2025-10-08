@@ -1,4 +1,4 @@
-import { listAllActivityLogs } from '@/lib/db/queries/admin-activity-log.query';
+import { listAllActivityLogsAction } from '@/lib/actions/admin/list-activity-logs.action';
 import { ActivityLogTable } from '@/components/admin/activity/activity-log-table.component';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
@@ -30,7 +30,7 @@ export default async function AdminActivityPage({
     action: params.action,
     startDate: params.startDate,
     endDate: params.endDate,
-    limit: parseInt(params.limit ?? '100', 10),
+    limit: parseInt(params.limit ?? '10', 10),
     offset: parseInt(params.offset ?? '0', 10),
   };
 
@@ -40,10 +40,10 @@ export default async function AdminActivityPage({
     startDate: params.startDate ? new Date(params.startDate) : undefined,
     endDate: params.endDate ? new Date(params.endDate) : undefined,
   };
-  const activityLogsData = await listAllActivityLogs(queryFilters);
+  const activityLogsData = await listAllActivityLogsAction(queryFilters);
 
   // Convert to the format expected by the generic table (TableDataResponse)
-  const tableData = activityLogsData.logs.map((log) => ({
+  const tableData = activityLogsData.data.map((log) => ({
     id: log.id,
     userId: log.userId,
     action: log.action,

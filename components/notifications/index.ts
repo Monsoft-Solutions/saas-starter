@@ -12,5 +12,10 @@ export { NotificationEmpty } from './notification-empty.component';
 export { NotificationFilters } from './notification-filters.component';
 
 // Hooks
-export { useNotifications } from './use-notifications.hook';
+export {
+  useNotifications,
+  useNotification,
+  useUnreadCount,
+  useNotificationOperations,
+} from '@/lib/hooks/api/notifications/use-notifications.hook';
 export { useNotificationContext } from './notification-provider.component';

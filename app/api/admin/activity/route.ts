@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
-import { ensureApiPermissions } from '@/lib/auth/api-permission';
+import { createValidatedAdminHandler } from '@/lib/server/validated-admin-handler';
 import {
   listAllActivityLogs,
   getActivityStatistics,
   getActivityBreakdown,
 } from '@/lib/db/queries/admin-activity-log.query';
-import logger from '@/lib/logger/logger.service';
+import { adminActivityListRequestSchema } from '@/lib/types/admin/admin-activity-list-request.schema';
+import { adminActivityListResponseSchema } from '@/lib/types/admin/admin-activity-list-response.schema';
 
 /**
  * GET /api/admin/activity
@@ -22,69 +22,28 @@ import logger from '@/lib/logger/logger.service';
  * - offset: Pagination offset (default: 0)
  * - includeStats: Include activity statistics (true/false) (optional)
  *
+ * Uses validated admin handler with:
+ * - Input validation: Query parameters (userId, action, startDate, endDate, search, limit, offset, includeStats)
+ * - Output validation: Activity list response schema
+ * - Permission check: Requires `activity:read` admin permission
+ *
  * @requires `activity:read` admin permission
- * @returns Paginated list of activity logs
+ * @returns Paginated list of activity logs with optional statistics
  */
-export async function GET(request: Request) {
-  try {
-    const permissionCheck = await ensureApiPermissions(request, {
-      resource: 'admin.activity.list',
-      requiredPermissions: ['activity:read'],
-    });
-
-    if (!permissionCheck.ok) {
-      return permissionCheck.response;
-    }
-
-    const { searchParams } = new URL(request.url);
-
-    const userId = searchParams.get('userId') ?? undefined;
-    const action = searchParams.get('action') ?? undefined;
-    const startDateParam = searchParams.get('startDate');
-    const endDateParam = searchParams.get('endDate');
-    const search = searchParams.get('search') ?? undefined;
-    const limit = parseInt(searchParams.get('limit') ?? '100', 10);
-    const offset = parseInt(searchParams.get('offset') ?? '0', 10);
-    const includeStats = searchParams.get('includeStats') === 'true';
-
-    // Validate pagination parameters
-    if (isNaN(limit) || limit < 1 || limit > 1000) {
-      return NextResponse.json(
-        { error: 'Invalid limit parameter (must be between 1 and 1000)' },
-        { status: 400 }
-      );
-    }
-
-    if (isNaN(offset) || offset < 0) {
-      return NextResponse.json(
-        { error: 'Invalid offset parameter (must be >= 0)' },
-        { status: 400 }
-      );
-    }
-
-    // Parse dates if provided
-    let startDate: Date | undefined;
-    let endDate: Date | undefined;
-
-    if (startDateParam) {
-      startDate = new Date(startDateParam);
-      if (isNaN(startDate.getTime())) {
-        return NextResponse.json(
-          { error: 'Invalid startDate format (use ISO 8601)' },
-          { status: 400 }
-        );
-      }
-    }
-
-    if (endDateParam) {
-      endDate = new Date(endDateParam);
-      if (isNaN(endDate.getTime())) {
-        return NextResponse.json(
-          { error: 'Invalid endDate format (use ISO 8601)' },
-          { status: 400 }
-        );
-      }
-    }
+export const GET = createValidatedAdminHandler(
+  adminActivityListRequestSchema,
+  adminActivityListResponseSchema,
+  async ({ data }) => {
+    const {
+      userId,
+      action,
+      startDate,
+      endDate,
+      search,
+      limit,
+      offset,
+      includeStats,
+    } = data;
 
     const result = await listAllActivityLogs({
       userId,
@@ -96,29 +55,26 @@ export async function GET(request: Request) {
       offset,
     });
 
-    // Optionally include activity statistics
+    // Optionally include activity statistics and breakdown
     if (includeStats) {
       const [statistics, breakdown] = await Promise.all([
         getActivityStatistics(30),
         getActivityBreakdown(30),
       ]);
 
-      return NextResponse.json({
+      return {
         ...result,
         statistics,
         breakdown,
-      });
+      };
     }
 
-    return NextResponse.json(result);
-  } catch (error) {
-    logger.error('[api/admin/activity] Failed to load activity logs', {
-      error,
-    });
-
-    return NextResponse.json(
-      { error: 'Failed to load activity logs' },
-      { status: 500 }
-    );
+    return result;
+  },
+  {
+    resource: 'admin.activity.list',
+    requiredPermissions: ['activity:read'],
+    inputSource: 'query',
+    logName: 'GET /api/admin/activity',
   }
-}
+);

@@ -71,7 +71,7 @@ export const signIn = validatedAction(
 
     const user = result.user;
 
-    await logActivity(ActivityType.SIGN_IN);
+    await logActivity({ userId: user.id, action: ActivityType.SIGN_IN });
 
     // TODO: add the activity log
 
@@ -151,7 +151,7 @@ export const signUp = validatedAction(
       redirect(`/accept-invitation/${activeInvitationId}`);
     }
 
-    await logActivity(ActivityType.SIGN_UP);
+    await logActivity({ userId: createdUser.id, action: ActivityType.SIGN_UP });
 
     const redirectTo = formData.get('redirect') as string | null;
     if (redirectTo === 'checkout') {

@@ -1,8 +1,8 @@
 import {
-  getAdminStatistics,
-  getUserGrowthData,
-} from '@/lib/db/queries/admin-statistics.query';
-import { getPlanDistribution } from '@/lib/db/queries/admin-subscription-analytics.query';
+  getAdminStatisticsAction,
+  getUserGrowthDataAction,
+} from '@/lib/actions/admin/get-statistics.action';
+import { getPlanDistributionAction } from '@/lib/actions/admin/get-subscription-analytics.action';
 import { MetricCard } from '@/components/admin/dashboard/metric-card.component';
 import { QuickActions } from '@/components/admin/dashboard/quick-actions.component';
 import { RecentActivity } from '@/components/admin/dashboard/recent-activity.component';
@@ -18,9 +18,9 @@ import { requireAdminContext } from '@/lib/auth/admin-context';
  */
 export default async function AdminDashboardPage() {
   const context = await requireAdminContext();
-  const stats = await getAdminStatistics();
-  const userGrowthData = await getUserGrowthData();
-  const planDistribution = await getPlanDistribution();
+  const stats = await getAdminStatisticsAction();
+  const userGrowthData = await getUserGrowthDataAction();
+  const planDistribution = await getPlanDistributionAction();
 
   return (
     <div className="space-y-6">

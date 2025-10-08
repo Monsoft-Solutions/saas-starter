@@ -1,6 +1,7 @@
-import { listAllUsers } from '@/lib/db/queries/admin-user.query';
+import { listAllUsersAction } from '@/lib/actions/admin/list-users.action';
 import { UserTable } from '@/components/admin/users/user-table.component';
 import { requireAdminContext } from '@/lib/auth/admin-context';
+import { userListFiltersSchema } from '@/lib/types/admin';
 
 /**
  * Admin user management page.
@@ -21,35 +22,18 @@ export default async function AdminUsersPage({
   const params = await searchParams;
 
   // Parse search parameters
-  const filters = {
+  const filters = userListFiltersSchema.parse({
     search: params.search,
     role: params.role,
     limit: parseInt(params.limit ?? '50', 10),
     offset: parseInt(params.offset ?? '0', 10),
-  };
+  });
 
   // Fetch users data
-  const usersData = await listAllUsers(filters);
+  const usersData = await listAllUsersAction(filters);
 
   // Convert to the format expected by the generic table (TableDataResponse)
-  const tableData = usersData.users.map((user) => ({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    emailVerified: user.emailVerified,
-    banned: user.banned,
-    banReason: user.banReason,
-    banExpires: user.banExpires,
-    createdAt: user.createdAt,
-  }));
-
-  const initialData = {
-    data: tableData,
-    total: usersData.total,
-    limit: filters.limit,
-    offset: filters.offset,
-  };
+  const initialData = usersData;
 
   return (
     <div className="space-y-6">

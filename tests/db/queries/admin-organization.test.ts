@@ -165,7 +165,7 @@ describe('admin organization queries', () => {
     const result = await listAllOrganizations(filters);
 
     expect(result).toMatchObject({
-      organizations,
+      data: organizations,
       total: 2,
       limit: 5,
       offset: 0,

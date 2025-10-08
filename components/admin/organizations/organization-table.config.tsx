@@ -2,12 +2,13 @@ import { Building2, Eye, ExternalLink, Trash2, Users } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import type {
-  TableConfig,
-  OrganizationTableData,
-  OrganizationTableFilters,
-} from '@/lib/types/table';
+import { apiRoutes } from '@/lib/api/routes.config';
+import type { TableConfig } from '@/lib/types/table';
 import { FilterFieldType } from '@/lib/types/table';
+import {
+  AdminOrganizationListRequest,
+  OrganizationTableData,
+} from '@/lib/types/admin';
 
 /**
  * Get subscription status badge variant.
@@ -37,10 +38,10 @@ function getSubscriptionStatusVariant(status: string) {
  */
 export const organizationTableConfig: TableConfig<
   OrganizationTableData,
-  OrganizationTableFilters
+  AdminOrganizationListRequest
 > = {
   tableId: 'organizations',
-  apiEndpoint: '/api/admin/organizations',
+  route: apiRoutes.admin.organizations.list,
 
   columns: [
     {

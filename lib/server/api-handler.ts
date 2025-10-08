@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   getServerContextFromHeaders,
   type OrganizationContext,
@@ -13,6 +14,7 @@ import {
   ok,
   type ApiResponse,
 } from '@/lib/http/response';
+import { optionalValidatedOk } from '@/lib/validation/validated-response.util';
 import logger from '@/lib/logger/logger.service';
 
 type RouteParamRecord = Record<string, string | string[]>;
@@ -71,6 +73,12 @@ export type ApiHandlerOptions = {
   successStatus?: number;
   logName?: string;
   onError?: (error: unknown) => void;
+  /**
+   * Optional output schema for response validation.
+   * When provided, validates the response data before returning.
+   * Validation is enforced in development/test, optional in production (controlled by env var).
+   */
+  outputSchema?: z.ZodTypeAny;
 };
 
 async function resolveRouteContext(
@@ -85,10 +93,12 @@ async function resolveRouteContext(
 
 /**
  * Normalizes mixed handler results into deterministic Next.js responses.
+ * Optionally validates output against a schema if provided.
  */
 function normalizeResult<T>(
   result: ApiHandlerResult<T>,
-  successStatus?: number
+  successStatus?: number,
+  outputSchema?: z.ZodTypeAny
 ): NextResponse<ApiResponse<T>> {
   if (result instanceof NextResponse) {
     return result as NextResponse<ApiResponse<T>>;
@@ -109,6 +119,11 @@ function normalizeResult<T>(
   const statusInit =
     successStatus && successStatus !== 200 ? successStatus : undefined;
 
+  // If output schema is provided, validate the response
+  if (outputSchema) {
+    return optionalValidatedOk(result, outputSchema, { status: statusInit });
+  }
+
   return ok(result as T, statusInit);
 }
 
@@ -116,7 +131,12 @@ export function createApiHandler<T>(
   handler: (args: RouteHandlerArgs) => Promise<ApiHandlerResult<T>>,
   options: ApiHandlerOptions = {}
 ) {
-  const { successStatus, logName = 'API handler error', onError } = options;
+  const {
+    successStatus,
+    logName = 'API handler error',
+    onError,
+    outputSchema,
+  } = options;
 
   return async (
     request: NextRequest,
@@ -131,7 +151,7 @@ export function createApiHandler<T>(
         route: normalizedRoute,
       });
 
-      return normalizeResult(result, successStatus);
+      return normalizeResult(result, successStatus, outputSchema);
     } catch (unknownError) {
       onError?.(unknownError);
 

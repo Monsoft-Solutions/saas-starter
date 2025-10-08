@@ -1,8 +1,104 @@
 # Enterprise SaaS Starter
 
+<div align="center">
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+![Maintained](https://img.shields.io/badge/Maintained-yes-green.svg)
+
+**[🚀 Live Demo](#) • [📖 Documentation](./docs/README.md) • [💬 Discord](#) • [🐛 Report Bug](https://github.com/Monsoft-Solutions/saas-starter/issues)**
+
+</div>
+
 A production-ready, enterprise-grade SaaS starter template built by **[Monsoft Solutions](https://monsoftsolutions.com)** and developed by **[@flechilla](https://github.com/flechilla)**.
 
 Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-starter) but completely rewritten with enterprise features, advanced authentication, multi-tenancy, and a comprehensive design system.
+
+## 📋 Table of Contents
+
+- [Quick Overview](#-quick-overview)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [Local Development Setup](#-local-development-setup)
+- [Testing](#-testing)
+- [Production Deployment](#-production-deployment)
+- [Documentation](#-documentation)
+- [Development Standards](#-development-standards)
+- [Available Commands](#-available-commands)
+- [Enterprise Features](#-enterprise-features)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+## 🎯 Quick Overview
+
+> **Production-ready** Next.js 15 SaaS boilerplate with everything you need to launch your SaaS business
+
+- 🔐 **Complete Authentication** - Multi-tenant auth with social providers & RBAC
+- 💳 **Stripe Payments** - Full subscription management & billing portal
+- 👑 **Admin Dashboard** - Powerful admin panel with analytics & user management
+- 🔄 **Background Jobs** - Async processing with BullMQ & Redis
+- 📧 **Email System** - Beautiful templates with Resend integration
+- ⚡ **Cache Layer** - Provider-agnostic caching with Upstash Redis
+- 🎨 **Design System** - Notion-inspired UI with shadcn/ui components
+- 🔌 **Type-Safe API** - End-to-end type safety with Zod validation
+- 📝 **Logging** - Production-ready logging with Winston
+- 🧪 **Testing** - Comprehensive test coverage with Vitest
+
+## 💡 Why Choose This Starter?
+
+<table>
+<tr>
+<td width="50%">
+
+### ⚡ **Fast Development**
+
+- Pre-configured authentication & authorization
+- Ready-to-use admin dashboard
+- Complete payment integration
+- Professional email templates
+- Modern UI components library
+
+</td>
+<td width="50%">
+
+### 🛡️ **Production Ready**
+
+- Enterprise-grade security
+- Comprehensive error handling
+- Performance optimized caching
+- Structured logging & monitoring
+- Full test coverage
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🎨 **Beautiful Design**
+
+- Notion-inspired interface
+- Dark/light mode support
+- Responsive mobile-first design
+- Accessible components
+- Customizable design tokens
+
+</td>
+<td width="50%">
+
+### 🚀 **Scalable Architecture**
+
+- Multi-tenant from day one
+- Background job processing
+- Provider-agnostic caching
+- Type-safe API architecture
+- Database optimization
+
+</td>
+</tr>
+</table>
 
 ## ✨ Key Features
 
@@ -69,6 +165,33 @@ Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-star
 - **Performance Monitoring**: Built-in statistics and health monitoring
 - **Graceful Degradation**: Cache failures don't break application functionality
 
+### 🔄 **Async Background Job Processing**
+
+- **BullMQ Integration**: Redis-backed queue management with robust job processing
+- **Job Types**: Email jobs, webhook jobs, and custom job definitions
+- **Retry Logic**: Automatic retry with exponential backoff for failed jobs
+- **Job Monitoring**: Real-time job status tracking and comprehensive dashboard
+- **Priority Queues**: Support for job prioritization and scheduling
+- **Dead Letter Queue**: Failed job handling with manual retry capabilities
+
+### 🔌 **Type-Safe API Architecture**
+
+- **Unified API Patterns**: Consistent patterns for API routes, server actions, and hooks
+- **Zod Validation**: Runtime type validation for all API inputs and outputs
+- **Permission System**: Granular permission-based access control for all operations
+- **Error Handling**: Standardized error responses with proper HTTP status codes
+- **Type Inference**: End-to-end type safety from client to server
+- **Documentation**: Comprehensive API documentation with examples and best practices
+
+### 📝 **Production Logging System**
+
+- **Winston Integration**: Structured logging with environment-based configuration
+- **Log Levels**: Support for debug, info, warn, and error log levels
+- **Log Rotation**: Automatic daily log rotation with compression
+- **Error Tracking**: Comprehensive error and exception logging
+- **Performance Monitoring**: Request timing and performance metrics
+- **Production Ready**: Separate logs for different environments
+
 ### 🛠 **Developer Experience**
 
 - **TypeScript Excellence**: 100% TypeScript with strict type safety
@@ -78,38 +201,6 @@ Originally forked from [nextjs/saas-starter](https://github.com/nextjs/saas-star
 - **Development Tools**: ESLint, Prettier, Husky, and lint-staged
 - **Testing Framework**: Vitest with comprehensive test coverage
 
-### ⚡ **Next.js 15 App Router Patterns**
-
-**Important Breaking Change**: Starting from Next.js 15, `searchParams` and `params` in page components are now asynchronous Promises that must be awaited.
-
-```typescript
-// ✅ Correct in Next.js 15
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const params = await searchParams; // Must await
-  // ... rest of component
-}
-
-// ❌ Incorrect - will cause runtime errors
-export default function Page({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  // searchParams is now a Promise, not a plain object
-}
-```
-
-**Key Points:**
-
-- **Always await** `searchParams` and `params` in server components
-- This is a **breaking change** from Next.js 14 and earlier
-- Client components still receive synchronous props (use `useSearchParams()` from `next/navigation`)
-- API routes continue to use synchronous `request.nextUrl.searchParams`
-
 ## 🚀 Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) with App Router and Turbopack
@@ -118,8 +209,11 @@ export default function Page({
 - **Payments**: [Stripe](https://stripe.com/) with subscription management
 - **Email**: [Resend](https://resend.com/) with React Email templates
 - **Caching**: [Upstash Redis](https://upstash.com/) with provider-agnostic cache layer
+- **Background Jobs**: [BullMQ](https://docs.bullmq.io/) with Redis-backed queues
+- **Logging**: [Winston](https://github.com/winstonjs/winston) with structured logging
 - **UI Framework**: [shadcn/ui](https://ui.shadcn.com/) with [Tailwind CSS](https://tailwindcss.com/)
 - **Validation**: [Zod](https://zod.dev/) for runtime type validation
+- **Testing**: [Vitest](https://vitest.dev/) with React Testing Library
 - **Deployment**: [Vercel](https://vercel.com/) optimized
 
 ## 📦 Quick Start
@@ -351,7 +445,10 @@ The application is compatible with:
 - **[🔐 Authentication Guide](./docs/auth/)**: BetterAuth and OAuth setup
 - **[👑 Super Admin Space](./docs/admin-space/overview.md)**: Admin panel documentation and features
 - **[💳 Stripe Integration](./docs/stripe/)**: Payment processing and webhooks
+- **[🔌 API Architecture](./docs/api/)**: Type-safe API patterns, validation, and permissions
 - **[⚡ Cache System](./docs/cache/)**: Provider-agnostic caching with Upstash Redis
+- **[🔄 Background Jobs](./docs/async-job-processing.md)**: Async job processing with BullMQ
+- **[📝 Logging System](./docs/logging.md)**: Production logging with Winston
 - **[🌍 Environment Configuration](./docs/environment-configuration.md)**: Multi-environment setup guide
 - **[💎 Design System](./docs/design-system.md)**: Tailwind CSS v4 design tokens and utilities
 - **[📧 Email System](./docs/emails.md)**: Email templates and delivery
@@ -542,6 +639,9 @@ This project was originally forked from [nextjs/saas-starter](https://github.com
 - **[Stripe](https://stripe.com/)**: Online payment processing platform
 - **[Resend](https://resend.com/)**: Email delivery service for developers
 - **[Upstash](https://upstash.com/)**: Serverless Redis for edge-compatible caching
+- **[BullMQ](https://docs.bullmq.io/)**: Premium message queue for Node.js
+- **[Winston](https://github.com/winstonjs/winston)**: Universal logging library
+- **[Vitest](https://vitest.dev/)**: Next generation testing framework
 - **[shadcn/ui](https://ui.shadcn.com/)**: Beautifully designed components
 - **[Drizzle ORM](https://orm.drizzle.team/)**: TypeScript ORM for SQL databases
 
@@ -557,8 +657,9 @@ Special thanks to the open-source community and all contributors who help make t
 
 - **[Monsoft Solutions](https://monsoftsolutions.com)** - Enterprise Software Development
 - **[@flechilla on GitHub](https://github.com/flechilla)** - Follow for more projects
-- **[Documentation](./docs-dev/README.md)** - Complete project documentation
+- **[Documentation](./docs/README.md)** - Complete project documentation
 - **[Issues](https://github.com/Monsoft-Solutions/saas-starter/issues)** - Report bugs or request features
+- **[Live Demo](#)** - Coming soon
 
 ---
 

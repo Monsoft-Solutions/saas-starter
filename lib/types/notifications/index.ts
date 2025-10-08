@@ -27,3 +27,12 @@ export {
   notificationEventSchema,
   type NotificationEvent,
 } from './notification-event.schema';
+export {
+  notificationMetadataSchema,
+  notificationResponseSchema,
+  type NotificationResponse,
+} from './notification-response.schema';
+export {
+  notificationListResponseSchema,
+  type NotificationListResponse,
+} from './notification-list-response.schema';

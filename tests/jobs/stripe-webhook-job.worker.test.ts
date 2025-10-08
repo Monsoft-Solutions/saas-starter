@@ -178,7 +178,10 @@ describe('Stripe Webhook Job Worker', () => {
       expect(mockGetOrganizationOwner).toHaveBeenCalledWith(1);
 
       // Verify activity logging
-      expect(mockLogActivity).toHaveBeenCalledWith('subscription.created');
+      expect(mockLogActivity).toHaveBeenCalledWith({
+        action: 'subscription.created',
+        userId: 10,
+      });
 
       // Verify user lookup
       expect(mockGetUserById).toHaveBeenCalledWith(10);
@@ -316,7 +319,10 @@ describe('Stripe Webhook Job Worker', () => {
 
       await capturedHandler(payload, job);
 
-      expect(mockLogActivity).toHaveBeenCalledWith('payment.failed');
+      expect(mockLogActivity).toHaveBeenCalledWith({
+        action: 'payment.failed',
+        userId: 10,
+      });
 
       expect(mockSendPaymentFailedEmailAsync).toHaveBeenCalledWith({
         to: 'owner@example.com',
@@ -355,7 +361,10 @@ describe('Stripe Webhook Job Worker', () => {
 
       await capturedHandler(payload, job);
 
-      expect(mockLogActivity).toHaveBeenCalledWith('payment.failed');
+      expect(mockLogActivity).toHaveBeenCalledWith({
+        action: 'payment.failed',
+        userId: 10,
+      });
     });
   });
 
@@ -402,7 +411,10 @@ describe('Stripe Webhook Job Worker', () => {
       );
 
       // Verify activity logging
-      expect(mockLogActivity).toHaveBeenCalledWith('subscription.updated');
+      expect(mockLogActivity).toHaveBeenCalledWith({
+        action: 'subscription.updated',
+        userId: 10,
+      });
     });
   });
 
@@ -449,7 +461,10 @@ describe('Stripe Webhook Job Worker', () => {
       );
 
       // Verify activity logging
-      expect(mockLogActivity).toHaveBeenCalledWith('subscription.deleted');
+      expect(mockLogActivity).toHaveBeenCalledWith({
+        action: 'subscription.deleted',
+        userId: 10,
+      });
     });
   });
 

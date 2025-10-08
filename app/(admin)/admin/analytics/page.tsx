@@ -1,9 +1,9 @@
 import {
-  getSubscriptionTableData,
-  getRevenueMetrics,
-  getPlanDistribution,
-  getRevenueTrend,
-} from '@/lib/db/queries/admin-subscription-analytics.query';
+  getSubscriptionTableDataAction,
+  getRevenueMetricsAction,
+  getPlanDistributionAction,
+  getRevenueTrendAction,
+} from '@/lib/actions/admin/get-subscription-analytics.action';
 import { SubscriptionTable } from '@/components/admin/analytics/subscription-table.component';
 import { RevenueMetrics } from '@/components/admin/analytics/revenue-metrics.component';
 import { PlanDistributionChart } from '@/components/admin/analytics/plan-distribution-chart.component';
@@ -58,10 +58,10 @@ export default async function AdminAnalyticsPage({
   // Fetch all data in parallel
   const [subscriptionsData, revenueMetrics, planDistribution, revenueTrend] =
     await Promise.all([
-      getSubscriptionTableData(filters),
-      getRevenueMetrics(),
-      getPlanDistribution(),
-      getRevenueTrend(),
+      getSubscriptionTableDataAction(filters),
+      getRevenueMetricsAction(),
+      getPlanDistributionAction(),
+      getRevenueTrendAction(),
     ]);
 
   // Convert to the format expected by the generic table (TableDataResponse)

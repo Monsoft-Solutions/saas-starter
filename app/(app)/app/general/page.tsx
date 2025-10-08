@@ -7,12 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { updateAccount } from '@/app/(login)/actions';
-import { User } from '@/lib/db/schemas';
-import useSWR from 'swr';
 import { Suspense } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { useApiQuery } from '@/lib/hooks/api/use-api.hook';
+import { apiRoutes } from '@/lib/api/routes.config';
 
 type ActionState = {
   name?: string;
@@ -63,7 +61,7 @@ function AccountForm({
 }
 
 function AccountFormWithData({ state }: { state: ActionState }) {
-  const { data: user } = useSWR<User>('/api/user', fetcher);
+  const { data: user } = useApiQuery(apiRoutes.users.current);
   return (
     <AccountForm
       state={state}

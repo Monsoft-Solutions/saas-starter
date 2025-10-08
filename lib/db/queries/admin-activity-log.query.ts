@@ -6,16 +6,7 @@ import { db } from '../drizzle';
 import { activityLogs, user } from '../schemas';
 import { desc, eq, and, gte, lte, sql, ilike, or } from 'drizzle-orm';
 import logger from '@/lib/logger/logger.service';
-
-export type ActivityLogFilters = {
-  userId?: string;
-  action?: string;
-  startDate?: Date;
-  endDate?: Date;
-  search?: string; // Search in user email or action
-  limit?: number;
-  offset?: number;
-};
+import type { ActivityLogFilters } from '@/lib/types/admin/admin-activity-action-input.schema';
 
 /**
  * List all activity logs with filters and pagination.
@@ -83,7 +74,7 @@ export async function listAllActivityLogs(filters: ActivityLogFilters = {}) {
   ]);
 
   return {
-    logs,
+    data: logs,
     total: Number(totalCount),
     limit,
     offset,
@@ -205,7 +196,7 @@ export async function exportActivityLogsToCSV(
   const csvLines = [headers.join(',')];
 
   // Add data rows
-  for (const log of result.logs) {
+  for (const log of result.data) {
     const row = [
       log.id,
       `"${log.userEmail}"`, // Escape email in quotes
@@ -218,7 +209,7 @@ export async function exportActivityLogsToCSV(
   }
 
   logger.info('[admin-activity-log] Activity logs exported to CSV', {
-    totalLogs: result.logs.length,
+    totalLogs: result.data.length,
     filters,
   });
 

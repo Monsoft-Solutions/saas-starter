@@ -3,7 +3,6 @@
 import { useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -36,25 +35,13 @@ import { resolveRoute } from '@/lib/navigation/resolve-route.util';
 import { filterNavigationItems } from '@/lib/navigation/filter-navigation-items.util';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { signOut } from '@/app/(login)/actions';
-import type { User } from '@/lib/db/schemas';
-
-/**
- * Fetches the authenticated user record from the session-backed API endpoint.
- */
-const userFetcher = async (url: string): Promise<User> => {
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error('Unable to load user profile.');
-  }
-
-  return (await response.json()) as User;
-};
+import { useCurrentUser } from '@/lib/hooks/api/users/use-current-user.hook';
+import type { UserProfileResponse } from '@/lib/types/auth/user-profile-response.schema';
 
 /**
  * Derives the initials to display in the avatar fallback from the user profile.
  */
-function getUserInitials(user?: User | null) {
+function getUserInitials(user?: UserProfileResponse | null) {
   if (!user) {
     return 'U';
   }
@@ -73,7 +60,7 @@ function getUserInitials(user?: User | null) {
 /**
  * Resolves the preferred display name for the authenticated user.
  */
-function getUserDisplayName(user?: User | null) {
+function getUserDisplayName(user?: UserProfileResponse | null) {
   if (!user) {
     return 'Unnamed user';
   }
@@ -84,7 +71,7 @@ function getUserDisplayName(user?: User | null) {
 /**
  * Check if user has admin or super-admin role.
  */
-function isUserAdmin(user?: User | null): boolean {
+function isUserAdmin(user?: UserProfileResponse | null): boolean {
   return user?.role === 'admin' || user?.role === 'super-admin';
 }
 
@@ -104,7 +91,7 @@ export function SidebarNav({
   const [settingsOpen, setSettingsOpen] = useState(true);
   const [isSigningOut, startSignOutTransition] = useTransition();
   const navigationItems = filterNavigationItems(appNav.items);
-  const { data: user } = useSWR<User>('/api/user', userFetcher);
+  const { data: user } = useCurrentUser();
 
   const userInitials = useMemo(() => getUserInitials(user), [user]);
   const userDisplayName = useMemo(() => getUserDisplayName(user), [user]);

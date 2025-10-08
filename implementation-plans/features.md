@@ -1,8 +1,10 @@
 ## Core Infrastructure:
 
 - (done) Database & ORM - Drizzle & Postgres
-- Logging & monitoring - Structured logging (Winston) and
-  error tracking (Sentry). Send errors to slack
+- Logging & monitoring -
+  - Structured logging (Winston) (DONE)
+  - error tracking (Sentry).
+  - Send errors to slack
 - Rate limiting - API protection and abuse prevention
 - Caching layer - Redis for session storage and performance
   optimization (done)
@@ -25,7 +27,7 @@
 
 ## Business Features (admin area):
 
-- Analytics dashboard - Usage metrics and business intelligence
+- Analytics dashboard - Usage metrics and business intelligence (DONE)
 - Feature flags - A/B testing and gradual rollouts
 - API management - Rate limiting, API keys, usage tracking
 - Billing management - Invoice generation, usage-based billing, dunning

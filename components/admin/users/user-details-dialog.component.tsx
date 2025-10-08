@@ -19,7 +19,7 @@ import {
   Building2,
   Ban,
 } from 'lucide-react';
-import { UserTableData } from '@/lib/types/table';
+import { UserTableData } from '@/lib/types/admin';
 
 /**
  * User details dialog component.

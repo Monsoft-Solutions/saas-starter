@@ -10,7 +10,8 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = authClient.getSession().then((session) => session?.data?.user);
+  const session = await authClient.getSession();
+  const user = session?.data?.user;
 
   return (
     <SWRProvider

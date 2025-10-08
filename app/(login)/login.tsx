@@ -11,6 +11,8 @@ import { signIn, signUp, forgotPassword } from './actions';
 import { ActionState } from '@/lib/auth/middleware';
 import { authClient } from '@/lib/auth/auth-client';
 import { APP_BASE_PATH } from '@/config/navigation';
+import { apiRequest } from '@/lib/api/client.util';
+import { apiRoutes } from '@/lib/api/routes.config';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
@@ -35,8 +37,10 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   // Fetch invitation email when invitationId is present
   useEffect(() => {
     if (invitationId) {
-      fetch(`/api/invitations/${invitationId}`)
-        .then((res) => res.json())
+      // Use type-safe API client with route definition
+      apiRequest(apiRoutes.invitations.get, {
+        pathParams: [invitationId],
+      })
         .then((data) => {
           if (data.email) {
             setInvitationEmail(data.email);

@@ -3,71 +3,51 @@
  *
  * Update a notification (mark as read/unread, dismiss)
  * User can only update their own notifications
+ *
+ * Uses validated API handler with:
+ * - Route param validation: ID must be a valid numeric string
+ * - Input validation: Request body (action)
+ * - Output validation: Success response schema
+ * - Authentication: Required (via validated handler)
+ * - Authorization: User must own the notification
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { requireServerContext } from '@/lib/auth/server-context';
+import {
+  createValidatedRouteParamHandler,
+  HandlerError,
+} from '@/lib/server/validated-api-handler';
 import {
   markNotificationAsRead,
   toggleNotificationRead,
   dismissNotification,
   getNotification,
 } from '@/lib/notifications/notification.service';
-import logger from '@/lib/logger/logger.service';
+import { notificationUpdateRequestSchema } from '@/lib/types/notifications/notification-update-request.schema';
+import { successResponseSchema } from '@/lib/types/common/success-response.schema';
 
-const updateNotificationSchema = z.object({
-  action: z.enum(['mark_read', 'toggle_read', 'dismiss']),
+// Schema for route parameters
+const notificationParamsSchema = z.object({
+  id: z.string().regex(/^\d+$/, 'ID must be a number'),
 });
 
-type RouteParams = {
-  params: Promise<{
-    id: string;
-  }>;
-};
-
-export async function PATCH(request: NextRequest, props: RouteParams) {
-  const params = await props.params;
-  try {
-    // Authenticate user
-    const { user } = await requireServerContext();
-
-    // Parse notification ID
+export const PATCH = createValidatedRouteParamHandler(
+  notificationParamsSchema,
+  notificationUpdateRequestSchema,
+  successResponseSchema,
+  async ({ params, data, context }) => {
     const notificationId = parseInt(params.id, 10);
-    if (isNaN(notificationId)) {
-      return NextResponse.json(
-        { error: 'Invalid notification ID' },
-        { status: 400 }
-      );
-    }
-
-    // Parse request body
-    const body = await request.json();
-    const validation = updateNotificationSchema.safeParse(body);
-
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body', details: validation.error.issues },
-        { status: 400 }
-      );
-    }
-
-    const { action } = validation.data;
+    const { action } = data;
+    const { user } = context;
 
     // Verify notification exists and belongs to user
     const notification = await getNotification(notificationId);
     if (!notification) {
-      return NextResponse.json(
-        { error: 'Notification not found' },
-        { status: 404 }
-      );
+      throw new HandlerError('Notification not found', 404);
     }
 
     if (notification.userId !== user.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized to update this notification' },
-        { status: 403 }
-      );
+      throw new HandlerError('Unauthorized to update this notification', 403);
     }
 
     // Perform action
@@ -79,16 +59,10 @@ export async function PATCH(request: NextRequest, props: RouteParams) {
       await dismissNotification(notificationId, user.id);
     }
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    logger.error('[api/notifications/[id]] Failed to update notification', {
-      notificationId: params.id,
-      error,
-    });
-
-    return NextResponse.json(
-      { error: 'Failed to update notification' },
-      { status: 500 }
-    );
+    // Response is automatically validated against successResponseSchema
+    return { success: true };
+  },
+  {
+    logName: 'Update notification',
   }
-}
+);

@@ -18,6 +18,7 @@ export enum ActivityType {
   SUBSCRIPTION_UPDATED = 'subscription.updated',
   SUBSCRIPTION_DELETED = 'subscription.deleted',
   PAYMENT_FAILED = 'payment.failed',
+  PAYMENT_SUCCEEDED = 'payment.succeeded',
   // Admin activities
   ADMIN_ACTIVITY_EXPORTED = 'admin.activity.exported',
   ADMIN_USER_BANNED = 'admin.user.banned',

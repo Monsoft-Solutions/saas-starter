@@ -5,28 +5,12 @@ import { withPermission } from '@/lib/auth/permission-middleware';
 import { banUserById, unbanUserById } from '@/lib/db/queries/admin-user.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
 import { ActivityType } from '@/lib/types/activity-log';
-
-/**
- * Schema for banning a user
- */
-const banUserSchema = z.object({
-  userId: z.string().min(1, 'User ID is required'),
-  reason: z.string().min(10, 'Reason must be at least 10 characters'),
-  expiresInDays: z
-    .string()
-    .optional()
-    .transform((val) => (val ? parseInt(val) : undefined))
-    .refine((val) => val === undefined || (val > 0 && Number.isInteger(val)), {
-      message: 'Expiry must be a positive integer',
-    }),
-});
-
-/**
- * Schema for unbanning a user
- */
-const unbanUserSchema = z.object({
-  userId: z.string().min(1, 'User ID is required'),
-});
+import {
+  BanUserInput,
+  banUserSchema,
+  UnbanUserInput,
+  unbanUserSchema,
+} from '@/lib/types/admin/ban-user.schema';
 
 /**
  * Server action to ban a user.
@@ -34,13 +18,9 @@ const unbanUserSchema = z.object({
  */
 export const banUserAction = withPermission(
   'users:write',
-  async (formData) => {
+  async (params: BanUserInput) => {
     try {
-      const data = banUserSchema.parse({
-        userId: formData.get('userId'),
-        reason: formData.get('reason'),
-        expiresInDays: formData.get('expiresInDays'),
-      });
+      const data = banUserSchema.parse(params);
 
       // Ban user via Better Auth
       await banUserById(data.userId, data.reason, data.expiresInDays);
@@ -73,11 +53,9 @@ export const banUserAction = withPermission(
  */
 export const unbanUserAction = withPermission(
   'users:write',
-  async (formData) => {
+  async (params: UnbanUserInput) => {
     try {
-      const data = unbanUserSchema.parse({
-        userId: formData.get('userId'),
-      });
+      const data = unbanUserSchema.parse(params);
 
       // Unban user via Better Auth
       await unbanUserById(data.userId);

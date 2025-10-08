@@ -11,14 +11,32 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/README' },
-      { text: 'Configuration', link: '/environment-configuration' },
-      { text: 'Authentication', link: '/auth/' },
-      { text: 'Admin Space', link: '/admin-space/overview' },
-      { text: 'Payments', link: '/stripe/' },
-      { text: 'Cache System', link: '/cache/' },
-      { text: 'Background Jobs', link: '/async-job-processing' },
-      { text: 'Design System', link: '/design-system' },
-      { text: 'Logging', link: '/logging' },
+      {
+        text: 'Core Features',
+        items: [
+          { text: 'Authentication', link: '/auth/' },
+          { text: 'API Architecture', link: '/api/' },
+          { text: 'Admin Space', link: '/admin-space/overview' },
+          { text: 'Payments', link: '/stripe/' },
+        ],
+      },
+      {
+        text: 'Infrastructure',
+        items: [
+          { text: 'Cache System', link: '/cache/' },
+          { text: 'Background Jobs', link: '/async-job-processing' },
+          { text: 'Logging', link: '/logging' },
+          { text: 'Configuration', link: '/environment-configuration' },
+        ],
+      },
+      {
+        text: 'Development',
+        items: [
+          { text: 'Design System', link: '/design-system' },
+          { text: 'Unit Testing', link: '/unit-testing' },
+          { text: 'Email System', link: '/emails' },
+        ],
+      },
     ],
 
     sidebar: [
@@ -46,6 +64,28 @@ export default defineConfig({
             link: '/auth/server-actions-and-hooks',
           },
           { text: 'OAuth Setup', link: '/auth/OAUTH_SETUP' },
+        ],
+      },
+      {
+        text: 'API Architecture',
+        items: [
+          { text: 'Overview', link: '/api/' },
+          {
+            text: 'Type-Safe API Client',
+            link: '/api/type-safe-api-guide',
+          },
+          {
+            text: 'API Handlers & Validation',
+            link: '/api/handlers-and-validation',
+          },
+          {
+            text: 'Server Actions & Permissions',
+            link: '/api/server-actions-and-permissions',
+          },
+          {
+            text: 'Schemas & Validation',
+            link: '/api/schemas-and-validation',
+          },
         ],
       },
       {
@@ -168,7 +208,8 @@ export default defineConfig({
     ],
 
     footer: {
-      message: 'Built with ❤️ using Next.js, BetterAuth, Stripe, and shadcn/ui',
+      message:
+        'Built with ❤️ using Next.js, BetterAuth, Stripe, and shadcn/ui | Made by <a href="https://monsoftsolutions.com" target="_blank" rel="noopener noreferrer">MonsoftLabs</a>',
       copyright: 'Copyright © 2025 SaaS Starter Team',
     },
 

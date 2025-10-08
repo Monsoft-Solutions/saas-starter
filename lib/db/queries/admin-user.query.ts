@@ -7,14 +7,14 @@ import { db } from '../drizzle';
 import { user, member, organization, activityLogs } from '../schemas';
 import { eq, ilike, or, desc, and, sql } from 'drizzle-orm';
 import logger from '@/lib/logger/logger.service';
-import type { UserListFilters } from '@/lib/types/admin';
+import { userTableDataSchema, type UserListFilters } from '@/lib/types/admin';
 
 /**
  * List all users with filters and pagination.
  * Uses Better Auth's listUsers API as base, then applies additional filters.
  * Cached for performance.
  */
-export async function listAllUsers(filters: UserListFilters = {}) {
+export async function listAllUsers(filters: UserListFilters) {
   const { cacheService, CacheKeys } = await import('@/lib/cache');
 
   const cacheKey = CacheKeys.custom(
@@ -38,7 +38,7 @@ export async function listAllUsers(filters: UserListFilters = {}) {
         );
       }
 
-      if (filters.role && filters.role !== 'all') {
+      if (filters.role) {
         conditions.push(eq(user.role, filters.role));
       }
 
@@ -80,8 +80,10 @@ export async function listAllUsers(filters: UserListFilters = {}) {
           .where(whereClause),
       ]);
 
+      const userOutput = users.map((user) => userTableDataSchema.parse(user));
+
       return {
-        users,
+        data: userOutput,
         total: Number(totalCount),
         limit,
         offset,

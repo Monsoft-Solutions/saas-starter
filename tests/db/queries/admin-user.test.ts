@@ -134,6 +134,7 @@ import {
   unbanUserById,
   updateUserRole,
 } from '@/lib/db/queries/admin-user.query';
+import { userListFiltersSchema } from '@/lib/types/admin';
 
 describe('admin user queries', () => {
   beforeEach(() => {
@@ -143,14 +144,14 @@ describe('admin user queries', () => {
   });
 
   it('lists users with filters and caching', async () => {
-    const filters = {
+    const filters = userListFiltersSchema.parse({
       search: 'admin',
       role: 'admin',
       banned: false,
       emailVerified: true,
       limit: 2,
       offset: 0,
-    };
+    });
 
     const userRows = [
       {
@@ -192,12 +193,13 @@ describe('admin user queries', () => {
     const result = await listAllUsers(filters);
 
     expect(result).toMatchObject({
-      users: userRows,
+      data: expect.arrayContaining(userRows),
       total: 4,
       limit: 2,
       offset: 0,
       hasMore: true,
     });
+    expect(result.hasMore).toBe(true);
     expect(mocks.cacheGetOrSet).toHaveBeenCalledWith(
       expect.stringContaining('admin:users-list'),
       expect.any(Function),

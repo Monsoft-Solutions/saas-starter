@@ -1,14 +1,28 @@
-import { withOrganization } from '@/lib/server/api-handler';
-import {
+/**
+ * Organization Subscription API Route
+ *
+ * Retrieve subscription details for the authenticated user's organization.
+ * Requires an active organization membership.
+ *
+ * @route GET /api/organization/subscription
+ */
+
+import { createValidatedOrganizationHandler } from '@/lib/server/validated-api-handler';
+import { organizationSubscriptionResponseSchema } from '@/lib/types/api/subscription.type';
+import z from 'zod';
+
+/**
+ * GET /api/organization/subscription
+ *
+ * Get organization subscription details
+ */
+export const GET = createValidatedOrganizationHandler(
+  z.object({}),
   organizationSubscriptionResponseSchema,
-  type OrganizationSubscriptionResponse,
-} from '@/lib/types/api/subscription.type';
+  async ({ context }) => {
+    const organization = context.organization;
 
-export const GET = withOrganization(async ({ context }) => {
-  const organization = context.organization;
-
-  const response: OrganizationSubscriptionResponse =
-    organizationSubscriptionResponseSchema.parse({
+    return {
       organizationId: organization.id ?? null,
       organizationName: organization.name ?? null,
       stripeProductId: organization.stripeProductId ?? null,
@@ -16,7 +30,9 @@ export const GET = withOrganization(async ({ context }) => {
       planName: organization.planName ?? null,
       subscriptionStatus: organization.subscriptionStatus ?? null,
       stripeCustomerId: organization.stripeCustomerId ?? null,
-    });
-
-  return response;
-});
+    };
+  },
+  {
+    inputSource: 'query',
+  }
+);

@@ -279,7 +279,6 @@ export function AdminTable<TData>({
           isLoading={isLoading}
           onPageChange={onPageChange}
           onLimitChange={onLimitChange}
-          pageSizeOptions={config.pagination?.pageSizeOptions}
           showPageSizeSelector={config.pagination?.showPageSizeSelector}
         />
       )}

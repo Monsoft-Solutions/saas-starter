@@ -20,7 +20,7 @@ import {
   unbanUserAction,
 } from '@/lib/actions/admin/ban-user.action';
 import { toast } from 'sonner';
-import { UserTableData } from '@/lib/types/table';
+import { UserTableData } from '@/lib/types/admin';
 
 /**
  * Ban user dialog component.
@@ -51,12 +51,11 @@ export function BanUserDialog({
     }
 
     startTransition(async () => {
-      const formData = new FormData();
-      formData.append('userId', user.id);
-
       if (isUnban) {
         // Unban user
-        const result = await unbanUserAction(formData);
+        const result = await unbanUserAction({
+          userId: user.id,
+        });
 
         if ('error' in result) {
           toast.error(result.error);
@@ -66,13 +65,11 @@ export function BanUserDialog({
           window.location.reload();
         }
       } else {
-        // Ban user
-        formData.append('reason', reason);
-        if (expiresInDays) {
-          formData.append('expiresInDays', expiresInDays);
-        }
-
-        const result = await banUserAction(formData);
+        const result = await banUserAction({
+          userId: user.id,
+          reason,
+          expiresInDays: expiresInDays ? parseInt(expiresInDays) : undefined,
+        });
 
         if ('error' in result) {
           toast.error(result.error);
