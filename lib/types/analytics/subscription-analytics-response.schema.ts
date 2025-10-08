@@ -10,11 +10,14 @@ export const subscriptionDataItemSchema = z.object({
   organizationLogo: z.string().nullable(),
   planName: z.string().nullable(),
   subscriptionStatus: z.string(),
-  startDate: z.date(),
+  startDate: z.string().nullable(),
   stripeCustomerId: z.string().nullable(),
   stripeSubscriptionId: z.string().nullable(),
   memberCount: z.number(),
   mrr: z.number(),
+  renewalDate: z.string().nullable(),
+  trialEndDate: z.string().nullable(),
+  customerLifetimeValue: z.number(),
 });
 
 export type SubscriptionDataItem = z.infer<typeof subscriptionDataItemSchema>;
@@ -24,10 +27,11 @@ export type SubscriptionDataItem = z.infer<typeof subscriptionDataItemSchema>;
  */
 export const subscriptionAnalyticsResponseSchema = z
   .object({
-    data: z.array(subscriptionDataItemSchema),
+    subscriptions: z.array(subscriptionDataItemSchema),
     total: z.number(),
     limit: z.number(),
     offset: z.number(),
+    hasMore: z.boolean(),
   })
   .strict();
 
