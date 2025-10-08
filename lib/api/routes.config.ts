@@ -31,6 +31,10 @@ import { adminActivityListResponseSchema } from '@/lib/types/admin/admin-activit
 import { adminStatsResponseSchema } from '@/lib/types/admin/admin-stats-response.schema';
 import { invitationDetailsResponseSchema } from '@/lib/types/invitations/invitation-details-response.schema';
 import { cacheStatsResponseSchema } from '@/lib/types/cache/cache-stats-response.schema';
+import { subscriptionAnalyticsResponseSchema } from '@/lib/types/analytics/subscription-analytics-response.schema';
+import { subscriptionAnalyticsFiltersSchema } from '@/lib/types/analytics/subscription-analytics-filters.schema';
+import { adminOrganizationDetailsResponseSchema } from '@/lib/types/admin/admin-organization-details-response.schema';
+import { adminActivityDetailsResponseSchema } from '@/lib/types/admin/admin-activity-details-response.schema';
 
 /**
  * Route definition structure for GET requests with query parameters
@@ -246,16 +250,16 @@ export const apiRoutes = {
       >,
 
       /**
-       * Get single organization by ID
+       * Get single organization by ID with full details
        * GET /api/admin/organizations/:id
        */
       get: {
         path: (id: string) => `/api/admin/organizations/${id}`,
         method: 'GET',
-        responseSchema: adminOrganizationListResponseSchema,
+        responseSchema: adminOrganizationDetailsResponseSchema,
       } as const satisfies GetRouteWithParams<
         [string],
-        typeof adminOrganizationListResponseSchema
+        typeof adminOrganizationDetailsResponseSchema
       >,
     },
 
@@ -278,16 +282,16 @@ export const apiRoutes = {
       >,
 
       /**
-       * Get single activity log by ID
+       * Get single activity log by ID with full details
        * GET /api/admin/activity/:id
        */
       get: {
         path: (id: string) => `/api/admin/activity/${id}`,
         method: 'GET',
-        responseSchema: adminActivityListResponseSchema,
+        responseSchema: adminActivityDetailsResponseSchema,
       } as const satisfies GetRouteWithParams<
         [string],
-        typeof adminActivityListResponseSchema
+        typeof adminActivityDetailsResponseSchema
       >,
     },
 
@@ -307,6 +311,25 @@ export const apiRoutes = {
       } as const satisfies GetRouteWithQuery<
         typeof adminStatsRequestSchema,
         typeof adminStatsResponseSchema
+      >,
+    },
+
+    /**
+     * Admin analytics routes
+     */
+    analytics: {
+      /**
+       * Get subscription analytics data
+       * GET /api/admin/analytics/subscriptions
+       */
+      subscriptions: {
+        path: '/api/admin/analytics/subscriptions',
+        method: 'GET',
+        querySchema: subscriptionAnalyticsFiltersSchema,
+        responseSchema: subscriptionAnalyticsResponseSchema,
+      } as const satisfies GetRouteWithQuery<
+        typeof subscriptionAnalyticsFiltersSchema,
+        typeof subscriptionAnalyticsResponseSchema
       >,
     },
   },

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
+import { useAdminOrganization } from '@/lib/hooks/api/admin/use-admin-organizations.hook';
 import {
   Building2,
   Users,
@@ -35,33 +35,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-
-/**
- * Organization details type from API
- */
-type OrganizationDetails = {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  createdAt: Date;
-  stripeCustomerId: string | null;
-  stripeSubscriptionId: string | null;
-  stripeProductId: string | null;
-  planName: string | null;
-  subscriptionStatus: string;
-  members: Array<{
-    userId: string;
-    role: string;
-    joinedAt: Date;
-    userName: string | null;
-    userEmail: string;
-    userImage: string | null;
-    userRole: string;
-    userBanned: boolean;
-  }>;
-  memberCount: number;
-};
 
 type OrganizationDetailsDialogProps = {
   organizationId: string;
@@ -132,53 +105,21 @@ export function OrganizationDetailsDialog({
   open,
   onClose,
 }: OrganizationDetailsDialogProps) {
-  const [organization, setOrganization] = useState<OrganizationDetails | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch organization details using type-safe hook
+  const {
+    data: organization,
+    error: fetchError,
+    isLoading,
+  } = useAdminOrganization(organizationId, {
+    enabled: open && !!organizationId,
+  });
 
-  /**
-   * Fetch organization details
-   */
-  useEffect(() => {
-    if (!open || !organizationId) {
-      return;
-    }
-
-    const fetchOrganization = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(
-          `/api/admin/organizations/${organizationId}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch organization details');
-        }
-
-        const data = await response.json();
-        setOrganization(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to load organization'
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchOrganization();
-  }, [organizationId, open]);
+  const error = fetchError?.message || null;
 
   /**
    * Handle dialog close
    */
   const handleClose = () => {
-    setOrganization(null);
-    setError(null);
     onClose();
   };
 

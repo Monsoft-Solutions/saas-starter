@@ -1,6 +1,7 @@
 'use client';
 
 import { formatDistanceToNow, format } from 'date-fns';
+import { useAdminActivityLog } from '@/lib/hooks/api/admin/use-admin-activity.hook';
 import {
   Dialog,
   DialogContent,
@@ -19,22 +20,6 @@ import {
   Hash,
   AlertTriangle,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
-/**
- * Activity log data type for the dialog
- */
-type ActivityLog = {
-  id: number;
-  userId: string;
-  action: string;
-  timestamp: Date;
-  ipAddress: string | null;
-  userEmail: string;
-  userName: string | null;
-  userImage: string | null;
-  metadata?: Record<string, unknown> | null;
-};
 
 // Helper function to format action labels
 function formatActionLabel(action: string): string {
@@ -80,59 +65,16 @@ export function ActivityDetailsDialog({
   logId: number;
   onClose: () => void;
 }) {
-  const [log, setLog] = useState<ActivityLog | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch activity log details using type-safe hook
+  const {
+    data: log,
+    error: fetchError,
+    isLoading: loading,
+  } = useAdminActivityLog(logId, {
+    enabled: !!logId,
+  });
 
-  // Fetch activity log details
-  useEffect(() => {
-    const fetchLogDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetch(`/api/admin/activity/${logId}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('Activity log not found');
-          }
-          throw new Error(
-            `Failed to load activity log: ${response.statusText}`
-          );
-        }
-
-        const activityLog = await response.json();
-
-        // Transform API response to component's ActivityLog type
-        const log: ActivityLog = {
-          id: activityLog.id,
-          userId: activityLog.userId,
-          action: activityLog.action,
-          timestamp: new Date(activityLog.timestamp),
-          ipAddress: activityLog.ipAddress,
-          userEmail: activityLog.userEmail,
-          userName: activityLog.userName,
-          userImage: activityLog.userImage,
-          metadata: activityLog.metadata,
-        };
-
-        setLog(log);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : 'Failed to load activity log details';
-        setError(errorMessage);
-        console.error('Error fetching activity log:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (logId) {
-      fetchLogDetails();
-    }
-  }, [logId]);
+  const error = fetchError?.message || null;
 
   if (loading) {
     return (

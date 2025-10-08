@@ -45,6 +45,13 @@ type UseApiQueryConfig<TResponse extends z.ZodTypeAny> = {
   pathParams?: string[];
 
   /**
+   * Enable/disable the query
+   * When false, the query will not execute
+   * @default true
+   */
+  enabled?: boolean;
+
+  /**
    * SWR configuration options
    */
   swrConfig?: SWRConfiguration<z.infer<TResponse>, ApiError>;
@@ -131,6 +138,11 @@ type UseApiMutationConfig<
  *   pathParams: ['notification-123'],
  * });
  *
+ * // Conditional fetching
+ * const { data } = useApiQuery(apiRoutes.users.current, {
+ *   enabled: !!userId, // Only fetch when userId is available
+ * });
+ *
  * // With SWR config
  * const { data } = useApiQuery(apiRoutes.users.current, {
  *   swrConfig: {
@@ -144,7 +156,12 @@ export function useApiQuery<TResponse extends z.ZodTypeAny>(
   route: RouteDefinition<undefined, TResponse> & { method: 'GET' },
   config?: UseApiQueryConfig<TResponse>
 ): SWRResponse<z.infer<TResponse>, ApiError> {
-  const { queryParams, pathParams = [], swrConfig } = config || {};
+  const {
+    queryParams,
+    pathParams = [],
+    enabled = true,
+    swrConfig,
+  } = config || {};
 
   // Build SWR key
   const path =
@@ -155,8 +172,11 @@ export function useApiQuery<TResponse extends z.ZodTypeAny>(
     ? `${path}?${new URLSearchParams(queryParams as Record<string, string>).toString()}`
     : path;
 
+  // Use null key to disable the query when enabled is false
+  const swrKey = enabled ? key : null;
+
   return useSWR<z.infer<TResponse>, ApiError>(
-    key,
+    swrKey,
     () => apiRequest(route, { queryParams, pathParams }),
     {
       // User overrides
