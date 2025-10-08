@@ -5,6 +5,10 @@ import { withPermission } from '@/lib/auth/permission-middleware';
 import { banUserById, unbanUserById } from '@/lib/db/queries/admin-user.query';
 import { logActivity } from '@/lib/db/queries/activity-log.query';
 import { ActivityType } from '@/lib/types/activity-log';
+import {
+  BanUserInput,
+  UnbanUserInput,
+} from '@/lib/types/admin/ban-user.schema';
 
 /**
  * Schema for banning a user
@@ -34,13 +38,9 @@ const unbanUserSchema = z.object({
  */
 export const banUserAction = withPermission(
   'users:write',
-  async (formData) => {
+  async (params: BanUserInput) => {
     try {
-      const data = banUserSchema.parse({
-        userId: formData.get('userId'),
-        reason: formData.get('reason'),
-        expiresInDays: formData.get('expiresInDays'),
-      });
+      const data = banUserSchema.parse(params);
 
       // Ban user via Better Auth
       await banUserById(data.userId, data.reason, data.expiresInDays);
@@ -73,11 +73,9 @@ export const banUserAction = withPermission(
  */
 export const unbanUserAction = withPermission(
   'users:write',
-  async (formData) => {
+  async (params: UnbanUserInput) => {
     try {
-      const data = unbanUserSchema.parse({
-        userId: formData.get('userId'),
-      });
+      const data = unbanUserSchema.parse(params);
 
       // Unban user via Better Auth
       await unbanUserById(data.userId);

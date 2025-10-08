@@ -1,4 +1,4 @@
-import { listAllUsers } from '@/lib/db/queries/admin-user.query';
+import { listAllUsersAction } from '@/lib/actions/admin/list-users.action';
 import { UserTable } from '@/components/admin/users/user-table.component';
 import { requireAdminContext } from '@/lib/auth/admin-context';
 import { UserRole } from '@/lib/types/admin';
@@ -30,7 +30,7 @@ export default async function AdminUsersPage({
   };
 
   // Fetch users data
-  const usersData = await listAllUsers(filters);
+  const usersData = await listAllUsersAction(filters);
 
   // Convert to the format expected by the generic table (TableDataResponse)
   const tableData = usersData.users.map((user) => ({
@@ -43,6 +43,7 @@ export default async function AdminUsersPage({
     banReason: user.banReason,
     banExpires: user.banExpires,
     createdAt: user.createdAt,
+    image: user.image,
   }));
 
   const initialData = {

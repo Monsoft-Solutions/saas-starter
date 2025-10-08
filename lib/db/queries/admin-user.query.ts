@@ -7,7 +7,7 @@ import { db } from '../drizzle';
 import { user, member, organization, activityLogs } from '../schemas';
 import { eq, ilike, or, desc, and, sql } from 'drizzle-orm';
 import logger from '@/lib/logger/logger.service';
-import type { UserListFilters } from '@/lib/types/admin';
+import { userTableDataSchema, type UserListFilters } from '@/lib/types/admin';
 
 /**
  * List all users with filters and pagination.
@@ -80,8 +80,10 @@ export async function listAllUsers(filters: UserListFilters = {}) {
           .where(whereClause),
       ]);
 
+      const userOutput = users.map((user) => userTableDataSchema.parse(user));
+
       return {
-        users,
+        users: userOutput,
         total: Number(totalCount),
         limit,
         offset,

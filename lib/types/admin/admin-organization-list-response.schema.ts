@@ -40,7 +40,7 @@ export const subscriptionAnalyticsSchema = z.object({
  * Returns paginated list of organizations with metadata.
  */
 export const adminOrganizationListResponseSchema = z.object({
-  organizations: z.array(organizationTableDataSchema),
+  data: z.array(organizationTableDataSchema),
   total: z.number().int().min(0),
   limit: z.number().int().min(1).max(100),
   offset: z.number().int().min(0),

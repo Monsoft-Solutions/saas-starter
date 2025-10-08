@@ -19,13 +19,13 @@ export class PermissionDeniedError extends Error {
   }
 }
 
-type PermissionActionFunction<T, P = FormData> = (
+type PermissionActionFunction<T, P = FormData | undefined> = (
   params: P,
   context: AdminContext
 ) => Promise<T> | T;
 
 type PermissionActionWrapper<T, P = FormData> = {
-  (params: P): Promise<T>;
+  (params?: P): Promise<T>;
   (prevState: ActionState, params: P): Promise<ActionState>;
 };
 
@@ -76,7 +76,7 @@ function handlePermissionFailure(
   } satisfies ActionState;
 }
 
-function withPermissionsInternal<T, P = FormData>(
+function withPermissionsInternal<T, P = FormData | undefined>(
   required: readonly AdminPermission[],
   action: PermissionActionFunction<T, P>,
   resource?: string
@@ -140,7 +140,7 @@ function withPermissionsInternal<T, P = FormData>(
   return handler as PermissionActionWrapper<T, P>;
 }
 
-export function withPermissions<T, P = FormData>(
+export function withPermissions<T, P>(
   required: readonly AdminPermission[],
   action: PermissionActionFunction<T, P>,
   resource?: string
@@ -148,7 +148,7 @@ export function withPermissions<T, P = FormData>(
   return withPermissionsInternal(required, action, resource);
 }
 
-export function withPermission<T, P = FormData>(
+export function withPermission<T, P>(
   required: AdminPermission,
   action: PermissionActionFunction<T, P>,
   resource?: string
@@ -156,7 +156,7 @@ export function withPermission<T, P = FormData>(
   return withPermissionsInternal([required], action, resource);
 }
 
-export function withSuperAdminPermission<T, P = FormData>(
+export function withSuperAdminPermission<T, P>(
   action: PermissionActionFunction<T, P>,
   resource?: string
 ): PermissionActionWrapper<T, P> {

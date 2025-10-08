@@ -83,7 +83,7 @@ export async function listAllActivityLogs(filters: ActivityLogFilters = {}) {
   ]);
 
   return {
-    logs,
+    data: logs,
     total: Number(totalCount),
     limit,
     offset,
@@ -205,7 +205,7 @@ export async function exportActivityLogsToCSV(
   const csvLines = [headers.join(',')];
 
   // Add data rows
-  for (const log of result.logs) {
+  for (const log of result.data) {
     const row = [
       log.id,
       `"${log.userEmail}"`, // Escape email in quotes
@@ -218,7 +218,7 @@ export async function exportActivityLogsToCSV(
   }
 
   logger.info('[admin-activity-log] Activity logs exported to CSV', {
-    totalLogs: result.logs.length,
+    totalLogs: result.data.length,
     filters,
   });
 

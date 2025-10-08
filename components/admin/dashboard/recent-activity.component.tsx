@@ -12,9 +12,9 @@ import { listAllActivityLogs } from '@/lib/db/queries/admin-activity-log.query';
  * Fetches and displays recent activity logs.
  */
 export async function RecentActivity() {
-  const { logs } = await listAllActivityLogs({ limit: 5 });
+  const { data } = await listAllActivityLogs({ limit: 5 });
 
-  if (logs.length === 0) {
+  if (data.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -42,7 +42,7 @@ export async function RecentActivity() {
       </div>
 
       <div className="space-y-3">
-        {logs.map((log) => (
+        {data.map((log) => (
           <div
             key={log.id}
             className="flex items-start justify-between gap-3 pb-3 border-b last:border-0 last:pb-0"

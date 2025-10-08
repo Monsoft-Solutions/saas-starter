@@ -10,3 +10,9 @@ export const banUserSchema = z.object({
 });
 
 export type BanUserInput = z.infer<typeof banUserSchema>;
+
+export const unbanUserSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+});
+
+export type UnbanUserInput = z.infer<typeof unbanUserSchema>;

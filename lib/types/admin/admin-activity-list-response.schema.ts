@@ -46,7 +46,7 @@ export const activityBreakdownSchema = z.array(activityBreakdownItemSchema);
  * Returns paginated list of activity logs with optional statistics and breakdown.
  */
 export const adminActivityListResponseSchema = z.object({
-  logs: z.array(activityLogTableDataSchema),
+  data: z.array(activityLogTableDataSchema),
   total: z.number().int().min(0),
   limit: z.number().int().min(1).max(1000),
   offset: z.number().int().min(0),

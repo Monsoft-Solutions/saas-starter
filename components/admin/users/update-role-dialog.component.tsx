@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { updateUserRoleAction } from '@/lib/actions/admin/update-user-role.action';
 import { toast } from 'sonner';
-import { UserTableData } from '@/lib/types/admin';
+import { USER_ROLES, UserRole, UserTableData } from '@/lib/types/admin';
 
 /**
  * Update role dialog component.
@@ -50,11 +50,10 @@ export function UpdateRoleDialog({
     }
 
     startTransition(async () => {
-      const formData = new FormData();
-      formData.append('userId', user.id);
-      formData.append('role', selectedRole);
-
-      const result = await updateUserRoleAction(formData);
+      const result = await updateUserRoleAction({
+        userId: user.id,
+        role: selectedRole,
+      });
 
       if ('error' in result) {
         toast.error(result.error);
@@ -84,14 +83,21 @@ export function UpdateRoleDialog({
           {/* Role Selection */}
           <div className="stack-sm">
             <Label htmlFor="role">New Role</Label>
-            <Select value={selectedRole} onValueChange={setSelectedRole}>
+            <Select
+              value={selectedRole}
+              onValueChange={(value) => setSelectedRole(value as UserRole)}
+            >
               <SelectTrigger id="role">
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="super-admin">Super Admin</SelectItem>
+                {USER_ROLES.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {role === 'super-admin'
+                      ? 'Super Admin'
+                      : role.charAt(0).toUpperCase() + role.slice(1)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

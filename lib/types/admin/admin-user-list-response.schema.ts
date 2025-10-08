@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { USER_ROLES } from './user-role.enum';
 
 /**
  * User table data schema for admin user list responses.
@@ -8,12 +9,13 @@ export const userTableDataSchema = z.object({
   id: z.string(),
   name: z.string(),
   email: z.string().email(),
-  role: z.string().nullable(),
+  role: z.enum(USER_ROLES).nullable(),
   emailVerified: z.boolean(),
   banned: z.boolean().nullable(),
   banReason: z.string().nullable(),
   banExpires: z.date().nullable(),
   createdAt: z.date(),
+  image: z.string().nullable(),
 });
 
 /**

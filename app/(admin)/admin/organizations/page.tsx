@@ -1,7 +1,7 @@
 import {
-  listAllOrganizations,
-  getOrganizationStatistics,
-} from '@/lib/db/queries/admin-organization.query';
+  listAllOrganizationsAction,
+  getOrganizationStatisticsAction,
+} from '@/lib/actions/admin/list-organizations.action';
 import { OrganizationTable } from '@/components/admin/organizations/organization-table.component';
 import { Building2, Users, CreditCard, TrendingUp } from 'lucide-react';
 import {
@@ -45,13 +45,13 @@ export default async function AdminOrganizationsPage({
 
   // Fetch organizations and statistics
   const [organizationsData, statistics] = await Promise.all([
-    listAllOrganizations(filters),
-    getOrganizationStatistics(),
+    listAllOrganizationsAction(filters),
+    getOrganizationStatisticsAction(),
   ]);
 
   // Convert to the format expected by the generic table (TableDataResponse)
   const initialData = {
-    data: organizationsData.organizations,
+    data: organizationsData.data,
     total: organizationsData.total,
     limit: organizationsData.limit,
     offset: organizationsData.offset,

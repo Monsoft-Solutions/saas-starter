@@ -16,10 +16,7 @@ export const adminUserListRequestSchema =
      * Filter by user role.
      * Optional - if not provided, returns users with all roles.
      */
-    role: z
-      .enum(USER_ROLES)
-      .optional()
-      .transform((val) => val ?? undefined),
+    role: z.enum(USER_ROLES).optional(),
   });
 
 /**

@@ -59,7 +59,7 @@ export async function listAllOrganizations(
         conditions.length > 0 ? and(...conditions) : undefined;
 
       // Get organizations with member count
-      const [organizations, [{ count: totalCount }]] = await Promise.all([
+      const [data, [{ count: totalCount }]] = await Promise.all([
         db
           .select({
             id: organization.id,
@@ -90,11 +90,11 @@ export async function listAllOrganizations(
       ]);
 
       return {
-        organizations,
+        data,
         total: Number(totalCount),
         limit,
         offset,
-        hasMore: offset + organizations.length < Number(totalCount),
+        hasMore: offset + data.length < Number(totalCount),
       };
     },
     { ttl: 60 } // Cache for 1 minute
