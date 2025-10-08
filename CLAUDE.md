@@ -118,6 +118,16 @@ pnpm dev
 - Use `withOrganization()` wrapper for organization-scoped operations
 - Use `createTypedAction()` for type-safe actions with output validation
 - Use `createTypedActionWithUser()` for authenticated typed actions
+- Use `withPermission()` or `withPermissions()` for admin permission checks
+
+**API Request Architecture:**
+
+- **Route Registry** (`lib/api/routes.config.ts`): ALL API endpoints must be registered with request/response schemas
+- **Client Hooks** (`lib/hooks/api/`): Use `useApiQuery()` for GET, `useApiMutation()` for POST/PUT/PATCH/DELETE
+- **Server Actions** (`lib/actions/`): Use `withPermission()` wrapper for admin actions
+- **API Handlers** (`app/api/`): Use `createValidatedApiHandler()`, `createValidatedAuthenticatedHandler()`, or `createValidatedAdminHandler()`
+- **Type Safety**: Full TypeScript inference from route definitions to client hooks
+- **Optimistic Updates**: Implement with automatic rollback on error for better UX
 
 **Validation:**
 
@@ -348,3 +358,271 @@ Follow the pattern: `<file-name>.<file-type>.ts`
 **Comment Code**
 
 - Always comment the functions, types and important objects with concise doc. For complex code, document inner logic when necessary for better understanding.
+
+## API Request & Response Pattern
+
+### Architecture Overview
+
+The application uses a centralized, type-safe pattern for all API communication:
+
+1. **Central Route Registry** (`lib/api/routes.config.ts`) - Single source of truth for all API endpoints
+2. **Schema Validation** - Automatic request/response validation with Zod
+3. **Type Safety** - Full TypeScript inference across the entire stack
+4. **Client Hooks** - SWR-based hooks with caching and optimistic updates
+5. **Server Actions** - Permission-protected actions for admin operations
+6. **API Handlers** - Validated handlers with automatic schema validation
+
+### 1. Route Registry Pattern
+
+**ALL API endpoints MUST be registered in `lib/api/routes.config.ts`:**
+
+```typescript
+export const apiRoutes = {
+  resource: {
+    // GET with query parameters
+    list: {
+      path: '/api/resource',
+      method: 'GET',
+      querySchema: resourceListRequestSchema,
+      responseSchema: resourceListResponseSchema,
+    } as const satisfies GetRouteWithQuery<...>,
+
+    // GET with dynamic path
+    get: {
+      path: (id: string) => `/api/resource/${id}`,
+      method: 'GET',
+      responseSchema: resourceResponseSchema,
+    } as const satisfies GetRouteWithParams<[string], ...>,
+
+    // POST/PATCH with request body
+    update: {
+      path: (id: string) => `/api/resource/${id}`,
+      method: 'PATCH',
+      requestSchema: updateResourceRequestSchema,
+      responseSchema: simpleSuccessResponseSchema,
+    } as const satisfies MutationRouteWithParams<...>,
+  },
+} as const;
+```
+
+### 2. Client Hook Pattern
+
+**Create domain-specific hooks in `lib/hooks/api/[domain]/`:**
+
+```typescript
+'use client';
+
+import { useApiQuery, useApiMutation } from '../use-api.hook';
+import { apiRoutes } from '@/lib/api/routes.config';
+
+// GET request with SWR caching
+export function useResources(params?: { limit?: number }) {
+  return useApiQuery(apiRoutes.resource.list, {
+    queryParams: params,
+    swrConfig: {
+      refreshInterval: 30000, // Poll every 30 seconds
+      revalidateOnFocus: true,
+    },
+  });
+}
+
+// Mutation with optimistic updates
+export function useResourceOperations() {
+  const { data, mutate } = useResources();
+
+  const update = useCallback(
+    async (id: number, updates: UpdateData) => {
+      // Optimistic update
+      await mutate(
+        {
+          ...data,
+          resources: data.resources.map((r) =>
+            r.id === id ? { ...r, ...updates } : r
+          ),
+        },
+        false
+      );
+
+      try {
+        await apiRequest(apiRoutes.resource.update, {
+          pathParams: [String(id)],
+          data: updates,
+        });
+        await mutate(); // Revalidate on success
+      } catch (error) {
+        await mutate(); // Rollback on error
+      }
+    },
+    [data, mutate]
+  );
+
+  return { resources: data?.resources || [], update };
+}
+```
+
+### 3. Server Action Pattern
+
+**Create permission-protected actions in `lib/actions/[domain]/`:**
+
+```typescript
+'use server';
+
+import { withPermission } from '@/lib/auth/permission-middleware';
+
+/**
+ * Server action with permission check
+ * Requires the `resource:read` admin permission
+ */
+export const listResourcesAction = withPermission(
+  'resource:read',
+  async (filters: ResourceFilters) => {
+    return await listAllResources(filters);
+  },
+  'admin.resources.list'
+);
+
+/**
+ * Multiple permissions required (all must be present)
+ */
+export const updateResourceAction = withPermissions(
+  ['resource:read', 'resource:write'],
+  async (id: number, data: UpdateData) => {
+    return await updateResource(id, data);
+  },
+  'admin.resources.update'
+);
+```
+
+### 4. API Handler Pattern
+
+**Create validated handlers in `app/api/[route]/route.ts`:**
+
+```typescript
+import {
+  createValidatedApiHandler,
+  createValidatedAuthenticatedHandler,
+  createValidatedAdminHandler,
+} from '@/lib/server/validated-api-handler';
+
+/**
+ * Public endpoint with validation
+ */
+export const GET = createValidatedApiHandler(
+  requestSchema,
+  responseSchema,
+  async ({ data }) => {
+    return await queryData(data);
+  },
+  { inputSource: 'query' }
+);
+
+/**
+ * Authenticated endpoint
+ */
+export const POST = createValidatedAuthenticatedHandler(
+  requestSchema,
+  responseSchema,
+  async ({ data, context }) => {
+    const { user } = context;
+    return await createResource(user.id, data);
+  },
+  { inputSource: 'body', successStatus: 201 }
+);
+
+/**
+ * Admin endpoint with permissions
+ */
+export const GET = createValidatedAdminHandler(
+  requestSchema,
+  responseSchema,
+  async ({ data, context }) => {
+    // context.admin.permissions available
+    return await adminQuery(data);
+  },
+  {
+    requiredPermissions: ['resource:read'],
+    resource: 'admin.resources.list',
+    inputSource: 'query',
+  }
+);
+```
+
+### 5. Schema Organization
+
+**Request/Response schemas in `lib/types/[domain]/`:**
+
+```typescript
+// resource-list-request.schema.ts
+export const resourceListRequestSchema = z.object({
+  search: z.string().optional(),
+  limit: z.number().min(1).max(100).default(50),
+  offset: z.number().min(0).default(0),
+});
+
+export type ResourceListRequest = z.infer<typeof resourceListRequestSchema>;
+
+// resource-list-response.schema.ts
+export const resourceListResponseSchema = z
+  .object({
+    data: z.array(resourceItemSchema),
+    total: z.number(),
+    limit: z.number(),
+    offset: z.number(),
+  })
+  .strict(); // Use .strict() to prevent data leakage
+
+export type ResourceListResponse = z.infer<typeof resourceListResponseSchema>;
+```
+
+### Best Practices
+
+1. **Always register routes** - Never create ad-hoc fetch calls
+2. **Use strict schemas** - Apply `.strict()` to response schemas to prevent data leakage
+3. **Implement optimistic updates** - Improve UX with instant feedback and automatic rollback
+4. **Use permission wrappers** - Don't check permissions manually in server actions
+5. **Specify input source** - Use `inputSource: 'query'` for GET, `'body'` for mutations
+6. **Type everything** - Leverage full TypeScript inference from schemas
+7. **Handle errors properly** - Use ApiError type and provide clear error messages
+
+### Common Patterns
+
+**Polling:**
+
+```typescript
+useApiQuery(route, {
+  swrConfig: { refreshInterval: 5000 },
+});
+```
+
+**Conditional Fetching:**
+
+```typescript
+useApiQuery(route, {
+  pathParams: [id],
+  enabled: !!id,
+});
+```
+
+**Optimistic Updates:**
+
+```typescript
+await mutate(optimisticData, false);
+try {
+  await apiRequest(route, { data });
+  await mutate(); // Revalidate
+} catch {
+  await mutate(); // Rollback
+}
+```
+
+**Permission Checks:**
+
+```typescript
+export const action = withPermission(
+  'permission:name',
+  async (data, context) => {
+    // Permission already verified
+  },
+  'resource.identifier'
+);
+```

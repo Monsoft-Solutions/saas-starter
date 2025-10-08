@@ -62,10 +62,10 @@ This agent serves as the **registry and router** for all specialized agents in t
 - **Purpose**: Expert agent for analyzing GitHub PR code reviews, determining actionable items, and creating detailed fix instructions following project guidelines
 - **Location**: `.cursor/rules/pr-review-analyzer.mdc`
 
-### api-actions-expert
+### api-request-expert
 
-- **Purpose**: Expert in building validated API routes and server actions with proper authentication, authorization, and error handling
-- **Location**: `.cursor/rules/api-actions-expert.mdc`
+- **Purpose**: Expert for building type-safe API requests, client hooks, server actions, and API handlers with validation and permissions
+- **Location**: `.cursor/rules/api-request-expert.mdc`
 
 ## Routing Guidelines
 
@@ -81,7 +81,7 @@ Direct tasks to appropriate specialized agents:
 - **TypeScript best practices** → `typescript`
 - **Unit Testing** → `unit-testing`
 - **PR Review Analysis** → `pr-review-analyzer`
-- **API routes & server actions** → `api-actions-expert`
+- **API routes, hooks, server actions** → `api-request-expert`
 
 ## Registry Maintenance
 
@@ -115,5 +115,5 @@ Use these credentials:
 
 ---
 
-_Last updated: 2025-10-07_  
-_Total Cursor agents: 11 (including main-agent)_
+_Last updated: 2025-10-08_  
+_Total Cursor agents: 12 (including main-agent)_
