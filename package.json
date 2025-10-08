@@ -32,9 +32,6 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "preview:emails": "tsx scripts/preview-emails.ts",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
     "stripe": "stripe listen --forward-to localhost:3000/api/stripe/webhook",
     "qstash:listen": "npx qstash dev",
     "stripe:listen": "stripe listen --forward-to localhost:3000/api/stripe/webhook"
@@ -115,7 +112,6 @@
     "shadcn": "^3.4.0",
     "tsx": "^4.20.6",
     "typescript-eslint": "^8.46.0",
-    "vitepress": "2.0.0-alpha.12",
     "vitest": "^2.1.9"
   },
   "lint-staged": {
