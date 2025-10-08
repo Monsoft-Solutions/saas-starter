@@ -14,7 +14,7 @@ import { userTableDataSchema, type UserListFilters } from '@/lib/types/admin';
  * Uses Better Auth's listUsers API as base, then applies additional filters.
  * Cached for performance.
  */
-export async function listAllUsers(filters: UserListFilters = {}) {
+export async function listAllUsers(filters: UserListFilters) {
   const { cacheService, CacheKeys } = await import('@/lib/cache');
 
   const cacheKey = CacheKeys.custom(
@@ -38,7 +38,7 @@ export async function listAllUsers(filters: UserListFilters = {}) {
         );
       }
 
-      if (filters.role && filters.role !== 'all') {
+      if (filters.role) {
         conditions.push(eq(user.role, filters.role));
       }
 

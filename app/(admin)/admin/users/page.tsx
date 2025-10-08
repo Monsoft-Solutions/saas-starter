@@ -1,7 +1,7 @@
 import { listAllUsersAction } from '@/lib/actions/admin/list-users.action';
 import { UserTable } from '@/components/admin/users/user-table.component';
 import { requireAdminContext } from '@/lib/auth/admin-context';
-import { UserRole } from '@/lib/types/admin';
+import { userListFiltersSchema } from '@/lib/types/admin';
 
 /**
  * Admin user management page.
@@ -22,12 +22,12 @@ export default async function AdminUsersPage({
   const params = await searchParams;
 
   // Parse search parameters
-  const filters = {
+  const filters = userListFiltersSchema.parse({
     search: params.search,
-    role: params.role as UserRole,
+    role: params.role,
     limit: parseInt(params.limit ?? '50', 10),
     offset: parseInt(params.offset ?? '0', 10),
-  };
+  });
 
   // Fetch users data
   const usersData = await listAllUsersAction(filters);
