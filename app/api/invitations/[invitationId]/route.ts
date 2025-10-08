@@ -54,7 +54,7 @@ export const GET = createValidatedRouteParamHandler(
     }
 
     // Check if invitation is expired
-    if (invitationData.expiresAt < new Date()) {
+    if (invitationData.expiresAt && invitationData.expiresAt < new Date()) {
       throw new HandlerError('Invitation has expired', 410);
     }
 
