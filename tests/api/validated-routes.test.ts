@@ -89,7 +89,6 @@ vi.mock('@/lib/db/schemas', () => ({
   },
 }));
 
-
 import { GET as getNotifications } from '@/app/api/notifications/route';
 import { PATCH as updateNotification } from '@/app/api/notifications/[id]/route';
 import { POST as logError } from '@/app/api/log-error/route';
