@@ -9,7 +9,15 @@
 
 ## Executive Summary
 
-This plan addresses comprehensive improvements to input/output validation across API routes and server actions, implementing industry best practices from Next.js 15, Zod validation patterns, and type-safe API design. The current implementation has strong input validation but lacks consistent output validation, schema organization, and type inference patterns that ensure runtime and compile-time safety.
+This plan addresses comprehensive improvements to input/output validation across API routes and server actions, implementing industry best practices from Next.js 15, Zod validation patterns, and type-safe API design. The implementation consists of five phases:
+
+1. **Phase 1 (Complete):** Foundation validation utilities and typed action state system
+2. **Phase 2 (Complete):** API route enhancement with input/output validation and query parameter handling
+3. **Phase 3 (In Progress):** Type-safe client API integration with SWR and centralized route configuration
+4. **Phase 4:** Advanced validation patterns and error handling
+5. **Phase 5:** Documentation and developer experience
+
+The current implementation has strong input validation but lacked consistent output validation, schema organization, and type inference patterns. Phase 3 extends this foundation to the client side, ensuring end-to-end type safety from API definition to component consumption using SWR hooks and a centralized API route registry.
 
 ---
 
@@ -515,40 +523,499 @@ lib/types/notifications/
 
 ---
 
-### Phase 3: Server Action Enhancement (Week 3)
+### Phase 3: Type-Safe Client API Integration (Week 3)
 
-**Goal:** Type-safe server actions with validated outputs
+**Goal:** Create type-safe client-side API integration with SWR and centralized route configuration
+
+#### Prerequisites
+
+- [ ] Install SWR: `pnpm add swr`
+- [ ] Install MSW for testing: `pnpm add -D msw`
 
 #### Tasks
 
-1. **Create Action Response Schemas**
-   - [ ] `lib/types/auth/sign-in-action.schema.ts`
-   - [ ] `lib/types/auth/update-password-action.schema.ts`
-   - [ ] `lib/types/organization/invite-member-action.schema.ts`
-   - [ ] Common success/error schemas
+1. **Create API Route Registry** ✅ DONE
+   - [x] Create `lib/api/routes.config.ts` - Central API route registry
+   - [x] Define route types with method signatures
+   - [x] Export typed route paths and methods
+   - [x] Add route parameter helpers (e.g., `userId` → `/api/users/${userId}`)
+   - [x] Add comprehensive JSDoc documentation
+   - [x] Create unit tests (30 tests, all passing)
 
-2. **Enhance Action Middleware**
-   - [ ] Update `validatedAction` to support output schemas
-   - [ ] Update `validatedActionWithUser` similarly
-   - [ ] Preserve backward compatibility
-   - [ ] Add `typedAction` wrapper for strongly-typed returns
+2. **Create Type-Safe API Client**
+   - [ ] Create `lib/api/client.util.ts` - Base API client with fetch wrapper
+   - [ ] Implement type-safe request/response handling
+   - [ ] Add error handling and response normalization
+   - [ ] Support for different HTTP methods (GET, POST, PATCH, DELETE)
+   - [ ] Automatic content-type handling
+   - [ ] Integration with authentication (session tokens)
 
-3. **Migrate High-Impact Actions**
-   - [ ] `signIn` - Type-safe return with redirect handling
-   - [ ] `signUp` - Validate output
-   - [ ] `updatePassword` - Validate output
-   - [ ] `inviteOrganizationMember` - Full validation
+3. **Create SWR Hooks Factory**
+   - [ ] Create `lib/hooks/api/use-api.hook.ts` - Generic SWR hook factory
+   - [ ] Type-safe SWR hooks that infer response types from schemas
+   - [ ] Create mutation hooks for POST/PATCH/DELETE operations
+   - [ ] Add optimistic updates support
+   - [ ] Implement revalidation strategies
+   - [ ] Error handling with typed errors
 
-4. **Client-Side Type Inference**
-   - [ ] Create `ActionReturn<T>` utility type
-   - [ ] Update `useActionState` usage patterns
-   - [ ] Documentation for consuming typed actions
+4. **Create Domain-Specific API Hooks**
+   - [ ] Create `lib/hooks/api/use-notifications.hook.ts` - Notification hooks
+   - [ ] Create `lib/hooks/api/use-users.hook.ts` - User hooks
+   - [ ] Create `lib/hooks/api/use-organizations.hook.ts` - Organization hooks
+   - [ ] Create `lib/hooks/api/use-admin.hook.ts` - Admin hooks
+   - [ ] Add JSDoc documentation with usage examples
+
+5. **SWR Configuration & Middleware**
+   - [ ] Create `lib/api/swr-config.ts` - Global SWR configuration
+   - [ ] Add SWR middleware for logging
+   - [ ] Add SWR middleware for error handling
+   - [ ] Add SWR middleware for authentication errors
+   - [ ] Configure global revalidation options
+
+6. **Testing**
+   - [ ] Unit tests for API client
+   - [ ] Unit tests for route registry
+   - [ ] Integration tests for SWR hooks with MSW (Mock Service Worker)
+   - [ ] Test type inference from schemas
 
 **Deliverables:**
 
-- Typed server actions
-- Client-side type inference
-- Migration guide
+- ✅ Centralized API route registry
+- ✅ Type-safe API client
+- ✅ SWR hook factory with type inference
+- ✅ Domain-specific API hooks
+- ✅ Comprehensive test suite
+- ✅ Migration guide for existing API calls
+
+**Architecture Overview:**
+
+```typescript
+// lib/api/routes.config.ts
+/**
+ * Central API route registry
+ * Maps route paths to their request/response schemas
+ */
+export const apiRoutes = {
+  notifications: {
+    list: {
+      path: '/api/notifications',
+      method: 'GET',
+      responseSchema: notificationListResponseSchema,
+      querySchema: notificationListRequestSchema,
+    },
+    get: {
+      path: (id: string) => `/api/notifications/${id}`,
+      method: 'GET',
+      responseSchema: notificationResponseSchema,
+    },
+    update: {
+      path: (id: string) => `/api/notifications/${id}`,
+      method: 'PATCH',
+      requestSchema: updateNotificationSchema,
+      responseSchema: notificationResponseSchema,
+    },
+  },
+  users: {
+    current: {
+      path: '/api/user',
+      method: 'GET',
+      responseSchema: userProfileResponseSchema,
+    },
+    update: {
+      path: '/api/user',
+      method: 'PATCH',
+      requestSchema: updateUserSchema,
+      responseSchema: userProfileResponseSchema,
+    },
+  },
+  admin: {
+    users: {
+      list: {
+        path: '/api/admin/users',
+        method: 'GET',
+        responseSchema: userListResponseSchema,
+        querySchema: paginationRequestSchema,
+      },
+    },
+    organizations: {
+      list: {
+        path: '/api/admin/organizations',
+        method: 'GET',
+        responseSchema: organizationListResponseSchema,
+        querySchema: paginationRequestSchema,
+      },
+    },
+  },
+} as const;
+
+// Type helpers
+export type ApiRoute = typeof apiRoutes;
+export type ApiRoutePath = keyof ApiRoute;
+```
+
+```typescript
+// lib/api/client.util.ts
+/**
+ * Type-safe API client
+ */
+import { z } from 'zod';
+import type { ApiResponse } from '@/lib/http/response.type';
+
+type RequestConfig<TRequest extends z.ZodTypeAny | undefined> = {
+  data?: TRequest extends z.ZodTypeAny ? z.infer<TRequest> : never;
+  params?: Record<string, string>;
+  headers?: HeadersInit;
+};
+
+/**
+ * Makes a type-safe API request
+ */
+export async function apiRequest<
+  TRequest extends z.ZodTypeAny | undefined,
+  TResponse extends z.ZodTypeAny,
+>(
+  route: {
+    path: string | ((...args: any[]) => string);
+    method: string;
+    requestSchema?: TRequest;
+    responseSchema: TResponse;
+    querySchema?: z.ZodTypeAny;
+  },
+  config?: RequestConfig<TRequest>
+): Promise<z.infer<TResponse>> {
+  // Build URL with query params
+  const url = new URL(
+    typeof route.path === 'function'
+      ? route.path(...Object.values(config?.params ?? {}))
+      : route.path,
+    window.location.origin
+  );
+
+  // Add query params if present
+  if (route.querySchema && config?.data) {
+    Object.entries(config.data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        url.searchParams.set(key, String(value));
+      }
+    });
+  }
+
+  // Make request
+  const response = await fetch(url.toString(), {
+    method: route.method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...config?.headers,
+    },
+    body:
+      config?.data && route.method !== 'GET'
+        ? JSON.stringify(config.data)
+        : undefined,
+    credentials: 'include', // Include session cookies
+  });
+
+  // Parse response
+  const json: ApiResponse<unknown> = await response.json();
+
+  if (!response.ok || json.error) {
+    throw new ApiError(json.error ?? 'Request failed', response.status);
+  }
+
+  // Validate response with schema
+  const validated = route.responseSchema.safeParse(json.data);
+
+  if (!validated.success) {
+    console.error('Response validation failed:', validated.error);
+    throw new ApiError('Invalid response format', 500);
+  }
+
+  return validated.data;
+}
+
+/**
+ * Custom API error class
+ */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public details?: unknown
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+```
+
+```typescript
+// lib/hooks/api/use-api.hook.ts
+/**
+ * Type-safe SWR hook factory
+ */
+import useSWR, { type SWRConfiguration } from 'swr';
+import useSWRMutation from 'swr/mutation';
+import { apiRequest } from '@/lib/api/client.util';
+import type { apiRoutes } from '@/lib/api/routes.config';
+import { z } from 'zod';
+
+/**
+ * Creates a type-safe SWR hook for GET requests
+ */
+export function useApi<TResponse extends z.ZodTypeAny>(
+  route: {
+    path: string | ((...args: any[]) => string);
+    method: 'GET';
+    responseSchema: TResponse;
+    querySchema?: z.ZodTypeAny;
+  },
+  params?: {
+    pathParams?: any[];
+    queryParams?: Record<string, any>;
+  },
+  options?: SWRConfiguration
+) {
+  const key =
+    typeof route.path === 'function'
+      ? route.path(...(params?.pathParams ?? []))
+      : route.path;
+
+  return useSWR<z.infer<TResponse>>(
+    key,
+    () =>
+      apiRequest(route, {
+        data: params?.queryParams,
+        params: params?.pathParams,
+      }),
+    options
+  );
+}
+
+/**
+ * Creates a type-safe SWR mutation hook for POST/PATCH/DELETE
+ */
+export function useApiMutation<
+  TRequest extends z.ZodTypeAny | undefined,
+  TResponse extends z.ZodTypeAny,
+>(
+  route: {
+    path: string | ((...args: any[]) => string);
+    method: 'POST' | 'PATCH' | 'DELETE';
+    requestSchema?: TRequest;
+    responseSchema: TResponse;
+  },
+  pathParams?: any[]
+) {
+  const key =
+    typeof route.path === 'function'
+      ? route.path(...(pathParams ?? []))
+      : route.path;
+
+  return useSWRMutation<
+    z.infer<TResponse>,
+    Error,
+    string,
+    TRequest extends z.ZodTypeAny ? z.infer<TRequest> : void
+  >(key, async (_, { arg }) => {
+    return apiRequest(route, {
+      data: arg as any,
+      params: pathParams,
+    });
+  });
+}
+```
+
+```typescript
+// lib/hooks/api/use-notifications.hook.ts
+/**
+ * Domain-specific notification hooks
+ */
+import { useApi, useApiMutation } from './use-api.hook';
+import { apiRoutes } from '@/lib/api/routes.config';
+
+/**
+ * Hook to fetch notifications list
+ * @example
+ * const { data, error, isLoading } = useNotifications({ limit: 10, offset: 0 });
+ */
+export function useNotifications(params?: { limit?: number; offset?: number }) {
+  return useApi(
+    apiRoutes.notifications.list,
+    { queryParams: params },
+    { revalidateOnFocus: false }
+  );
+}
+
+/**
+ * Hook to fetch a single notification
+ * @example
+ * const { data, error, isLoading } = useNotification('notification-id');
+ */
+export function useNotification(id: string) {
+  return useApi(apiRoutes.notifications.get, { pathParams: [id] });
+}
+
+/**
+ * Hook to update a notification
+ * @example
+ * const { trigger, isMutating } = useUpdateNotification('notification-id');
+ * await trigger({ isRead: true });
+ */
+export function useUpdateNotification(id: string) {
+  const mutation = useApiMutation(apiRoutes.notifications.update, [id]);
+
+  return {
+    ...mutation,
+    trigger: async (data: { isRead?: boolean }) => {
+      const result = await mutation.trigger(data);
+      // Revalidate list after update
+      await mutate('/api/notifications');
+      return result;
+    },
+  };
+}
+```
+
+**Example Usage in Components:**
+
+```typescript
+// components/notifications/NotificationList.tsx
+'use client';
+
+import { useNotifications, useUpdateNotification } from '@/lib/hooks/api/use-notifications.hook';
+
+export function NotificationList() {
+  const { data, error, isLoading } = useNotifications({ limit: 10, offset: 0 });
+  const { trigger: updateNotification } = useUpdateNotification('some-id');
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  // data is fully typed from notificationListResponseSchema
+  return (
+    <ul>
+      {data.notifications.map((notification) => (
+        <li key={notification.id}>
+          {notification.message}
+          <button onClick={() => updateNotification({ isRead: true })}>
+            Mark as read
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+**Migration Example - Before and After:**
+
+```typescript
+// BEFORE: Manual fetch with hardcoded paths and no type safety
+'use client';
+
+import { useEffect, useState } from 'react';
+
+interface Notification {
+  id: string;
+  message: string;
+  isRead: boolean;
+}
+
+export function NotificationListOld() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/notifications?limit=10&offset=0')
+      .then((res) => res.json())
+      .then((data) => {
+        setNotifications(data.notifications);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  const updateNotification = async (id: string, isRead: boolean) => {
+    try {
+      const response = await fetch(`/api/notifications/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isRead }),
+      });
+      const data = await response.json();
+
+      // Manual state update
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead } : n))
+      );
+    } catch (err) {
+      console.error('Failed to update notification');
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <ul>
+      {notifications.map((notification) => (
+        <li key={notification.id}>
+          {notification.message}
+          <button onClick={() => updateNotification(notification.id, true)}>
+            Mark as read
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// AFTER: Type-safe SWR hooks with centralized routes
+'use client';
+
+import { useNotifications, useUpdateNotification } from '@/lib/hooks/api/use-notifications.hook';
+
+export function NotificationListNew() {
+  // Type-safe, automatic caching, revalidation
+  const { data, error, isLoading } = useNotifications({ limit: 10, offset: 0 });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  // data is fully typed from schema - TypeScript knows all properties
+  return (
+    <ul>
+      {data.notifications.map((notification) => {
+        // Type-safe update with automatic revalidation
+        const { trigger: updateNotification } = useUpdateNotification(notification.id);
+
+        return (
+          <li key={notification.id}>
+            {notification.message}
+            <button onClick={() => updateNotification({ isRead: true })}>
+              Mark as read
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+```
+
+**Benefits of Migration:**
+
+- ✅ **Type Safety:** Full type inference from API schemas
+- ✅ **No Hardcoded URLs:** All routes defined in central config
+- ✅ **Automatic Caching:** SWR handles caching and deduplication
+- ✅ **Automatic Revalidation:** Fresh data on focus, reconnect, etc.
+- ✅ **Less Code:** No manual state management needed
+- ✅ **Error Handling:** Consistent error handling across all requests
+- ✅ **Loading States:** Built-in loading states
+- ✅ **Optimistic Updates:** Easy to implement with SWR
 
 ---
 
@@ -634,43 +1101,60 @@ lib/types/notifications/
 ```
 lib/
   validation/
-    validated-response.util.ts         # NEW
-    request-validator.util.ts          # NEW
-    sanitization.util.ts               # NEW
-    error-codes.enum.ts                # NEW
-    query-params.util.ts               # NEW
-    route-params.util.ts               # NEW
+    validated-response.util.ts         # NEW - Phase 1
+    request-validator.util.ts          # NEW - Phase 1
+    sanitization.util.ts               # NEW - Phase 1
+    error-codes.enum.ts                # NEW - Phase 1
+    query-params.util.ts               # NEW - Phase 1
+    route-params.util.ts               # NEW - Phase 1
 
   server/
-    validated-api-handler.ts           # NEW
+    validated-api-handler.ts           # NEW - Phase 2
+
+  api/
+    routes.config.ts                   # NEW - Phase 3 - Central API route registry
+    client.util.ts                     # NEW - Phase 3 - Type-safe API client
+    swr-config.ts                      # NEW - Phase 3 - Global SWR configuration
+
+  hooks/
+    api/
+      use-api.hook.ts                  # NEW - Phase 3 - Generic SWR hook factory
+      use-notifications.hook.ts        # NEW - Phase 3 - Notification API hooks
+      use-users.hook.ts                # NEW - Phase 3 - User API hooks
+      use-organizations.hook.ts        # NEW - Phase 3 - Organization API hooks
+      use-admin.hook.ts                # NEW - Phase 3 - Admin API hooks
 
   types/
     actions/
-      action-state.type.ts             # NEW
-      create-typed-action.util.ts      # NEW
+      action-state.type.ts             # NEW - Phase 1
+      create-typed-action.util.ts      # NEW - Phase 1
 
     common/
-      pagination-response.schema.ts    # NEW
-      success-response.schema.ts       # NEW
-      error-response.schema.ts         # NEW
+      pagination-response.schema.ts    # NEW - Phase 2
+      success-response.schema.ts       # NEW - Phase 2
+      error-response.schema.ts         # NEW - Phase 2
+
+    api/
+      api-error.type.ts                # NEW - Phase 3 - API error types
 
   # Domain-specific response schemas
   types/notifications/
-    notification-list-response.schema.ts   # NEW
-    notification-response.schema.ts        # NEW
+    notification-list-response.schema.ts   # NEW - Phase 2
+    notification-response.schema.ts        # NEW - Phase 2
 
   types/auth/
-    sign-in-request.schema.ts         # NEW
-    sign-in-response.schema.ts        # NEW
-    sign-in-action.schema.ts          # NEW
-    user-profile-response.schema.ts   # NEW
+    sign-in-request.schema.ts         # NEW - Phase 1
+    sign-in-response.schema.ts        # NEW - Phase 1
+    sign-in-action.schema.ts          # NEW - Phase 1
+    user-profile-response.schema.ts   # NEW - Phase 2
 
 docs/
   validation/
-    api-validation-guide.md            # NEW
-    action-validation-guide.md         # NEW
-    schema-organization.md             # NEW
-    migration-guide.md                 # NEW
+    api-validation-guide.md            # NEW - Phase 5
+    action-validation-guide.md         # NEW - Phase 5
+    schema-organization.md             # NEW - Phase 5
+    migration-guide.md                 # NEW - Phase 5
+    client-api-integration.md          # NEW - Phase 3 - SWR integration guide
 ```
 
 ### Modified Files
@@ -719,7 +1203,7 @@ app/
 ### Migration Checklist Per Route
 
 ```markdown
-## API Route Migration
+## API Route Migration (Phase 2)
 
 - [ ] Extract inline schemas to `lib/types/[domain]/`
 - [ ] Create request schema (`*-request.schema.ts`)
@@ -729,7 +1213,7 @@ app/
 - [ ] Update tests to cover validation
 - [ ] Update API documentation
 
-## Server Action Migration
+## Server Action Migration (Phase 2)
 
 - [ ] Extract inline schemas
 - [ ] Create action state schema
@@ -737,6 +1221,18 @@ app/
 - [ ] Add output validation
 - [ ] Update client usage to use inferred types
 - [ ] Update tests
+
+## Client API Migration (Phase 3)
+
+- [ ] Add route to `lib/api/routes.config.ts` with schemas
+- [ ] Create domain-specific hook in `lib/hooks/api/use-[domain].hook.ts`
+- [ ] Add JSDoc documentation with usage examples
+- [ ] Replace manual fetch calls with SWR hooks
+- [ ] Remove manual loading/error state management
+- [ ] Remove hardcoded API paths
+- [ ] Update component to use typed hook
+- [ ] Add tests for hook with MSW
+- [ ] Remove manual cache invalidation (use SWR mutate)
 ```
 
 ---
@@ -771,12 +1267,36 @@ app/
    - Test typed return values
    - Test `useActionState` integration
 
+### Integration Tests (Phase 3)
+
+1. **SWR Hooks**
+   - Test hooks with MSW (Mock Service Worker)
+   - Test loading states
+   - Test error handling
+   - Test data caching and revalidation
+   - Test mutation hooks (POST/PATCH/DELETE)
+   - Test optimistic updates
+
+2. **API Client**
+   - Test route registry type inference
+   - Test request/response validation
+   - Test error handling (network errors, validation errors)
+   - Test authentication integration
+   - Test query param serialization
+
+3. **Route Configuration**
+   - Test all routes are properly typed
+   - Test path parameter functions
+   - Test schema associations
+
 ### E2E Tests
 
 1. **Critical Flows**
    - Sign in/sign up with validation
    - API consumption with type safety
    - Error handling across stack
+   - Client-side data fetching with SWR
+   - Optimistic UI updates
 
 ---
 
@@ -789,6 +1309,8 @@ app/
 - [ ] 100% of public API routes have response schemas
 - [ ] 95%+ test coverage for validation utilities
 - [ ] Zero validation-related production errors in 30 days
+- [ ] 100% of client API calls use centralized route config
+- [ ] All API responses are type-safe with SWR hooks
 
 ### Developer Experience Metrics
 
@@ -796,12 +1318,17 @@ app/
 - [ ] Documentation: 100% of validation patterns documented
 - [ ] Type safety: 0 `any` types in validation layer
 - [ ] Migration: 80%+ of routes migrated to new patterns
+- [ ] All API hooks have JSDoc with usage examples
+- [ ] Developers can discover all available API routes via type hints
+- [ ] Zero hardcoded API paths in client components
 
 ### Performance Metrics
 
 - [ ] Validation adds <10ms to P95 response time
 - [ ] No memory leaks from schema caching
 - [ ] Schema parsing cached where beneficial
+- [ ] SWR caching reduces redundant API calls by 40%+
+- [ ] Client-side type inference has zero runtime overhead
 
 ---
 
@@ -940,9 +1467,162 @@ const [state, formAction] = useActionState(signIn, initialState);
 // state.redirectUrl is typed as string | undefined
 ```
 
+#### Example: Complete Type-Safe Flow (Phase 3)
+
+**1. Define Response Schema:**
+
+```typescript
+// lib/types/users/user-profile-response.schema.ts
+import { z } from 'zod';
+
+export const userProfileResponseSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string().nullable(),
+  image: z.string().url().nullable(),
+  createdAt: z.string().datetime(),
+});
+
+export type UserProfileResponse = z.infer<typeof userProfileResponseSchema>;
+```
+
+**2. Add to Route Registry:**
+
+```typescript
+// lib/api/routes.config.ts
+import { userProfileResponseSchema } from '@/lib/types/users/user-profile-response.schema';
+
+export const apiRoutes = {
+  // ... other routes
+  users: {
+    current: {
+      path: '/api/user',
+      method: 'GET' as const,
+      responseSchema: userProfileResponseSchema,
+    },
+  },
+} as const;
+```
+
+**3. Implement Validated API Route:**
+
+```typescript
+// app/api/user/route.ts
+import { createValidatedAuthenticatedHandler } from '@/lib/server/validated-api-handler';
+import { userProfileResponseSchema } from '@/lib/types/users/user-profile-response.schema';
+import { getUserById } from '@/lib/db/queries';
+
+export const GET = createValidatedAuthenticatedHandler(
+  undefined, // No input schema for GET
+  userProfileResponseSchema,
+  async ({ context }) => {
+    const user = await getUserById(context.user.id);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Response is automatically validated
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      image: user.image,
+      createdAt: user.createdAt.toISOString(),
+    };
+  }
+);
+```
+
+**4. Create Type-Safe Hook:**
+
+```typescript
+// lib/hooks/api/use-users.hook.ts
+import { useApi } from './use-api.hook';
+import { apiRoutes } from '@/lib/api/routes.config';
+
+/**
+ * Hook to fetch current user profile
+ * @example
+ * const { data: user, error, isLoading } = useCurrentUser();
+ */
+export function useCurrentUser() {
+  return useApi(apiRoutes.users.current, undefined, {
+    revalidateOnFocus: true,
+    dedupingInterval: 60000, // 1 minute
+  });
+}
+```
+
+**5. Use in Component:**
+
+```typescript
+// components/profile/UserProfile.tsx
+'use client';
+
+import { useCurrentUser } from '@/lib/hooks/api/use-users.hook';
+import { Avatar } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+
+export function UserProfile() {
+  const { data: user, error, isLoading } = useCurrentUser();
+
+  if (isLoading) {
+    return <Skeleton className="h-12 w-12 rounded-full" />;
+  }
+
+  if (error) {
+    return <div>Failed to load profile</div>;
+  }
+
+  // user is fully typed - TypeScript knows all properties
+  return (
+    <div className="flex items-center gap-3">
+      <Avatar>
+        {user.image ? (
+          <img src={user.image} alt={user.name ?? 'User'} />
+        ) : (
+          <div className="bg-primary text-primary-foreground">
+            {user.email[0].toUpperCase()}
+          </div>
+        )}
+      </Avatar>
+      <div>
+        <p className="font-medium">{user.name ?? 'Anonymous'}</p>
+        <p className="text-sm text-muted-foreground">{user.email}</p>
+      </div>
+    </div>
+  );
+}
+```
+
+**Complete Type Flow:**
+
+```
+1. Schema Definition (userProfileResponseSchema)
+   ↓
+2. Route Registry (apiRoutes.users.current)
+   ↓
+3. API Route (validates response against schema)
+   ↓
+4. SWR Hook (infers return type from schema)
+   ↓
+5. Component (fully typed data, no manual types needed)
+```
+
+**Benefits:**
+
+- ✅ **Single Source of Truth:** Schema defines types everywhere
+- ✅ **Runtime Validation:** API validates actual response
+- ✅ **Compile-Time Safety:** TypeScript catches errors before runtime
+- ✅ **Auto-Completion:** Full IntelliSense in components
+- ✅ **Refactoring Safety:** Change schema, all usages update
+- ✅ **No Hardcoded Paths:** All routes in central registry
+- ✅ **Built-in Caching:** SWR handles caching automatically
+
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** October 7, 2025  
+**Document Version:** 1.1  
+**Last Updated:** October 8, 2025  
 **Author:** AI Engineering Assistant  
-**Status:** Ready for Review
+**Status:** Phase 3 Added - Ready for Implementation
