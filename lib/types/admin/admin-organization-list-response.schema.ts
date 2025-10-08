@@ -9,7 +9,7 @@ export const organizationTableDataSchema = z.object({
   name: z.string(),
   slug: z.string().nullable(),
   logo: z.string().nullable(),
-  createdAt: z.date(),
+  createdAt: z.coerce.date(),
   stripeCustomerId: z.string().nullable(),
   stripeSubscriptionId: z.string().nullable(),
   stripeProductId: z.string().nullable(),

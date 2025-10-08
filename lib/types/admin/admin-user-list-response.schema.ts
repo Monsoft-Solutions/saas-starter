@@ -14,8 +14,8 @@ export const userTableDataSchema = z.object({
   banned: z.boolean().nullable(),
   banReason: z.string().nullable(),
   banExpires: z.date().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
   image: z.string().nullable(),
 });
 
