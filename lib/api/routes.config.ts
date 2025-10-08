@@ -35,6 +35,8 @@ import { subscriptionAnalyticsResponseSchema } from '@/lib/types/analytics/subsc
 import { subscriptionAnalyticsFiltersSchema } from '@/lib/types/analytics/subscription-analytics-filters.schema';
 import { adminOrganizationDetailsResponseSchema } from '@/lib/types/admin/admin-organization-details-response.schema';
 import { adminActivityDetailsResponseSchema } from '@/lib/types/admin/admin-activity-details-response.schema';
+import { clientErrorPayloadSchema } from '@/lib/types/logger/client-error-payload.schema';
+import { logErrorResponseSchema } from '@/lib/types/logger/log-error-response.schema';
 
 /**
  * Route definition structure for GET requests with query parameters
@@ -381,6 +383,25 @@ export const apiRoutes = {
       responseSchema: organizationSubscriptionResponseSchema,
     } as const satisfies GetRoute<
       typeof organizationSubscriptionResponseSchema
+    >,
+  },
+
+  /**
+   * Logger-related API routes
+   */
+  logger: {
+    /**
+     * Log client-side errors
+     * POST /api/log-error
+     */
+    logError: {
+      path: '/api/log-error',
+      method: 'POST',
+      requestSchema: clientErrorPayloadSchema,
+      responseSchema: logErrorResponseSchema,
+    } as const satisfies MutationRoute<
+      typeof clientErrorPayloadSchema,
+      typeof logErrorResponseSchema
     >,
   },
 } as const;
