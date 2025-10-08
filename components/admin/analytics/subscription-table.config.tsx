@@ -2,6 +2,7 @@ import { ExternalLink, Eye, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { apiRoutes } from '@/lib/api/routes.config';
 import type { TableConfig } from '@/lib/types/table';
 import { FilterFieldType } from '@/lib/types/table';
 import type {
@@ -57,7 +58,7 @@ export const subscriptionTableConfig: TableConfig<
   SubscriptionTableFilters
 > = {
   tableId: 'subscriptions',
-  apiEndpoint: '/api/admin/analytics/subscriptions',
+  route: apiRoutes.admin.analytics.subscriptions,
 
   columns: [
     {

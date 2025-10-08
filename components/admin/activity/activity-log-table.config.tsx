@@ -2,6 +2,7 @@ import { Eye, Activity } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { apiRoutes } from '@/lib/api/routes.config';
 import type { TableConfig } from '@/lib/types/table';
 import { FilterFieldType } from '@/lib/types/table';
 import type {
@@ -41,7 +42,7 @@ export const activityLogTableConfig: TableConfig<
   ActivityLogTableFilters
 > = {
   tableId: 'activity-logs',
-  apiEndpoint: '/api/admin/activity',
+  route: apiRoutes.admin.activity.list,
 
   columns: [
     {

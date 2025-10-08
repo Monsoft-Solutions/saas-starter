@@ -1,6 +1,7 @@
 import { Eye, Shield, Ban, CheckCircle2, XCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { apiRoutes } from '@/lib/api/routes.config';
 import type { TableConfig } from '@/lib/types/table';
 import { FilterFieldType } from '@/lib/types/table';
 import { AdminUserListRequest, UserTableData } from '@/lib/types/admin';
@@ -12,7 +13,7 @@ import { AdminUserListRequest, UserTableData } from '@/lib/types/admin';
 export const userTableConfig: TableConfig<UserTableData, AdminUserListRequest> =
   {
     tableId: 'users',
-    apiEndpoint: '/api/admin/users',
+    route: apiRoutes.admin.users.list,
 
     columns: [
       {
