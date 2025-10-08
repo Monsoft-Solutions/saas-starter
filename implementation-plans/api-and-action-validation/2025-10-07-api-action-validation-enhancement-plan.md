@@ -542,41 +542,44 @@ lib/types/notifications/
    - [x] Add comprehensive JSDoc documentation
    - [x] Create unit tests (30 tests, all passing)
 
-2. **Create Type-Safe API Client**
-   - [ ] Create `lib/api/client.util.ts` - Base API client with fetch wrapper
-   - [ ] Implement type-safe request/response handling
-   - [ ] Add error handling and response normalization
-   - [ ] Support for different HTTP methods (GET, POST, PATCH, DELETE)
-   - [ ] Automatic content-type handling
-   - [ ] Integration with authentication (session tokens)
+2. **Create Type-Safe API Client** ✅ DONE
+   - [x] Create `lib/api/client.util.ts` - Base API client with fetch wrapper
+   - [x] Implement type-safe request/response handling
+   - [x] Add error handling and response normalization
+   - [x] Support for different HTTP methods (GET, POST, PATCH, DELETE)
+   - [x] Automatic content-type handling
+   - [x] Integration with authentication (session cookies)
+   - [x] Create `lib/types/api/api-error.type.ts` - Custom ApiError class
+   - [x] Add convenience functions (get, post, patch, del)
+   - [x] Create comprehensive unit tests (41 passing, 1 skipped)
 
-3. **Create SWR Hooks Factory**
-   - [ ] Create `lib/hooks/api/use-api.hook.ts` - Generic SWR hook factory
-   - [ ] Type-safe SWR hooks that infer response types from schemas
-   - [ ] Create mutation hooks for POST/PATCH/DELETE operations
-   - [ ] Add optimistic updates support
-   - [ ] Implement revalidation strategies
-   - [ ] Error handling with typed errors
+3. **Create SWR Hooks Factory** ✅ DONE
+   - [x] Create `lib/hooks/api/use-api.hook.ts` - Generic SWR hook factory
+   - [x] Type-safe SWR hooks that infer response types from schemas
+   - [x] Create mutation hooks for POST/PATCH/DELETE operations
+   - [x] Add optimistic updates support
+   - [x] Implement revalidation strategies
+   - [x] Error handling with typed errors
 
 4. **Create Domain-Specific API Hooks**
-   - [ ] Create `lib/hooks/api/use-notifications.hook.ts` - Notification hooks
+   - [x] Create `lib/hooks/api/use-notifications.hook.ts` - Notification hooks ✅ DONE
    - [ ] Create `lib/hooks/api/use-users.hook.ts` - User hooks
    - [ ] Create `lib/hooks/api/use-organizations.hook.ts` - Organization hooks
    - [ ] Create `lib/hooks/api/use-admin.hook.ts` - Admin hooks
-   - [ ] Add JSDoc documentation with usage examples
+   - [x] Add JSDoc documentation with usage examples ✅ DONE (for notifications)
 
-5. **SWR Configuration & Middleware**
-   - [ ] Create `lib/api/swr-config.ts` - Global SWR configuration
-   - [ ] Add SWR middleware for logging
-   - [ ] Add SWR middleware for error handling
-   - [ ] Add SWR middleware for authentication errors
-   - [ ] Configure global revalidation options
+5. **SWR Configuration & Middleware** ✅ DONE
+   - [x] Create `lib/api/swr-config.ts` - Global SWR configuration
+   - [x] Add SWR middleware for logging
+   - [x] Add SWR middleware for error handling
+   - [x] Add SWR middleware for authentication errors
+   - [x] Configure global revalidation options
 
-6. **Testing**
-   - [ ] Unit tests for API client
-   - [ ] Unit tests for route registry
-   - [ ] Integration tests for SWR hooks with MSW (Mock Service Worker)
-   - [ ] Test type inference from schemas
+6. **Testing** ✅ DONE
+   - [x] Unit tests for API client (41 passing, 1 skipped)
+   - [x] Unit tests for route registry (30 tests, all passing)
+   - [x] Integration tests for SWR hooks with MSW (Mock Service Worker)
+   - [x] Test type inference from schemas
 
 **Deliverables:**
 

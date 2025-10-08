@@ -31,5 +31,8 @@ export const GET = createValidatedOrganizationHandler(
       subscriptionStatus: organization.subscriptionStatus ?? null,
       stripeCustomerId: organization.stripeCustomerId ?? null,
     };
+  },
+  {
+    inputSource: 'query',
   }
 );

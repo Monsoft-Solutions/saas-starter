@@ -33,10 +33,10 @@ export const notificationResponseSchema = z.object({
   message: z.string(),
   metadata: notificationMetadataSchema.nullable(),
   isRead: z.boolean(),
-  readAt: z.date().nullable(),
+  readAt: z.coerce.date().nullable(),
   isDismissed: z.boolean(),
-  createdAt: z.date(),
-  expiresAt: z.date().nullable(),
+  createdAt: z.coerce.date(),
+  expiresAt: z.coerce.date().nullable(),
 });
 
 /**

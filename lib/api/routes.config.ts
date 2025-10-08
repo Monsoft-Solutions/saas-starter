@@ -17,6 +17,7 @@ import { adminUserListRequestSchema } from '@/lib/types/admin/admin-user-list-re
 import { adminOrganizationListRequestSchema } from '@/lib/types/admin/admin-organization-list-request.schema';
 import { adminActivityListRequestSchema } from '@/lib/types/admin/admin-activity-list-request.schema';
 import { adminStatsRequestSchema } from '@/lib/types/admin/admin-stats-request.schema';
+import { organizationSubscriptionResponseSchema } from '@/lib/types/api/subscription.type';
 
 // Import response schemas
 import { notificationListResponseSchema } from '@/lib/types/notifications/notification-list-response.schema';
@@ -143,11 +144,11 @@ export const apiRoutes = {
       path: (id: string) => `/api/notifications/${id}`,
       method: 'PATCH',
       requestSchema: notificationUpdateRequestSchema,
-      responseSchema: notificationResponseSchema,
+      responseSchema: simpleSuccessResponseSchema,
     } as const satisfies MutationRouteWithParams<
       [string],
       typeof notificationUpdateRequestSchema,
-      typeof notificationResponseSchema
+      typeof simpleSuccessResponseSchema
     >,
 
     /**
@@ -341,6 +342,23 @@ export const apiRoutes = {
       method: 'GET',
       responseSchema: cacheStatsResponseSchema,
     } as const satisfies GetRoute<typeof cacheStatsResponseSchema>,
+  },
+
+  /**
+   * Organization-related API routes
+   */
+  organization: {
+    /**
+     * Get organization subscription details
+     * GET /api/organization/subscription
+     */
+    subscription: {
+      path: '/api/organization/subscription',
+      method: 'GET',
+      responseSchema: organizationSubscriptionResponseSchema,
+    } as const satisfies GetRoute<
+      typeof organizationSubscriptionResponseSchema
+    >,
   },
 } as const;
 

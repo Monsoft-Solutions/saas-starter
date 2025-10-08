@@ -13,8 +13,23 @@ vi.mock('@/lib/logger/logger.service', () => ({
   },
 }));
 
+// Replace the current vi.mock for server-context with one that mocks both functions to the same value.
 vi.mock('@/lib/auth/server-context', () => ({
   requireServerContext: vi.fn().mockResolvedValue({
+    user: {
+      id: 'user-123',
+      email: 'test@example.com',
+      name: 'Test User',
+      image: null,
+    },
+    session: {
+      id: 'session-123',
+      user: {},
+    },
+    headers: {},
+    organization: null,
+  }),
+  getServerContextFromHeaders: vi.fn().mockResolvedValue({
     user: {
       id: 'user-123',
       email: 'test@example.com',
@@ -52,8 +67,8 @@ vi.mock('@/lib/db/drizzle', () => ({
               emailVerified: true,
               image: null,
               role: 'user',
-              createdAt: new Date('2024-01-01'),
-              updatedAt: new Date('2024-01-01'),
+              createdAt: new Date('2024-01-01').toISOString(),
+              updatedAt: new Date('2024-01-01').toISOString(),
               banned: null,
               banReason: null,
               banExpires: null,
@@ -252,7 +267,7 @@ describe('Validated API Routes', () => {
 
       expect(response.status).toBe(400);
       const body = await response.json();
-      expect(body.error).toBe('Invalid notification ID');
+      expect(body.error).toBe('ID must be a number');
     });
 
     it('should reject invalid action', async () => {
@@ -407,11 +422,11 @@ describe('Validated API Routes', () => {
                 emailVerified: true,
                 image: null,
                 role: 'user',
-                createdAt: new Date('2024-01-01'),
-                updatedAt: new Date('2024-01-01'),
+                createdAt: new Date('2024-01-01').toISOString(),
+                updatedAt: new Date('2024-01-01').toISOString(),
                 banned: true,
                 banReason: 'Violation of terms',
-                banExpires: new Date('2024-12-31'),
+                banExpires: new Date('2024-12-31').toISOString(),
               },
             ]),
           })),

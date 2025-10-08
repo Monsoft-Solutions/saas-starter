@@ -12,12 +12,12 @@ export const userProfileResponseSchema = z.object({
   emailVerified: z.boolean(),
   image: z.string().nullable(),
   role: z.string().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
   // Admin-specific fields (only included for admin users)
   banned: z.boolean().optional(),
   banReason: z.string().nullable().optional(),
-  banExpires: z.date().nullable().optional(),
+  banExpires: z.coerce.date().nullable().optional(),
 });
 
 /**

@@ -75,8 +75,6 @@ function SubscriptionSkeleton() {
 function OrganizationSubscriptionCard() {
   const { subscription, isLoading, error } = useOrganizationSubscription();
 
-  console.log('subscription', subscription);
-
   const planLabel = subscription?.planName || 'Free';
   const status = subscription?.subscriptionStatus;
   const statusLabel =
@@ -177,7 +175,7 @@ function getUserDisplayName(
 function OrganizationMembers() {
   const organizationState = authClient.useActiveOrganization();
   const memberRoleState = authClient.useActiveMemberRole();
-  console.log('memberRoleState', memberRoleState);
+
   const activeMemberState = authClient.useActiveMember();
   const [removalState, setRemovalState] = useState<ActionState>({});
   const [removingId, setRemovingId] = useState<string | null>(null);

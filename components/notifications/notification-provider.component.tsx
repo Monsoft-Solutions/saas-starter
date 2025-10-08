@@ -4,13 +4,13 @@ import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useNotifications } from './use-notifications.hook';
+import { useNotificationOperations } from '@/lib/hooks/api/use-notifications.hook';
 
 /**
  * Notification context shape - derived from hook return type
  */
 type NotificationContextType = Pick<
-  ReturnType<typeof useNotifications>,
+  ReturnType<typeof useNotificationOperations>,
   | 'notifications'
   | 'unreadCount'
   | 'isLoading'
@@ -31,7 +31,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
  */
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const notificationHook = useNotifications();
+  const notificationHook = useNotificationOperations();
   const previousUnreadCount = useRef<number>(0);
   const hasInitialized = useRef(false);
 
