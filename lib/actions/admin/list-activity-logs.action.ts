@@ -8,17 +8,26 @@ import {
   getActivityBreakdown,
   getActivityLogById,
   exportActivityLogsToCSV,
-  type ActivityLogFilters,
 } from '@/lib/db/queries/admin-activity-log.query';
+import {
+  activityLogFiltersSchema,
+  activityStatisticsParamsSchema,
+  mostActiveUsersParamsSchema,
+  activityBreakdownParamsSchema,
+  activityLogIdSchema,
+  ActivityLogFilters,
+} from '@/lib/types/admin/admin-activity-action-input.schema';
 
 /**
  * Server action to list all activity logs with filters and pagination.
  * Requires the `analytics:read` admin permission.
+ * Validates input to ensure proper types and bounds checking.
  */
 export const listAllActivityLogsAction = withPermission(
   'analytics:read',
   async (filters: ActivityLogFilters) => {
-    return await listAllActivityLogs(filters);
+    const validated = activityLogFiltersSchema.parse(filters);
+    return await listAllActivityLogs(validated);
   },
   'admin.activity-logs.list'
 );
@@ -26,11 +35,15 @@ export const listAllActivityLogsAction = withPermission(
 /**
  * Server action to get activity statistics for admin dashboard.
  * Requires the `analytics:read` admin permission.
+ * Validates days parameter to ensure it's within acceptable range (1-365).
  */
 export const getActivityStatisticsAction = withPermission(
   'analytics:read',
   async (days: number = 30) => {
-    return await getActivityStatistics(days);
+    const { days: validatedDays } = activityStatisticsParamsSchema.parse({
+      days,
+    });
+    return await getActivityStatistics(validatedDays);
   },
   'admin.activity-logs.statistics'
 );
@@ -38,11 +51,15 @@ export const getActivityStatisticsAction = withPermission(
 /**
  * Server action to get most active users by activity count.
  * Requires the `analytics:read` admin permission.
+ * Validates limit parameter to ensure it's within acceptable range (1-100).
  */
 export const getMostActiveUsersAction = withPermission(
   'analytics:read',
   async (limit: number = 10) => {
-    return await getMostActiveUsers(limit);
+    const { limit: validatedLimit } = mostActiveUsersParamsSchema.parse({
+      limit,
+    });
+    return await getMostActiveUsers(validatedLimit);
   },
   'admin.activity-logs.most-active-users'
 );
@@ -50,11 +67,15 @@ export const getMostActiveUsersAction = withPermission(
 /**
  * Server action to get activity breakdown by action type.
  * Requires the `analytics:read` admin permission.
+ * Validates days parameter to ensure it's within acceptable range (1-365).
  */
 export const getActivityBreakdownAction = withPermission(
   'analytics:read',
   async (days: number = 30) => {
-    return await getActivityBreakdown(days);
+    const { days: validatedDays } = activityBreakdownParamsSchema.parse({
+      days,
+    });
+    return await getActivityBreakdown(validatedDays);
   },
   'admin.activity-logs.breakdown'
 );
@@ -62,11 +83,13 @@ export const getActivityBreakdownAction = withPermission(
 /**
  * Server action to get a single activity log by ID with full user details.
  * Requires the `analytics:read` admin permission.
+ * Validates ID to ensure it's a positive integer.
  */
 export const getActivityLogByIdAction = withPermission(
   'analytics:read',
   async (id: number) => {
-    return await getActivityLogById(id);
+    const { id: validatedId } = activityLogIdSchema.parse({ id });
+    return await getActivityLogById(validatedId);
   },
   'admin.activity-logs.details'
 );
@@ -74,11 +97,13 @@ export const getActivityLogByIdAction = withPermission(
 /**
  * Server action to export activity logs to CSV format.
  * Requires the `analytics:read` admin permission.
+ * Validates input to ensure proper types and bounds checking.
  */
 export const exportActivityLogsToCSVAction = withPermission(
   'analytics:read',
   async (filters: ActivityLogFilters) => {
-    return await exportActivityLogsToCSV(filters);
+    const validated = activityLogFiltersSchema.parse(filters);
+    return await exportActivityLogsToCSV(validated);
   },
   'admin.activity-logs.export'
 );

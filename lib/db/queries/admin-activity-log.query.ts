@@ -6,16 +6,7 @@ import { db } from '../drizzle';
 import { activityLogs, user } from '../schemas';
 import { desc, eq, and, gte, lte, sql, ilike, or } from 'drizzle-orm';
 import logger from '@/lib/logger/logger.service';
-
-export type ActivityLogFilters = {
-  userId?: string;
-  action?: string;
-  startDate?: Date;
-  endDate?: Date;
-  search?: string; // Search in user email or action
-  limit?: number;
-  offset?: number;
-};
+import type { ActivityLogFilters } from '@/lib/types/admin/admin-activity-action-input.schema';
 
 /**
  * List all activity logs with filters and pagination.

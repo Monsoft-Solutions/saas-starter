@@ -47,6 +47,7 @@ export function validateRequest<T extends z.ZodTypeAny>(
 
 /**
  * Validates query parameters from a URL search params object.
+ * Properly handles multi-value query parameters (e.g., ?tag=a&tag=b).
  *
  * @param searchParams - The URL search params to validate
  * @param schema - The Zod schema to validate against
@@ -57,6 +58,7 @@ export function validateRequest<T extends z.ZodTypeAny>(
  * const querySchema = z.object({
  *   page: z.coerce.number().min(1).default(1),
  *   limit: z.coerce.number().min(1).max(100).default(20),
+ *   tags: z.array(z.string()).optional(), // Multi-value support
  * });
  *
  * const result = validateQueryParams(request.nextUrl.searchParams, querySchema);
@@ -69,7 +71,17 @@ export function validateQueryParams<T extends z.ZodTypeAny>(
   searchParams: URLSearchParams,
   schema: T
 ): ValidationResult<z.infer<T>> {
-  const params = Object.fromEntries(searchParams.entries());
+  // Get all unique parameter keys
+  const keys = Array.from(new Set(Array.from(searchParams.keys())));
+
+  // Build params object with proper multi-value handling
+  const params = keys.reduce<Record<string, string | string[]>>((acc, key) => {
+    const all = searchParams.getAll(key);
+    // If multiple values exist, return array; otherwise return single value
+    acc[key] = all.length > 1 ? all : (all[0] ?? '');
+    return acc;
+  }, {});
+
   return validateRequest(params, schema);
 }
 

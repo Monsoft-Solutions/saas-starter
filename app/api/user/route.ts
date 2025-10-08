@@ -12,6 +12,7 @@
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { createValidatedAuthenticatedHandler } from '@/lib/server/validated-api-handler';
+import { HandlerError } from '@/lib/server/validated-route-param-handler';
 import { userProfileResponseSchema } from '@/lib/types/auth/user-profile-response.schema';
 import { db } from '@/lib/db/drizzle';
 import { user } from '@/lib/db/schemas';
@@ -31,7 +32,7 @@ export const GET = createValidatedAuthenticatedHandler(
       .limit(1);
 
     if (!userData[0]) {
-      throw new Error('User not found');
+      throw new HandlerError('User not found', 404);
     }
 
     const userRecord = userData[0];
