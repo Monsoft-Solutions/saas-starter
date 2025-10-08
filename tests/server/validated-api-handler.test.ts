@@ -50,8 +50,10 @@ function createMockRequest(
     });
   }
 
+  const mockJson = vi.fn().mockResolvedValue(body ?? {});
+
   return {
-    json: vi.fn().mockResolvedValue(body),
+    json: mockJson,
     nextUrl: url,
     headers: new Headers(),
   } as unknown as NextRequest;
@@ -450,6 +452,10 @@ describe('createValidatedOrganizationHandler', () => {
       testInputSchema,
       testOutputSchema,
       async ({ data, context }) => {
+        expect(data).toEqual({
+          name: 'John Doe',
+          email: 'john@example.com',
+        });
         expect(context.organization).toEqual(mockOrganization);
         expect(context.user.id).toBe('user-123');
         return {
