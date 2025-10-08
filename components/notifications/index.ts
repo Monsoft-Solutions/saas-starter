@@ -17,5 +17,5 @@ export {
   useNotification,
   useUnreadCount,
   useNotificationOperations,
-} from '@/lib/hooks/api/use-notifications.hook';
+} from '@/lib/hooks/api/notifications/use-notifications.hook';
 export { useNotificationContext } from './notification-provider.component';

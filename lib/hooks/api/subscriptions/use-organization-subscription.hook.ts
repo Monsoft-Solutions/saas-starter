@@ -1,7 +1,7 @@
 /**
  * React hook glue that surfaces an organization's subscription status via the shared API client.
  */
-import { useApiQuery } from './api/use-api.hook';
+import { useApiQuery } from '../use-api.hook';
 import { apiRoutes } from '@/lib/api/routes.config';
 
 /**

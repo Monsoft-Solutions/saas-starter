@@ -11,7 +11,7 @@
 
 import { useCallback } from 'react';
 import type { SWRConfiguration } from 'swr';
-import { useApiQuery } from './use-api.hook';
+import { useApiQuery } from '../use-api.hook';
 import { apiRoutes } from '@/lib/api/routes.config';
 import { apiRequest } from '@/lib/api/client.util';
 

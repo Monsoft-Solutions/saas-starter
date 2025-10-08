@@ -23,7 +23,7 @@ import { Loader2, PlusCircle } from 'lucide-react';
 import { logOrganizationActivity } from '@/app/(login)/actions';
 import { authClient } from '@/lib/auth/auth-client';
 import type { OrganizationDetails } from '@/lib/db/queries';
-import { useOrganizationSubscription } from '@/lib/hooks/use-organization-subscription.hook';
+import { useOrganizationSubscription } from '@/lib/hooks/api/subscriptions/use-organization-subscription.hook';
 import { ActivityType } from '@/lib/types';
 
 type ActionState = {

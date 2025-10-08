@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useNotificationOperations } from '@/lib/hooks/api/use-notifications.hook';
+import { useNotificationOperations } from '@/lib/hooks/api/notifications/use-notifications.hook';
 
 /**
  * Notification context shape - derived from hook return type
