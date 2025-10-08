@@ -10,7 +10,6 @@ build/
 dist/
 
 # Cache directories
-.vitepress/cache/
 docs/.vitepress/cache/
 coverage/
 
