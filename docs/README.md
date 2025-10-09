@@ -1,249 +1,150 @@
 # SaaS Starter Documentation
 
-## Overview
-
-This directory contains comprehensive documentation for the SaaS Starter application. The documentation covers all major systems and integrations implemented in the application.
-
-## 📂 Documentation Structure
-
-### 🏗 **Architecture & Systems**
-
-- **[Design System](./design-system.md)**: Token-based design system with Notion-inspired components
-- **[Navigation System](./navigation.md)**: Dynamic navigation with role-based filtering
-- **[Email System](./emails.md)**: Transactional email templates and delivery
-
-### ⚙️ **Configuration & Setup**
-
-- **[Environment Configuration](./environment-configuration.md)**: Complete environment setup guide with multi-environment support (local, staging, production)
-
-### 💳 **Stripe Integration**
-
-- **[Stripe Integration](./stripe/)**: Complete subscription and billing system
-  - [Integration Overview](./stripe/stripe-integration.md): Architecture and implementation details
-  - [Setup Script Guide](./stripe/setup-script-guide.md): Automated Stripe account configuration
-  - [Webhooks Configuration](./stripe/webhooks-configuration.md): Real-time event processing
-  - [Checkout & Billing Portal](./stripe/checkout-and-billing-portal.md): Subscription flows
-
-### 🔐 **Authentication & Authorization**
-
-- **[Server Authorization Overview](./auth/server-authorization-overview.md)**: Request lifecycle, guard registry, and session caching helpers
-- **[Server Actions & Hooks](./auth/server-actions-and-hooks.md)**: Patterns for validated server actions, API handlers, and typed client fetchers
-- **[OAuth Setup](./auth/OAUTH_SETUP.md)**: Social authentication provider configuration
-
-### 🧪 **Development & Testing**
-
-- **[Unit Testing](./unit-testing.md)**: Testing framework and patterns
-- **[Stripe Metadata Validation](./stripe/stripe-metadata-validation.md)**: Type-safe Stripe data handling
+This directory contains the complete standalone documentation for the SaaS Starter project - a Next.js application with BetterAuth, Stripe integration, and modern UI components.
 
 ## 🚀 Quick Start
 
-### 1. Environment Setup
+### Prerequisites
 
-::: tip Multi-Environment Support
-The application supports multiple environments (local, staging, production). See [Environment Configuration](./environment-configuration.md) for details.
-:::
+- **Node.js**: Version 22.18.8 or later (specified in `.nvmrc`)
+- **Package Manager**: pnpm (version 9.15.4 or later)
 
-**Quick setup for local development:**
+### Installation
 
-```bash
-# Interactive setup (recommended)
-pnpm db:setup
+1. **Navigate to the docs directory:**
 
-# Or copy template manually
-cp .env.local.example .env.local
-# Edit .env.local with your credentials
-```
+   ```bash
+   cd docs
+   ```
 
-For detailed setup instructions, see [Environment Configuration](./environment-configuration.md).
+2. **Install dependencies:**
 
-### 2. Database Setup
+   ```bash
+   pnpm install
+   ```
 
-```bash
-# Create and migrate database
-pnpm db:setup
-pnpm db:migrate
+3. **Start the development server:**
 
-# Seed with test data
-pnpm db:seed
-```
+   ```bash
+   pnpm dev
+   ```
 
-### 3. Stripe Configuration
+4. **Open your browser:**
+   Navigate to `http://localhost:5173` to view the documentation.
 
-```bash
-# Set up Stripe products and pricing
-node scripts/setup-stripe-features.js
-```
+## 📝 Available Scripts
 
-### 4. Development
+- `pnpm dev` - Start the development server with hot reload
+- `pnpm build` - Build the documentation for production
+- `pnpm preview` - Preview the production build locally
+- `pnpm lint` - Check code formatting
+- `pnpm lint:fix` - Fix code formatting issues
+- `pnpm type-check` - Run TypeScript type checking
 
-```bash
-# Start development server
-pnpm dev
+## 📚 Documentation Structure
 
-# Test user credentials
-# Email: test@test.com
-# Password: admin123
-```
+The documentation is organized into the following sections:
 
-## 🏗 Architecture Overview
+### Getting Started
 
-The application follows a modern full-stack architecture:
+- **Overview** - Project overview and architecture
+- **Quick Start** - Getting started guide
+- **Environment Configuration** - Environment setup and configuration
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Next.js 15    │    │   PostgreSQL     │    │   External      │
-│   App Router    │◄───┤   + Drizzle ORM  │    │   Services      │
-│   + TypeScript  │    │                  │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   shadcn/ui     │    │   BetterAuth     │    │   Stripe API    │
-│   + Tailwind    │    │   Multi-tenant   │    │   + Webhooks    │
-│   Components    │    │   Organizations  │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-```
+### Core Features
 
-### Key Technologies
+- **Authentication** - Server authorization, actions, hooks, and OAuth setup
+- **API Architecture** - Type-safe API client, handlers, validation, and server actions
+- **Admin Space** - Admin panel features and API reference
+- **Payments** - Stripe integration, webhooks, checkout, and billing portal
 
-- **Framework**: Next.js 15 with App Router
-- **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: BetterAuth with multi-tenant organizations
-- **Payments**: Stripe with subscription management
-- **UI**: shadcn/ui components with Tailwind CSS
-- **Email**: Resend for transactional emails
-- **Type Safety**: TypeScript with Zod validation
+### Infrastructure
 
-## 📋 Development Standards
+- **Cache System** - Redis/Upstash cache configuration and usage
+- **Background Jobs** - Async job processing system
+- **Logging** - Logging system and configuration
+- **Configuration** - Environment and application configuration
 
-### Code Organization
+### Development
 
-The application follows strict naming conventions and file organization:
+- **Design System** - UI component system and design tokens
+- **Unit Testing** - Testing setup and best practices
+- **Email System** - Email sending and templates
 
-- **File Types**: `*.type.ts`, `*.schema.ts`, `*.query.ts`, `*.action.ts`
-- **Components**: `*.component.tsx`, `*.hook.ts`, `*.context.tsx`
-- **Database**: `*.table.ts`, `*.migration.ts`
+## 🎨 Features
 
-### Type Safety
+- **Modern UI** - Built with shadcn/ui components and Tailwind CSS
+- **Dark Mode** - Automatic theme switching support
+- **Search** - Local search functionality for finding content
+- **Mobile Responsive** - Optimized for all screen sizes
+- **GitHub Integration** - Edit links for contributing to documentation
 
-- **Zod Schemas**: All data validation uses Zod
-- **Type Inference**: Database queries maintain type safety
-- **No Any Types**: Explicit typing throughout the codebase
+## 🔧 Configuration
 
-### Design System
+The VitePress configuration is located in `.vitepress/config.mts`. You can customize:
 
-- **Token-Based**: Centralized design tokens for consistency
-- **Notion-Inspired**: Clean, modern UI patterns
-- **Component Library**: Reusable shadcn/ui components
+- **Site metadata** - Title, description, and social links
+- **Navigation** - Menu structure and sidebar organization
+- **Theme** - Styling and layout customization
+- **GitHub integration** - Repository links and edit functionality
 
-## 🔧 Core Features
+## 📖 Writing Guidelines
 
-### ✅ Implemented Features
+### Adding New Pages
 
-- **Multi-tenant Organizations**: User can belong to multiple organizations
-- **Role-based Access Control**: Owner/member roles with permissions
-- **Subscription Management**: Stripe integration with billing portal
-- **Email Notifications**: Automated transactional emails
-- **Activity Logging**: Audit trail for user actions
-- **Dynamic Navigation**: Context-aware navigation system
-- **Design System**: Consistent UI with design tokens
+1. Create a new markdown file in the appropriate section
+2. Add frontmatter metadata:
 
-### 🚧 In Development
+   ```yaml
+   ---
+   title: Your Page Title
+   description: Brief description for SEO
+   ---
+   ```
 
-- **In-app Notifications**: Real-time notification system
-- **Advanced Logging**: Winston-based logging infrastructure
-- **Provider-agnostic Cache**: Flexible caching layer
-- **Better Organization Management**: Enhanced organization features
+3. Update the sidebar configuration in `.vitepress/config.mts`
 
-## 📖 Documentation Guidelines
+### Markdown Features
 
-### For Developers
+VitePress supports enhanced markdown features:
 
-1. **Read Architecture Docs**: Start with system overviews
-2. **Follow Code Standards**: Use established patterns and naming
-3. **Maintain Type Safety**: Keep TypeScript coverage high
-4. **Test Thoroughly**: Write tests for new features
-5. **Update Documentation**: Keep docs current with changes
+- **Vue Components** - Embed Vue components in markdown
+- **Code Highlighting** - Syntax highlighting for all major languages
+- **Math Expressions** - LaTeX math with `$...$` and `$$...$$`
+- **Containers** - Info, warning, and tip callouts
+- **Custom Components** - Use the VitePress component system
 
-### For Integration
+## 🚀 Deployment
 
-1. **Stripe Setup**: Use the setup script for initial configuration
-2. **Email Templates**: Follow template patterns for new emails
-3. **Database Changes**: Use migrations for schema updates
-4. **Environment Variables**: Follow validation patterns
+### Static Site Generation
 
-## 🧪 Testing
-
-### Test Data
-
-After running `pnpm db:seed`:
-
-- **Test User**: `test@test.com` / `admin123`
-- **Test Organization**: Automatically created
-- **Stripe Test Cards**: `4242 4242 4242 4242`
-
-### Testing Commands
+Build the documentation for deployment:
 
 ```bash
-# Run unit tests
-pnpm test
-
-# Test Stripe integration
-node scripts/setup-stripe-features.js
-
-# Test email templates
-pnpm preview-emails
-
-# Database tests
-pnpm db:studio
+pnpm build
 ```
 
-## 🚨 Troubleshooting
+The built files will be in the `.vitepress/dist` directory, ready for deployment to any static hosting service.
 
-### Common Issues
+### Hosting Options
 
-| Issue                  | Documentation                        |
-| ---------------------- | ------------------------------------ |
-| Stripe setup problems  | [Stripe Integration](./stripe/)      |
-| Email delivery issues  | [Email System](./emails.md)          |
-| Authentication errors  | [OAuth Setup](./auth/OAUTH_SETUP.md) |
-| Navigation not working | [Navigation System](./navigation.md) |
-| Database connection    | Check environment variables          |
-
-### Debug Commands
-
-```bash
-# Check environment
-node -e "console.log(process.env.POSTGRES_URL ? 'DB Connected' : 'DB Missing')"
-
-# Test Stripe connection
-node scripts/setup-stripe-features.js
-
-# Check email configuration
-pnpm preview-emails
-```
-
-## 📚 External Resources
-
-- **[Next.js Documentation](https://nextjs.org/docs)**
-- **[Stripe API Reference](https://stripe.com/docs/api)**
-- **[Drizzle ORM Docs](https://orm.drizzle.team)**
-- **[BetterAuth Documentation](https://www.better-auth.com)**
-- **[shadcn/ui Components](https://ui.shadcn.com)**
+- **Vercel** - Zero-configuration deployment
+- **Netlify** - Static site hosting with build previews
+- **GitHub Pages** - Free hosting for public repositories
+- **Cloudflare Pages** - Fast global delivery
 
 ## 🤝 Contributing
 
-When contributing to the project:
+1. **Edit pages** - Use the "Edit this page" link on any page
+2. **Add content** - Create new markdown files and update navigation
+3. **Improve styling** - Customize the theme configuration
+4. **Submit PRs** - All changes go through pull requests
 
-1. **Follow Standards**: Use established patterns and naming
-2. **Update Documentation**: Keep docs current with changes
-3. **Maintain Type Safety**: Ensure TypeScript coverage
-4. **Test Changes**: Verify all functionality works
-5. **Review Security**: Follow security best practices
+## 📄 License
+
+This documentation is part of the SaaS Starter project and follows the same license terms.
 
 ---
 
-**Last Updated**: September 30, 2025  
-**Framework Version**: Next.js 15  
-**Documentation Version**: 1.0
+**Built with ❤️ using [VitePress](https://vitepress.dev/)**
+**Part of the [SaaS Starter](https://github.com/Monsoft-Solutions/saas-starter) project**

@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Cache directories
+docs/.vitepress/cache/
+coverage/
+
+# Environment files
+.env*
+
+# Logs
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Package manager lock files (usually don't need formatting)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Database files
+postgres_data/
+
+# Documentation build artifacts
+.vitepress/dist/
+.vitepress/.temp/
+
+# Test coverage
+coverage/
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
+# Email previews
+email-preview.html
